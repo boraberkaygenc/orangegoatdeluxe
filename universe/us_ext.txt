@@ -1,0 +1,799 @@
+# Extended US equity universe, static seed (November 2, 2026) · SYMBOL|GICS sector
+# Part 1: S&P MidCap 400 constituents (cross-checked against the Wikipedia list on November 2, 2026; names that have
+#         since moved to the S&P 600 stay as long as the ticker trades).
+# Part 2: US-listed common stocks / ADRs with a market cap of roughly 5 bn USD or more that are outside the
+#         S&P 500, S&P 400 and Nasdaq-100 (large foreign ADRs, recent IPOs, LPs, Canadian cross-listings).
+# Symbols already in us.txt are skipped at load. Share classes use the '.' form (MOG.A -> Yahoo MOG-A).
+# Sector 'Unclassified' = not sure; the nightly company-profile fetch fills it in from Yahoo.
+# The monthly refresh replaces this list with Wikipedia (S&P 400) + the Nasdaq screener (>= config.usMinMcap).
+
+# ---- Part 1: S&P MidCap 400 ----
+# Industrials
+AAON|Industrials
+ACM|Industrials
+AGCO|Industrials
+AIT|Industrials
+ALK|Industrials
+ALSN|Industrials
+ARMK|Industrials
+ASGN|Industrials
+AVAV|Industrials
+AWI|Industrials
+AYI|Industrials
+BCO|Industrials
+BLD|Industrials
+BWXT|Industrials
+CACI|Industrials
+CAR|Industrials
+CLH|Industrials
+CNM|Industrials
+CR|Industrials
+CSL|Industrials
+CSWI|Industrials
+CW|Industrials
+DCI|Industrials
+DRS|Industrials
+DY|Industrials
+ESAB|Industrials
+ESE|Industrials
+EXLS|Industrials
+FCN|Industrials
+FIX|Industrials
+FLR|Industrials
+FLS|Industrials
+FSS|Industrials
+FTAI|Industrials
+G|Industrials
+GATX|Industrials
+GGG|Industrials
+GNRC|Industrials
+GXO|Industrials
+HRI|Industrials
+HXL|Industrials
+ITT|Industrials
+JBLU|Industrials
+JBTM|Industrials
+KBR|Industrials
+KEX|Industrials
+KFY|Industrials
+KNF|Industrials
+KNX|Industrials
+KTOS|Industrials
+LECO|Industrials
+LII|Industrials
+LSTR|Industrials
+MAN|Industrials
+MATX|Industrials
+MDU|Industrials
+MIDD|Industrials
+MLI|Industrials
+MMS|Industrials
+MOD|Industrials
+MOG.A|Industrials
+MSA|Industrials
+MTZ|Industrials
+NPO|Industrials
+NVT|Industrials
+OC|Industrials
+OSK|Industrials
+PRIM|Industrials
+PSN|Industrials
+R|Industrials
+RBC|Industrials
+RHI|Industrials
+RRX|Industrials
+RXO|Industrials
+SAIA|Industrials
+SAIC|Industrials
+SITE|Industrials
+SPXC|Industrials
+SSD|Industrials
+STRL|Industrials
+THO|Industrials
+TKR|Industrials
+TREX|Industrials
+TTC|Industrials
+TTEK|Industrials
+UFPI|Industrials
+UHAL|Industrials
+ULS|Industrials
+UNF|Industrials
+VMI|Industrials
+VNT|Industrials
+WCC|Industrials
+WMS|Industrials
+WSO|Industrials
+WTS|Industrials
+WWD|Industrials
+XPO|Industrials
+# Financials
+AFG|Financials
+AGNC|Financials
+ALLY|Financials
+AMG|Financials
+ASB|Financials
+AXS|Financials
+BOKF|Financials
+BPOP|Financials
+CADE|Financials
+CBSH|Financials
+CFR|Financials
+CG|Financials
+CNO|Financials
+COLB|Financials
+CRBG|Financials
+EEFT|Financials
+EQH|Financials
+ESNT|Financials
+EVR|Financials
+EWBC|Financials
+FAF|Financials
+FCFS|Financials
+FHI|Financials
+FHN|Financials
+FLG|Financials
+FNB|Financials
+FNF|Financials
+GBCI|Financials
+HLI|Financials
+HLNE|Financials
+HOMB|Financials
+HWC|Financials
+JHG|Financials
+JXN|Financials
+KMPR|Financials
+KNSL|Financials
+LNC|Financials
+MC|Financials
+MORN|Financials
+MTG|Financials
+OMF|Financials
+ONB|Financials
+ORI|Financials
+OZK|Financials
+PB|Financials
+PIPR|Financials
+PJT|Financials
+PNFP|Financials
+PRI|Financials
+RDN|Financials
+RGA|Financials
+RLI|Financials
+RNR|Financials
+RYAN|Financials
+SEIC|Financials
+SF|Financials
+SIGI|Financials
+SLM|Financials
+SSB|Financials
+STEP|Financials
+THG|Financials
+TPG|Financials
+UBSI|Financials
+UMBF|Financials
+VIRT|Financials
+VLY|Financials
+VOYA|Financials
+WAL|Financials
+WBS|Financials
+WEX|Financials
+WTFC|Financials
+WTM|Financials
+WU|Financials
+ZION|Financials
+# Health Care
+ACHC|Health Care
+ALKS|Health Care
+ARWR|Health Care
+BBIO|Health Care
+BIO|Health Care
+BMRN|Health Care
+BRKR|Health Care
+CHE|Health Care
+CORT|Health Care
+DOCS|Health Care
+EHC|Health Care
+ELAN|Health Care
+ENSG|Health Care
+EXEL|Health Care
+GKOS|Health Care
+GMED|Health Care
+HAE|Health Care
+HALO|Health Care
+HIMS|Health Care
+HQY|Health Care
+ILMN|Health Care
+INSM|Health Care
+INSP|Health Care
+IONS|Health Care
+IRTC|Health Care
+ITGR|Health Care
+JAZZ|Health Care
+LIVN|Health Care
+LNTH|Health Care
+MASI|Health Care
+MDGL|Health Care
+MEDP|Health Care
+MMSI|Health Care
+NBIX|Health Care
+NTRA|Health Care
+NVST|Health Care
+OGN|Health Care
+OPCH|Health Care
+PBH|Health Care
+PCVX|Health Care
+PEN|Health Care
+PRCT|Health Care
+PRGO|Health Care
+QDEL|Health Care
+RGEN|Health Care
+RPRX|Health Care
+RVMD|Health Care
+SEM|Health Care
+SHC|Health Care
+SRPT|Health Care
+THC|Health Care
+UTHR|Health Care
+XRAY|Health Care
+# Information Technology
+ACIW|Information Technology
+AEIS|Information Technology
+ALGM|Information Technology
+AMKR|Information Technology
+APPF|Information Technology
+ARW|Information Technology
+AVT|Information Technology
+BILL|Information Technology
+BMI|Information Technology
+CGNX|Information Technology
+CIEN|Information Technology
+CNXC|Information Technology
+COHR|Information Technology
+CRDO|Information Technology
+CRUS|Information Technology
+CVLT|Information Technology
+DBX|Information Technology
+DLB|Information Technology
+DOCU|Information Technology
+DXC|Information Technology
+ENTG|Information Technology
+FN|Information Technology
+FOUR|Financials
+GWRE|Information Technology
+IPGP|Information Technology
+ITRI|Information Technology
+KD|Information Technology
+LFUS|Information Technology
+LITE|Information Technology
+LSCC|Information Technology
+MANH|Information Technology
+MKSI|Information Technology
+MTSI|Information Technology
+NOVT|Information Technology
+NSIT|Information Technology
+NTNX|Information Technology
+OLED|Information Technology
+ONTO|Information Technology
+PCTY|Industrials
+PEGA|Information Technology
+PSTG|Information Technology
+QLYS|Information Technology
+RMBS|Information Technology
+SANM|Information Technology
+SLAB|Information Technology
+SMTC|Information Technology
+SNX|Information Technology
+SPSC|Information Technology
+SSNC|Financials
+TDC|Information Technology
+TOST|Financials
+TWLO|Information Technology
+# Consumer Discretionary
+AAP|Consumer Discretionary
+AN|Consumer Discretionary
+ANF|Consumer Discretionary
+ASO|Consumer Discretionary
+BBWI|Consumer Discretionary
+BOOT|Consumer Discretionary
+BURL|Consumer Discretionary
+BYD|Consumer Discretionary
+CHDN|Consumer Discretionary
+CHH|Consumer Discretionary
+CHWY|Consumer Discretionary
+COLM|Consumer Discretionary
+CROX|Consumer Discretionary
+DKS|Consumer Discretionary
+DUOL|Consumer Discretionary
+ETSY|Consumer Discretionary
+FIVE|Consumer Discretionary
+FND|Consumer Discretionary
+GAP|Consumer Discretionary
+GME|Consumer Discretionary
+GNTX|Consumer Discretionary
+GPI|Consumer Discretionary
+GT|Consumer Discretionary
+H|Consumer Discretionary
+HOG|Consumer Discretionary
+HRB|Consumer Discretionary
+KBH|Consumer Discretionary
+LAD|Consumer Discretionary
+LEA|Consumer Discretionary
+LNW|Consumer Discretionary
+M|Consumer Discretionary
+MAT|Consumer Discretionary
+MTH|Consumer Discretionary
+MTN|Consumer Discretionary
+MUSA|Consumer Discretionary
+OLLI|Consumer Discretionary
+PAG|Consumer Discretionary
+PENN|Consumer Discretionary
+PII|Consumer Discretionary
+PLNT|Consumer Discretionary
+PVH|Consumer Discretionary
+RH|Consumer Discretionary
+SCI|Consumer Discretionary
+SGI|Consumer Discretionary
+TMHC|Consumer Discretionary
+TNL|Consumer Discretionary
+TXRH|Consumer Discretionary
+URBN|Consumer Discretionary
+VAC|Consumer Discretionary
+VFC|Consumer Discretionary
+W|Consumer Discretionary
+WH|Consumer Discretionary
+WHR|Consumer Discretionary
+WING|Consumer Discretionary
+WYNN|Consumer Discretionary
+YETI|Consumer Discretionary
+# Consumer Staples
+ACI|Consumer Staples
+BJ|Consumer Staples
+BRBR|Consumer Staples
+CALM|Consumer Staples
+CASY|Consumer Staples
+CELH|Consumer Staples
+COKE|Consumer Staples
+COTY|Consumer Staples
+DAR|Consumer Staples
+ELF|Consumer Staples
+ENR|Consumer Staples
+FLO|Consumer Staples
+FRPT|Consumer Staples
+INGR|Consumer Staples
+LANC|Consumer Staples
+PFGC|Consumer Staples
+POST|Consumer Staples
+PPC|Consumer Staples
+SAM|Consumer Staples
+SFM|Consumer Staples
+SMPL|Consumer Staples
+USFD|Consumer Staples
+WDFC|Consumer Staples
+# Energy
+AM|Energy
+AR|Energy
+AROC|Energy
+CHRD|Energy
+CNX|Energy
+CRC|Energy
+DINO|Energy
+DTM|Energy
+HP|Energy
+KNTK|Energy
+LBRT|Energy
+MTDR|Energy
+MUR|Energy
+NOV|Energy
+OVV|Energy
+PBF|Energy
+PR|Energy
+PTEN|Energy
+RRC|Energy
+SM|Energy
+VNOM|Energy
+WFRD|Energy
+WHD|Energy
+# Materials
+AA|Materials
+ASH|Materials
+ATI|Materials
+ATR|Materials
+AVNT|Materials
+AXTA|Materials
+BCPC|Materials
+CC|Materials
+CE|Materials
+CLF|Materials
+CMC|Materials
+CRS|Materials
+ESI|Materials
+EXP|Materials
+FUL|Materials
+GPK|Materials
+HUN|Materials
+LPX|Materials
+MP|Materials
+NEU|Materials
+OLN|Materials
+RGLD|Materials
+RPM|Materials
+RS|Materials
+SLGN|Materials
+SMG|Materials
+SON|Materials
+SXT|Materials
+VVV|Materials
+WLK|Materials
+# Utilities
+AVA|Utilities
+BKH|Utilities
+CWEN|Utilities
+HE|Utilities
+IDA|Utilities
+NFG|Utilities
+NJR|Utilities
+NWE|Utilities
+OGE|Utilities
+OGS|Utilities
+ORA|Utilities
+POR|Utilities
+SR|Utilities
+SWX|Utilities
+TLN|Utilities
+UGI|Utilities
+WTRG|Utilities
+# Real Estate
+ADC|Real Estate
+AMH|Real Estate
+BRX|Real Estate
+COLD|Real Estate
+CTRE|Real Estate
+CUBE|Real Estate
+CUZ|Real Estate
+EGP|Real Estate
+ELS|Real Estate
+EPR|Real Estate
+EPRT|Real Estate
+FR|Real Estate
+GLPI|Real Estate
+HHH|Real Estate
+HIW|Real Estate
+HR|Real Estate
+IRT|Real Estate
+JLL|Real Estate
+KRC|Real Estate
+KRG|Real Estate
+LAMR|Real Estate
+NNN|Real Estate
+NSA|Real Estate
+OHI|Real Estate
+PK|Real Estate
+REXR|Real Estate
+RHP|Real Estate
+RITM|Financials
+RYN|Real Estate
+SBRA|Real Estate
+SLG|Real Estate
+STAG|Real Estate
+STWD|Financials
+TRNO|Real Estate
+VNO|Real Estate
+WPC|Real Estate
+# Communication Services
+FWONK|Communication Services
+IAC|Communication Services
+IRDM|Communication Services
+LBRDK|Communication Services
+MSGS|Communication Services
+MTCH|Communication Services
+NXST|Communication Services
+NYT|Communication Services
+ROKU|Communication Services
+WMG|Communication Services
+ZD|Communication Services
+
+# S&P 400 constituents added after a cross-check with the live Wikipedia list (November 2, 2026)
+AAL|Industrials
+AHR|Real Estate
+ALV|Consumer Discretionary
+APG|Industrials
+AVTR|Health Care
+BAH|Industrials
+BC|Consumer Discretionary
+BDC|Information Technology
+BHF|Financials
+BROS|Consumer Discretionary
+BTSG|Health Care
+BWA|Consumer Discretionary
+CBT|Materials
+CCK|Materials
+CDE|Materials
+CDP|Real Estate
+CXT|Industrials
+DOCN|Information Technology
+EAT|Consumer Discretionary
+ENS|Industrials
+EXPO|Industrials
+FBIN|Industrials
+FFIN|Financials
+FORM|Information Technology
+FTI|Energy
+GEF|Materials
+GHC|Consumer Discretionary
+HGV|Consumer Discretionary
+HL|Materials
+IBOC|Financials
+IDCC|Information Technology
+IESC|Industrials
+JEF|Financials
+KRYS|Health Care
+LOPE|Consumer Discretionary
+MOH|Health Care
+MSM|Industrials
+MZTI|Unclassified
+NLY|Financials
+NXT|Industrials
+ROIV|Health Care
+SARO|Industrials
+SIRI|Communication Services
+SITM|Information Technology
+SN|Consumer Discretionary
+SOLS|Materials
+ST|Industrials
+SUI|Real Estate
+SYNA|Information Technology
+TCBI|Financials
+TEX|Industrials
+TOL|Consumer Discretionary
+TRU|Industrials
+TTMI|Information Technology
+TXNM|Utilities
+UNM|Financials
+VAL|Energy
+VC|Consumer Discretionary
+VIAV|Information Technology
+VICR|Industrials
+
+# ---- Part 2: large caps (>= ~5 bn USD) outside the S&P 500 / 400 / Nasdaq-100 ----
+# US companies, recent IPOs and listings
+ACHR|Industrials
+AFRM|Financials
+ALAB|Information Technology
+ALNY|Health Care
+APLD|Information Technology
+ARCC|Financials
+ASTS|Communication Services
+AXSM|Health Care
+BLSH|Financials
+BSY|Information Technology
+CACC|Financials
+CART|Consumer Staples
+CAVA|Consumer Discretionary
+CHYM|Financials
+CNA|Financials
+CORZ|Information Technology
+CPNG|Consumer Discretionary
+CRCL|Financials
+CRWV|Information Technology
+CYTK|Health Care
+DKNG|Consumer Discretionary
+DT|Information Technology
+FCNCA|Financials
+FIG|Information Technology
+GH|Health Care
+GLXY|Financials
+GTLB|Information Technology
+HUBS|Information Technology
+IONQ|Information Technology
+IOT|Information Technology
+JOBY|Industrials
+KLAR|Financials
+LYFT|Industrials
+MDB|Information Technology
+NET|Information Technology
+OKLO|Utilities
+OKTA|Information Technology
+OWL|Financials
+PATH|Information Technology
+PCOR|Information Technology
+PINS|Communication Services
+PRMB|Consumer Staples
+QBTS|Information Technology
+RBLX|Communication Services
+RDDT|Communication Services
+RGTI|Information Technology
+RIOT|Information Technology
+RIVN|Consumer Discretionary
+RKLB|Industrials
+S|Information Technology
+SAIL|Information Technology
+SCCO|Materials
+SFD|Consumer Staples
+SMMT|Health Care
+SMR|Industrials
+SNAP|Communication Services
+SNOW|Information Technology
+SOFI|Financials
+STUB|Consumer Discretionary
+TEM|Health Care
+TW|Financials
+U|Information Technology
+UI|Information Technology
+YUMC|Consumer Discretionary
+ZM|Information Technology
+# US-listed LPs (energy midstream)
+CQP|Energy
+EPD|Energy
+ET|Energy
+MPLX|Energy
+PAA|Energy
+WES|Energy
+# Canada (NYSE / Nasdaq cross-listings)
+AEM|Materials
+B|Materials
+BAM|Financials
+BCE|Communication Services
+BEP|Utilities
+BIP|Utilities
+BMO|Financials
+BN|Financials
+BNS|Financials
+CCJ|Energy
+CM|Financials
+CNI|Industrials
+CNQ|Energy
+CP|Industrials
+CVE|Energy
+ENB|Energy
+FNV|Materials
+FTS|Utilities
+GFL|Industrials
+GIB|Information Technology
+IMO|Energy
+KGC|Materials
+MFC|Financials
+NTR|Materials
+OTEX|Information Technology
+PAAS|Materials
+PBA|Energy
+QSR|Consumer Discretionary
+RBA|Industrials
+RCI|Communication Services
+RY|Financials
+SHOP|Information Technology
+SLF|Financials
+SU|Energy
+TD|Financials
+TECK|Materials
+TRI|Industrials
+TRP|Energy
+TU|Communication Services
+WCN|Industrials
+WPM|Materials
+# Europe / UK / Israel (ADRs and US primary listings)
+AER|Industrials
+ALC|Health Care
+ARGX|Health Care
+AS|Consumer Discretionary
+ASML|Information Technology
+AZN|Health Care
+BBVA|Financials
+BCS|Financials
+BIRK|Consumer Discretionary
+BNTX|Health Care
+BP|Energy
+BTI|Consumer Staples
+BUD|Consumer Staples
+CHKP|Information Technology
+CNH|Industrials
+DB|Financials
+DEO|Consumer Staples
+E|Energy
+EQNR|Energy
+ERIC|Information Technology
+ESLT|Industrials
+ESTC|Information Technology
+FER|Industrials
+FLUT|Consumer Discretionary
+GMAB|Health Care
+GSK|Health Care
+HLN|Consumer Staples
+HSBC|Financials
+ICLR|Health Care
+IHG|Consumer Discretionary
+ING|Financials
+LOGI|Information Technology
+LYG|Financials
+MNDY|Information Technology
+MT|Materials
+NICE|Information Technology
+NOK|Information Technology
+NVMI|Information Technology
+NVO|Health Care
+NVS|Health Care
+NWG|Financials
+ONON|Consumer Discretionary
+PHG|Health Care
+PUK|Financials
+QGEN|Health Care
+RELX|Industrials
+RIO|Materials
+SAN|Financials
+SAP|Information Technology
+SHEL|Energy
+SNY|Health Care
+SPOT|Communication Services
+STM|Information Technology
+TEVA|Health Care
+TS|Energy
+TTE|Energy
+UBS|Financials
+UL|Consumer Staples
+VOD|Communication Services
+WIX|Information Technology
+NBIS|Information Technology
+# Asia-Pacific (ADRs and US listings)
+ASX|Information Technology
+AU|Materials
+BABA|Consumer Discretionary
+BEKE|Real Estate
+BHP|Materials
+BIDU|Communication Services
+BZ|Industrials
+CHT|Communication Services
+FUTU|Financials
+GFI|Materials
+GRAB|Industrials
+HDB|Financials
+HMC|Consumer Discretionary
+IBN|Financials
+INFY|Information Technology
+IREN|Information Technology
+JD|Consumer Discretionary
+JHX|Materials
+KB|Financials
+LI|Consumer Discretionary
+MFG|Financials
+MMYT|Consumer Discretionary
+MUFG|Financials
+NMR|Financials
+NTES|Communication Services
+ONC|Health Care
+PKX|Materials
+RDY|Health Care
+SE|Communication Services
+SMFG|Financials
+SONY|Consumer Discretionary
+TAK|Health Care
+TCOM|Consumer Discretionary
+TM|Consumer Discretionary
+TME|Communication Services
+TSM|Information Technology
+UMC|Information Technology
+VIPS|Consumer Discretionary
+WDS|Energy
+WIT|Information Technology
+XPEV|Consumer Discretionary
+YMM|Industrials
+ZTO|Industrials
+# Latin America (ADRs and US listings)
+ABEV|Consumer Staples
+AMX|Communication Services
+BAP|Financials
+BBD|Financials
+BSBR|Financials
+CX|Materials
+EC|Energy
+ERJ|Industrials
+FMX|Consumer Staples
+ITUB|Financials
+KOF|Consumer Staples
+NU|Financials
+PBR|Energy
+PBR.A|Energy
+SQM|Materials
+SUZ|Materials
+VALE|Materials
+VIV|Communication Services
+XP|Financials
+YPF|Energy

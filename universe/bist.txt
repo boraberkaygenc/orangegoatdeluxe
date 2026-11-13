@@ -1,0 +1,603 @@
+# BIST all shares (kjhq/Turkey-Stock-Symbols-and-Metadata, Oct 2026) · TICKER|sector — BIST 100 members come from the data file and are merged in
+A1CAP|Finance
+A1YEN|Utilities
+ACSEL|Process industries
+ADEL|Consumer durables
+ADESE|Finance
+ADGYO|Finance
+AEFES|Consumer non-durables
+AFYON|Non-energy minerals
+AGESA|Finance
+AGHOL|Consumer non-durables
+AGROT|Technology services
+AHGAZ|Utilities
+AHSGY|Finance
+AKBNK|Finance
+AKCNS|Non-energy minerals
+AKENR|Utilities
+AKFIS|Industrial services
+AKFYE|Utilities
+AKGRT|Finance
+AKSA|Process industries
+AKSEN|Utilities
+AKSUE|Utilities
+AKYHO|Commercial services
+ALARK|Finance
+ALBRK|Finance
+ALCAR|Producer manufacturing
+ALCTL|Electronic technology
+ALFAS|Utilities
+ALKA|Process industries
+ALKIM|Process industries
+ALKLC|Consumer non-durables
+ALTNY|Electronic technology
+ALVES|Producer manufacturing
+ANELE|Industrial services
+ANGEN|Health technology
+ANHYT|Finance
+ANSGR|Finance
+ARASE|Utilities
+ARCLK|Consumer durables
+ARDYZ|Technology services
+ARENA|Distribution services
+ARMGD|Consumer non-durables
+ARSAN|Process industries
+ARTMS|Retail trade
+ARZUM|Distribution services
+ASELS|Electronic technology
+ASTOR|Producer manufacturing
+ASUZU|Consumer durables
+ATAKP|Consumer non-durables
+ATATP|Technology services
+ATEKS|Process industries
+ATLAS|Miscellaneous
+ATSYH|Miscellaneous
+AVGYO|Finance
+AVHOL|Health services
+AVOD|Consumer non-durables
+AVPGY|Finance
+AYCES|Consumer services
+AYDEM|Utilities
+AYEN|Utilities
+AYES|Producer manufacturing
+AYGAZ|Utilities
+AZTEK|Distribution services
+BAGFS|Process industries
+BAHKM|Process industries
+BAKAB|Process industries
+BALAT|Producer manufacturing
+BALSU|Consumer non-durables
+BANVT|Process industries
+BARMA|Process industries
+BASCM|Non-energy minerals
+BASGZ|Utilities
+BAYRK|Consumer non-durables
+BEGYO|Finance
+BERA|Producer manufacturing
+BESLR|Consumer non-durables
+BEYAZ|Retail trade
+BFREN|Producer manufacturing
+BIENY|Non-energy minerals
+BIGCH|Consumer services
+BIGEN|Utilities
+BIMAS|Retail trade
+BINBN|Commercial services
+BINHO|Technology services
+BIOEN|Utilities
+BIZIM|Retail trade
+BJKAS|Consumer services
+BLCYT|Process industries
+BMSCH|Producer manufacturing
+BMSTL|Producer manufacturing
+BNTAS|Process industries
+BOBET|Non-energy minerals
+BORLS|Finance
+BORSK|Process industries
+BOSSA|Process industries
+BRISA|Consumer durables
+BRKO|Consumer durables
+BRKSN|Process industries
+BRKVY|Finance
+BRLSM|Non-energy minerals
+BRMEN|Process industries
+BRSAN|Non-energy minerals
+BRYAT|Miscellaneous
+BSOKE|Non-energy minerals
+BTCIM|Non-energy minerals
+BUCIM|Non-energy minerals
+BULGS|Finance
+BURCE|Non-energy minerals
+BURVA|Producer manufacturing
+BVSAN|Producer manufacturing
+BYDNR|Consumer services
+CANTE|Utilities
+CASA|Distribution services
+CATES|Utilities
+CCOLA|Consumer non-durables
+CELHA|Non-energy minerals
+CEMAS|Non-energy minerals
+CEMTS|Non-energy minerals
+CEMZY|Consumer non-durables
+CEOEM|Consumer services
+CGCAM|Consumer durables
+CIMSA|Non-energy minerals
+CLEBI|Transportation
+CMBTN|Non-energy minerals
+CMENT|Non-energy minerals
+CONSE|Utilities
+COSMO|Distribution services
+CRDFA|Finance
+CRFSA|Retail trade
+CUSAN|Non-energy minerals
+CVKMD|Non-energy minerals
+CWENE|Electronic technology
+DAGI|Consumer non-durables
+DAPGM|Finance
+DARDL|Consumer non-durables
+DCTTR|Distribution services
+DENGE|Finance
+DERHL|Consumer non-durables
+DERIM|Consumer non-durables
+DESA|Consumer non-durables
+DESPC|Distribution services
+DEVA|Health technology
+DGATE|Distribution services
+DGNMO|Consumer durables
+DIRIT|Process industries
+DITAS|Producer manufacturing
+DMRGD|Consumer non-durables
+DMSAS|Producer manufacturing
+DNISI|Process industries
+DOAS|Retail trade
+DOBUR|Consumer services
+DOFER|Non-energy minerals
+DOFRB|Producer manufacturing
+DOGUB|Non-energy minerals
+DOHOL|Retail trade
+DOKTA|Producer manufacturing
+DSTKF|Finance
+DURDO|Process industries
+DURKN|Consumer non-durables
+DYOBY|Process industries
+DZGYO|Finance
+EBEBK|Retail trade
+ECILC|Health technology
+ECZYT|Finance
+EDATA|Commercial services
+EDIP|Finance
+EFORC|Consumer non-durables
+EGEEN|Producer manufacturing
+EGEGY|Finance
+EGEPO|Health services
+EGGUB|Process industries
+EGPRO|Process industries
+EGSER|Producer manufacturing
+EKGYO|Finance
+EKIZ|Process industries
+EKOS|Producer manufacturing
+EKSUN|Process industries
+ELITE|Consumer non-durables
+EMKEL|Producer manufacturing
+EMNIS|Process industries
+ENDAE|Finance
+ENERY|Utilities
+ENJSA|Utilities
+ENKAI|Industrial services
+ENSRI|Consumer non-durables
+ENTRA|Utilities
+EPLAS|Producer manufacturing
+ERBOS|Non-energy minerals
+ERCB|Non-energy minerals
+EREGL|Non-energy minerals
+ERSU|Consumer non-durables
+ESCAR|Finance
+ESCOM|Electronic technology
+ESEN|Utilities
+ETILR|Consumer services
+ETYAT|Finance
+EUHOL|Finance
+EUKYO|Finance
+EUPWR|Producer manufacturing
+EUREN|Producer manufacturing
+EUYO|Finance
+FADE|Consumer non-durables
+FENER|Consumer services
+FLAP|Consumer services
+FMIZP|Producer manufacturing
+FONET|Technology services
+FORMT|Non-energy minerals
+FORTE|Technology services
+FRIGO|Consumer non-durables
+FROTO|Consumer durables
+FZLGY|Consumer durables
+GARAN|Finance
+GARFA|Finance
+GEDIK|Finance
+GEDZA|Process industries
+GENIL|Health technology
+GENTS|Producer manufacturing
+GEREL|Producer manufacturing
+GESAN|Electronic technology
+GIPTA|Producer manufacturing
+GLBMD|Finance
+GLCVY|Finance
+GLRMK|Industrial services
+GLRYH|Finance
+GLYHO|Finance
+GMTAS|Retail trade
+GOKNR|Consumer non-durables
+GOLTS|Non-energy minerals
+GOODY|Consumer durables
+GOZDE|Finance
+GRNYO|Finance
+GRSEL|Consumer services
+GRTHO|Distribution services
+GSDDE|Transportation
+GSDHO|Transportation
+GSRAY|Consumer services
+GUBRF|Process industries
+GUNDG|Consumer non-durables
+GWIND|Utilities
+GZNMI|Consumer services
+HALKB|Finance
+HATEK|Process industries
+HATSN|Producer manufacturing
+HDFGS|Finance
+HEDEF|Finance
+HEKTS|Process industries
+HKTM|Producer manufacturing
+HOROZ|Transportation
+HRKET|Transportation
+HTTBT|Technology services
+HUBVC|Finance
+HUNER|Utilities
+HURGZ|Consumer services
+ICBCT|Finance
+ICUGS|Finance
+IEYHO|Process industries
+IHAAS|Commercial services
+IHEVA|Consumer durables
+IHGZT|Consumer services
+IHLAS|Finance
+IHLGM|Finance
+IHYAY|Consumer services
+IMASM|Producer manufacturing
+INDES|Distribution services
+INFO|Finance
+INGRM|Distribution services
+INTEK|Process industries
+INTEM|Producer manufacturing
+INVEO|Finance
+INVES|Finance
+IPEKE|Energy minerals
+ISBIR|Process industries
+ISCTR|Finance
+ISDMR|Non-energy minerals
+ISFIN|Finance
+ISKPL|Producer manufacturing
+ISMEN|Finance
+ISSEN|Process industries
+IZENR|Utilities
+IZFAS|Producer manufacturing
+IZINV|Consumer non-durables
+IZMDC|Non-energy minerals
+JANTS|Producer manufacturing
+KAPLM|Process industries
+KAREL|Electronic technology
+KARSN|Producer manufacturing
+KARTN|Process industries
+KATMR|Producer manufacturing
+KAYSE|Health technology
+KBORU|Producer manufacturing
+KCAER|Non-energy minerals
+KCHOL|Energy minerals
+KENT|Consumer non-durables
+KERVN|Consumer services
+KFEIN|Technology services
+KIMMR|Retail trade
+KLKIM|Process industries
+KLMSN|Producer manufacturing
+KLNMA|Finance
+KLRHO|Consumer non-durables
+KLSER|Producer manufacturing
+KLSYN|Consumer durables
+KLYPV|Producer manufacturing
+KMPUR|Producer manufacturing
+KNFRT|Consumer non-durables
+KOCMT|Non-energy minerals
+KONKA|Process industries
+KONTR|Utilities
+KONYA|Non-energy minerals
+KOPOL|Process industries
+KORDS|Process industries
+KOTON|Consumer non-durables
+KOZAA|Non-energy minerals
+KOZAL|Non-energy minerals
+KRDMA|Non-energy minerals
+KRDMD|Non-energy minerals
+KRONT|Communications
+KRPLS|Consumer non-durables
+KRSTL|Consumer non-durables
+KRTEK|Process industries
+KRVGD|Consumer non-durables
+KSTUR|Consumer services
+KTLEV|Finance
+KTSKR|Process industries
+KUTPO|Consumer durables
+KUVVA|Consumer durables
+KZBGY|Finance
+KZGYO|Finance
+LIDER|Finance
+LIDFA|Finance
+LILAK|Consumer non-durables
+LINK|Technology services
+LKMNH|Health services
+LMKDC|Non-energy minerals
+LOGO|Technology services
+LRSHO|Consumer non-durables
+LUKSK|Process industries
+LYDHO|Distribution services
+LYDYE|Consumer non-durables
+MAALT|Consumer services
+MACKO|Commercial services
+MAGEN|Utilities
+MAKIM|Electronic technology
+MAKTK|Producer manufacturing
+MANAS|Producer manufacturing
+MARBL|Non-energy minerals
+MARKA|Distribution services
+MARMR|Finance
+MARTI|Consumer services
+MAVI|Consumer non-durables
+MEDTR|Health technology
+MEGAP|Process industries
+MEGMT|Non-energy minerals
+MEKAG|Producer manufacturing
+MEPET|Retail trade
+MERCN|Process industries
+MERIT|Consumer services
+MERKO|Consumer non-durables
+METRO|Consumer non-durables
+METUR|Consumer services
+MGROS|Retail trade
+MHRGY|Finance
+MIATK|Technology services
+MMCAS|Transportation
+MNDRS|Consumer non-durables
+MNDTR|Process industries
+MOBTL|Distribution services
+MOGAN|Utilities
+MOPAS|Retail trade
+MPARK|Health services
+MRSHL|Process industries
+MTRKS|Technology services
+MTRYO|Miscellaneous
+MZHLD|Producer manufacturing
+NATEN|Industrial services
+NETAS|Technology services
+NIBAS|Industrial services
+NTGAZ|Utilities
+NTHOL|Consumer services
+NUHCM|Non-energy minerals
+OBAMS|Consumer non-durables
+OBASE|Technology services
+ODAS|Utilities
+ODINE|Technology services
+OFSYM|Process industries
+ONCSM|Health technology
+ONRYT|Electronic technology
+ORCAY|Consumer non-durables
+ORGE|Industrial services
+ORMA|Non-energy minerals
+OSMEN|Finance
+OSTIM|Miscellaneous
+OTKAR|Consumer durables
+OTTO|Process industries
+OYAKC|Non-energy minerals
+OYAYO|Finance
+OYLUM|Consumer non-durables
+OYYAT|Finance
+OZATD|Producer manufacturing
+OZRDN|Process industries
+OZSUB|Process industries
+OZYSR|Producer manufacturing
+PAGYO|Finance
+PAMEL|Utilities
+PAPIL|Electronic technology
+PARSN|Producer manufacturing
+PASEU|Transportation
+PATEK|Technology services
+PCILT|Commercial services
+PEKGY|Finance
+PENGD|Consumer non-durables
+PENTA|Distribution services
+PETKM|Process industries
+PETUN|Consumer non-durables
+PGSUS|Transportation
+PINSU|Consumer non-durables
+PKART|Commercial services
+PKENT|Consumer services
+PLTUR|Transportation
+PNLSN|Non-energy minerals
+PNSUT|Consumer non-durables
+POLHO|Process industries
+POLTK|Process industries
+PRDGS|Finance
+PRKAB|Producer manufacturing
+PRKME|Non-energy minerals
+PRZMA|Commercial services
+PSDTC|Process industries
+QNBFK|Finance
+QNBTR|Finance
+QUAGR|Non-energy minerals
+RALYH|Industrial services
+RAYSG|Finance
+REEDR|Technology services
+RGYAS|Finance
+RNPOL|Producer manufacturing
+RODRG|Consumer non-durables
+RTALB|Health technology
+RUBNS|Process industries
+RUZYE|Process industries
+RYSAS|Transportation
+SAFKR|Producer manufacturing
+SAHOL|Finance
+SAMAT|Commercial services
+SANEL|Producer manufacturing
+SANFM|Process industries
+SANKO|Process industries
+SARKY|Producer manufacturing
+SASA|Process industries
+SAYAS|Producer manufacturing
+SDTTR|Electronic technology
+SEGMN|Consumer non-durables
+SEGYO|Finance
+SEKFK|Finance
+SEKUR|Process industries
+SELEC|Distribution services
+SELGD|Consumer non-durables
+SELVA|Consumer non-durables
+SERNT|Producer manufacturing
+SEYKM|Health technology
+SILVR|Producer manufacturing
+SISE|Consumer durables
+SKBNK|Finance
+SKTAS|Process industries
+SKYLP|Commercial services
+SKYMD|Finance
+SMART|Technology services
+SMRTG|Electronic technology
+SMRVA|Finance
+SNICA|Producer manufacturing
+SNKRN|Commercial services
+SNPAM|Process industries
+SODSN|Process industries
+SOKE|Process industries
+SOKM|Retail trade
+SONME|Process industries
+SRVGY|Finance
+SUMAS|Process industries
+SUNTK|Consumer non-durables
+SURGY|Finance
+SUWEN|Retail trade
+TABGD|Consumer services
+TARKM|Process industries
+TATEN|Utilities
+TATGD|Consumer non-durables
+TAVHL|Transportation
+TBORG|Consumer non-durables
+TCELL|Communications
+TCKRC|Producer manufacturing
+TDGYO|Finance
+TEKTU|Consumer services
+TERA|Finance
+TEZOL|Consumer non-durables
+TGSAS|Distribution services
+THYAO|Transportation
+TKFEN|Industrial services
+TKNSA|Retail trade
+TLMAN|Transportation
+TMPOL|Process industries
+TMSN|Producer manufacturing
+TNZTP|Health services
+TOASO|Consumer durables
+TRCAS|Utilities
+TRHOL|Finance
+TRILC|Health technology
+TSKB|Finance
+TSPOR|Consumer services
+TTKOM|Communications
+TTRAK|Producer manufacturing
+TUCLK|Non-energy minerals
+TUKAS|Consumer non-durables
+TUPRS|Energy minerals
+TUREX|Finance
+TURGG|Finance
+TURSG|Finance
+UFUK|Finance
+ULAS|Consumer services
+ULKER|Consumer non-durables
+ULUFA|Finance
+ULUSE|Producer manufacturing
+ULUUN|Process industries
+UNLU|Finance
+USAK|Producer manufacturing
+VAKBN|Finance
+VAKFN|Finance
+VAKKO|Consumer non-durables
+VANGD|Distribution services
+VBTYZ|Technology services
+VERUS|Finance
+VESBE|Consumer durables
+VESTL|Consumer durables
+VKFYO|Finance
+VKING|Consumer non-durables
+VRGYO|Finance
+VSNMD|Non-energy minerals
+YAPRK|Process industries
+YATAS|Distribution services
+YAYLA|Industrial services
+YBTAS|Non-energy minerals
+YEOTK|Utilities
+YESIL|Miscellaneous
+YGGYO|Finance
+YIGIT|Producer manufacturing
+YKBNK|Finance
+YKSLN|Distribution services
+YONGA|Consumer durables
+YUNSA|Process industries
+YYAPI|Industrial services
+YYLGD|Process industries
+ZEDUR|Consumer services
+ZOREN|Utilities
+ZRGYO|Finance
+# added 2026-11-02: REITs (GYO) and a few shares missing from the data file
+AKSGY|Real estate
+AKFGY|Real estate
+ALGYO|Real estate
+DGGYO|Real estate
+HLGYO|Real estate
+ISGYO|Real estate
+KLGYO|Real estate
+MRGYO|Real estate
+NUGYO|Real estate
+OZKGY|Real estate
+RYGYO|Real estate
+SNGYO|Real estate
+TRGYO|Real estate
+TSGYO|Real estate
+VKGYO|Real estate
+KRGYO|Real estate
+MSGYO|Real estate
+ATAGY|Real estate
+AGYO|Real estate
+PSGYO|Real estate
+AKMGY|Real estate
+YGYO|Real estate
+KGYO|Real estate
+OZGYO|Real estate
+IDGYO|Real estate
+ISYAT|Finance
+QNBFL|Finance
+KRDMB|Non-energy minerals
+# BIST BYFs (exchange-traded funds on Borsa Istanbul) · TICKER|type|name
+BYF:ISX30|BIST 30|Is Portfoy BIST 30 BYF
+BYF:ZPX30|BIST 30|Ziraat Portfoy BIST 30 BYF
+BYF:ZPBDL|BIST Banka Disi Likit 10|Ziraat Portfoy BIST Banka Disi Likit 10 BYF
+BYF:ZPLIB|BIST Likit Banka|Ziraat Portfoy BIST Likit Banka BYF
+BYF:ZPT10|BIST Temettu|Ziraat Portfoy BIST Temettu 25 BYF
+BYF:ZSR25|BIST Surdurulebilirlik|Ziraat Portfoy BIST Surdurulebilirlik 25 BYF
+BYF:ZELOT|BIST 50-30|Ziraat Portfoy BIST 50-30 BYF
+# TEFAS seed funds (the app expands this list from TEFAS by fund size) · code|hy|b51|name
+TEFAS:TI2|1|1|Is Portfoy Hisse Senedi Fonu (Hisse Senedi Yogun Fon)
+TEFAS:TI3|1|1|Is Portfoy Istirak Hisse Senedi Fonu
+TEFAS:AFA|1|1|Ak Portfoy Alternatif Enerji Yabanci Hisse Senedi Fonu
+TEFAS:AFT|1|1|Ak Portfoy Yeni Teknolojiler Yabanci Hisse Senedi Fonu
+TEFAS:YAY|1|1|Yapi Kredi Portfoy Koc Holding Istirak ve Hisse Senedi Fonu
+TEFAS:HKH|1|1|Hedef Portfoy Hisse Senedi Fonu
+TEFAS:MAC|1|1|Marmara Capital Portfoy Hisse Senedi Fonu
+TEFAS:NNF|1|1|Nurol Portfoy Hisse Senedi Fonu
+TEFAS:TCD|1|1|Tacirler Portfoy Degisken Fon
+TEFAS:IJB|1|1|Is Portfoy BIST Banka Disi Likit 10 Endeksi Hisse Senedi Fonu
+TEFAS:KZL|1|1|Kuveyt Turk Portfoy Katilim Hisse Senedi Fonu
+TEFAS:GTA|1|1|Garanti Portfoy Hisse Senedi Fonu

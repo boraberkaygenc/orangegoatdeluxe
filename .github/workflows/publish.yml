@@ -1,0 +1,68 @@
+# orangegoat Deluxe: fetch market data and publish the app on GitHub Pages.
+# Every 30 minutes on weekdays 09:00–23:30 Istanbul (quick update), every night 00:15 Istanbul (full update),
+# on every push to main, and by hand (Actions › Update data and publish › Run workflow).
+# The store of market data (data/) is kept between runs in the Actions cache. Your personal data never comes here:
+# it stays in your browser. Needs one repository secret: EVDS_KEY (TCMB EVDS API key).
+name: Update data and publish
+on:
+  schedule:
+    - cron: '0,30 6-20 * * 1-5'
+    - cron: '15 21 * * *'
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'quick or full'
+        default: quick
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: publish
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Restore the market data store
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            data
+            !data/seed.json
+          key: store-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: store-
+      - name: Fetch data and build the site
+        env:
+          EVDS_KEY: ${{ secrets.EVDS_KEY }}
+          MODE: ${{ (github.event.schedule == '15 21 * * *' || inputs.mode == 'full') && 'full' || 'quick' }}
+          MAX_MIN: ${{ (github.event.schedule == '15 21 * * *' || inputs.mode == 'full') && '70' || '25' }}
+        run: node tools/static-build.mjs
+      - name: Keep the market data store
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            data
+            !data/seed.json
+          key: store-${{ github.run_id }}-${{ github.run_attempt }}
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

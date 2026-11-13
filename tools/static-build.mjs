@@ -1,0 +1,60 @@
+// orangegoat Deluxe — GitHub Pages build (run by .github/workflows/publish.yml, also runnable by hand: node tools/static-build.mjs)
+// 1) writes config.json from defaults + secrets (EVDS_KEY) — never prints them
+// 2) starts the normal server (server.mjs) on a private port, lets it refresh the market data, VİOP and the rest
+// 3) saves what the page needs into _site/data/view.json, copies public/ into _site/ with the GitHub Pages files
+// 4) stops the server cleanly (the store in data/ is kept by the workflow's cache for the next run)
+// Env: MODE=quick|full (default quick), PORT (default 8799), MAX_MIN (default 40), SITE (default _site)
+import fs from 'node:fs'; import path from 'node:path'; import { spawn } from 'node:child_process'; import { fileURLToPath } from 'node:url';
+const DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'), SITE = path.resolve(DIR, process.env.SITE || '_site');
+const PORT = +process.env.PORT || 8799, MODE = process.env.MODE === 'full' ? 'full' : 'quick', MAX = (+process.env.MAX_MIN || 40) * 60000, t0 = Date.now();
+const log = (...a) => console.log(`[${Math.round((Date.now() - t0) / 1000)}s]`, ...a);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const B = `http://127.0.0.1:${PORT}`;
+async function j(p, opt) { const r = await fetch(B + p, { signal: AbortSignal.timeout(120000), ...opt }); if (!r.ok) throw new Error(`${p}: HTTP ${r.status}`); return r.json(); }
+
+// 1) config — keep a local config.json if there is one (running by hand), otherwise defaults; secrets from the environment
+const cfgPath = path.join(DIR, 'config.json'); let cfg = {}; try { cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8')); } catch (e) { }
+cfg.port = PORT; cfg.backfillOnStart = false; cfg.remote = { enabled: false, pin: '' }; if (process.env.EVDS_KEY) cfg.evdsKey = process.env.EVDS_KEY;
+const hadCfg = fs.existsSync(cfgPath), oldCfg = hadCfg ? fs.readFileSync(cfgPath) : null; fs.writeFileSync(cfgPath, JSON.stringify(cfg, null, 2));
+log(`mode ${MODE}; EVDS key ${cfg.evdsKey ? 'set' : 'not set'}; store ${fs.existsSync(path.join(DIR, 'data', 'store.json')) ? 'restored from the previous run' : 'new (first run: full history, takes longer)'}`);
+
+// 2) server
+const srv = spawn(process.execPath, ['server.mjs'], { cwd: DIR, env: { ...process.env, GNC_PORT: String(PORT) }, stdio: ['ignore', 'pipe', 'pipe'] });
+let out = ''; srv.stdout.on('data', d => { out += d; }); srv.stderr.on('data', d => { out += d; });
+const stop = async () => { if (srv.exitCode !== null) return; srv.kill('SIGTERM'); for (let i = 0; i < 60 && srv.exitCode === null; i++) await sleep(500); if (srv.exitCode === null) srv.kill('SIGKILL'); };
+const notes = [];
+try {
+  for (let i = 0; ; i++) { try { await j('/api/version'); break; } catch (e) { if (i > 120) throw new Error('server did not start:\n' + out.slice(-3000)); await sleep(500); } }
+  log('server up');
+  const waitIdle = async (what) => { let seen = false; const end = Date.now() + MAX; await sleep(3000);
+    while (Date.now() < end) { const p = await j('/api/progress').catch(() => ({})); if (p.running) seen = true; if (!p.running && (seen || Date.now() - t0 > 20000)) return true; if (p.running && p.total) log(`${what}: ${p.phase || ''} ${p.done}/${p.total}`); await sleep(15000); }
+    notes.push(`${what} did not finish within ${MAX / 60000} min; published what was ready`); return false; };
+  await waitIdle('start-up refresh');
+  if (MODE === 'full') { await j('/api/refresh', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mode: 'full' }) }).catch(e => notes.push('full refresh: ' + e.message)); await waitIdle('full refresh'); }
+  const vp = await j('/api/viop/refresh', { method: 'POST' }).catch(e => ({ ok: false, error: e.message })); log('VİOP:', vp.ok ? `${vp.n} contracts, bulletin ${vp.bulletin}` : vp.error); if (!vp.ok) notes.push('VİOP: ' + vp.error);
+  await sleep(4000); // EVDS / IPO / Lighthouse updates started at start-up get a moment to land
+  // 3) data for the page: the same documents the local server sends, without anyone's personal data
+  const view = await j('/api/view?s=0&c=0'), inst = await j('/api/view/inst');
+  const docs = {}; for (const [k, v] of Object.entries(view.docs || {})) if (!k.startsWith('data/users/') && k !== 'settings/main' && !k.startsWith('import') && !k.startsWith('remote')) docs[k] = v;
+  // the page shows a "refresh running" strip while status/refresh says so; the published copy is a finished snapshot
+  if (docs['status/refresh'] && docs['status/refresh'].state === 'running') docs['status/refresh'] = { ...docs['status/refresh'], state: 'done', finishedAt: new Date().toISOString(), note: 'published while the update was still running; the next run continues it' };
+  const health = docs['status/health'] || {}, failing = Object.entries(health.sources || {}).filter(([, s]) => s && s.ok === false).map(([k]) => k); if (failing.length) notes.push('sources failing: ' + failing.join(', '));
+  const now = new Date(), next = new Date(now.getTime() + 35 * 60000);
+  const payload = { app: 'orangegoat-deluxe', generatedAt: now.toISOString(), nextRun: next.toISOString(), mode: MODE, rev: view.rev, notes, docs, inst: inst.inst || {} };
+  // one year of daily closes for every instrument (the page loads them on demand: charts, simulation, value history)
+  const syms = Object.keys(inst.inst || {}), series = {};
+  for (let i = 0; i < syms.length; i += 60) { const chunk = syms.slice(i, i + 60); const r = await j('/api/series?n=262&symbols=' + encodeURIComponent(chunk.join(','))).catch(() => ({ series: {} })); for (const [s, v] of Object.entries(r.series || {})) if (v && Array.isArray(v.closes) && v.closes.length) series[s] = { closes: v.closes.map(c => [c[0], +(+c[1]).toPrecision(7)]) }; }
+  // 4) site
+  fs.rmSync(SITE, { recursive: true, force: true }); fs.mkdirSync(path.join(SITE, 'data'), { recursive: true });
+  fs.cpSync(path.join(DIR, 'public'), SITE, { recursive: true });
+  fs.writeFileSync(path.join(SITE, 'data', 'view.json'), JSON.stringify(payload));
+  fs.writeFileSync(path.join(SITE, 'data', 'series.json'), JSON.stringify({ generatedAt: payload.generatedAt, series }));
+  fs.copyFileSync(path.join(DIR, 'tools', 'static', 'static-mode.js'), path.join(SITE, 'static-mode.js'));
+  fs.copyFileSync(path.join(DIR, 'tools', 'static', 'sw.js'), path.join(SITE, 'sw.js'));
+  const man = JSON.parse(fs.readFileSync(path.join(DIR, 'public', 'manifest.webmanifest'), 'utf8')); man.name = 'orangegoat Deluxe'; man.short_name = 'orangegoat'; man.id = './'; man.start_url = './'; man.scope = './';
+  man.icons = (man.icons || []).map(i => ({ ...i, src: String(i.src).replace(/^\//, '') })); fs.writeFileSync(path.join(SITE, 'manifest.webmanifest'), JSON.stringify(man, null, 2));
+  fs.writeFileSync(path.join(SITE, '.nojekyll'), '');
+  const mb = (fs.statSync(path.join(SITE, 'data', 'view.json')).size / 1e6).toFixed(1);
+  log(`site written: ${Object.keys(payload.inst).length} instruments, ${Object.keys(docs).length} documents, view.json ${mb} MB, series.json ${(fs.statSync(path.join(SITE, 'data', 'series.json')).size / 1e6).toFixed(1)} MB (${Object.keys(series).length} symbols)${notes.length ? '; notes: ' + notes.join(' | ') : ''}`);
+} catch (e) { console.error('BUILD FAILED:', e.message); console.error(out.slice(-4000)); process.exitCode = 1; }
+finally { await stop(); if (hadCfg) fs.writeFileSync(cfgPath, oldCfg); else fs.rmSync(cfgPath, { force: true }); log('server stopped'); }

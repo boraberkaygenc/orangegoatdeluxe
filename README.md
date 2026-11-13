@@ -1,0 +1,29 @@
+# orangegoat Deluxe
+
+Kişisel yatırım uygulaması: BIST, ABD hisseleri, TEFAS fonları, gram altın, nakit/mevduat ve VİOP; fon simülasyonu,
+stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama olarak yüklenir**; bilgisayara program kurmak gerekmez.
+
+**Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
+
+## Kurulum (bir kez)
+1. Adresi **Edge** veya **Chrome** ile açın.
+2. Adres çubuğundaki “Uygulamayı yükle” simgesine (veya Ayarlar › “Bu tarayıcıdaki verileriniz” › **Uygulama olarak yükle**) tıklayın.
+   Uygulama kendi penceresinde açılır; Başlat menüsünde ve görev çubuğunda yer alır. Android’de: Chrome menüsü › **Uygulamayı yükle**.
+3. Bilgisayardaki eski sürümden geçiyorsanız: Ayarlar › **Bu tarayıcıdaki verileriniz** › **Geri yükle / bilgisayar sürümünden aktar** ve
+   eski klasördeki `data\store.json` dosyasını seçin. Fonlarınız, işlem defteriniz, günlüğünüz ve ayarlarınız aktarılır.
+
+## Verileriniz
+- Fonlar, işlem defteri, günlük ve ayarlar **yalnızca bu cihazdaki tarayıcıda** tutulur; hiçbir yere gönderilmez.
+- Düzenli olarak **Yedek indir** düğmesiyle yedek alın. Başka bir cihazda kullanmak için yedeği orada geri yükleyin.
+
+## Piyasa verisi
+- GitHub Actions iş günleri 09:00–23:30 arasında yaklaşık 30 dakikada bir (GitHub zaman zaman geciktirebilir) ve her gece tam güncelleme yapar.
+- Kaynaklar: Yahoo Finance, TEFAS, TCMB EVDS, Borsa İstanbul (VİOP gün sonu dosyaları), KAP, SPK, SEC, İş Yatırım.
+- TCMB EVDS anahtarı depo ayarlarında **EVDS_KEY** adlı “secret” olarak saklanır (Settings › Secrets and variables › Actions); kodda veya sayfada yer almaz.
+
+## Bilgisayar sürümü
+Aynı kod bilgisayarda da çalışır (Node.js 18+): `node launcher/gnc.mjs --setup` — ayrıntılar `README.txt` dosyasında.
+
+## Geliştirme
+`engine.js`, `reports.js`, `deluxe.js`, `ui-deluxe.js` dosyaları `node tools/build-page.mjs` ile `public/index.html` içine gömülür.
+GitHub sürümü `tools/static-build.mjs` ile üretilir (`tools/static/`: tarayıcı veri katmanı ve service worker).

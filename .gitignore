@@ -1,0 +1,7 @@
+# never commit keys or personal data
+config.json
+data/*
+!data/seed.json
+_site/
+node_modules/
+*.log
