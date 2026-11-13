@@ -41,7 +41,7 @@ function dlMaturities() {
       toast(`${p.name.replace(/ \(.*\)$/, '')}: ${DL('deposit matured, interest credited', 'mevduat vadesi doldu, faiz eklendi')} (${dlMoney(it.net, o.ccy)})`); } }
   if (changed) saveUser('packages');
 }
-state.hooks.unshift(() => { try { for (const p of state.packages || []) dlNormalize(p); dlMaturities(); } catch (e) { console.error(e); } });
+state.hooks.unshift(() => { try { let moved = false; for (const p of state.packages || []) { dlNormalize(p); if (p.status !== 'closed' && typeof dlFixStart === 'function' && dlFixStart(p, true)) moved = true; } if (moved) saveUser('packages'); dlMaturities(); } catch (e) { console.error(e); } });
 { const la = liveAlerts; liveAlerts = function () { const out = la(); try { for (const p of state.packages || []) { if (p.status === 'closed' || !dlHasSleeve(p)) continue;
       for (const t of DX.dueSoon(p.tx, today(), 5)) out.push({ level: 'warn', kind: 'deposit', text: `${p.name.replace(/ \(.*\)$/, '')}: ${DL('time deposit', 'vadeli mevduat')} ${dlMoney(t.amount, t.ccy)} ${DL('matures on', 'vadesi')} ${dlDate(t.maturity)} (${DX.daysBetween(today(), t.maturity)} ${DL('days', 'gün')})${DL('.', ' doluyor.')}` });
       const w = dlSleeve(p).warn; if (w.length) out.push({ level: 'bad', kind: 'cash', text: `${p.name.replace(/ \(.*\)$/, '')}: ${w[0]}` }); } } catch (e) { } return out; }; }
@@ -66,8 +66,8 @@ function dlSleeveHTML(p) {
 function dlLedgerHTML(p) {
   const L = k => ({ Buy: DL('Buy', 'Alış'), Sell: DL('Sell', 'Satış'), 'Money in': DL('Money in', 'Para girişi'), 'Money out': DL('Money out', 'Para çıkışı'), Convert: DL('Convert', 'Çevir'), 'Time deposit': DL('Time deposit', 'Vadeli mevduat'), 'Demand deposit': DL('Demand deposit', 'Vadesiz mevduat'), withholding: DL('withholding', 'stopaj'), 'Deposit matured': DL('Deposit matured', 'Mevduat vadesi doldu'), 'Deposit closed': DL('Deposit closed', 'Mevduat kapatıldı'), interest: DL('interest', 'faiz'), gross: DL('gross', 'brüt') }[k] || k);
   const rows = DX.txList(p, L), closed = p.status === 'closed';
-  return `<div class="panel wide" id="dlx-ledger"><h2>${DL('Transaction ledger', 'İşlem defteri')} <span class="sub">${rows.length} ${DL('entries, newest first', 'kayıt, en yeni üstte')}</span></h2><div class="body">${rows.length ? `<table><tr><th class="l">${DL('Date', 'Tarih')}</th><th class="l">${DL('Transaction', 'İşlem')}</th><th>${DL('Quantity', 'Adet')}</th><th>${DL('Price', 'Fiyat')}</th><th>${DL('Amount, TRY', 'Tutar, TL')}</th><th>${DL('Commission', 'Komisyon')}</th><th>BSMV</th><th></th></tr>${rows.map(r => `<tr><td class="l mono">${esc(r.date)}</td><td class="l txt">${esc(r.text)}${r.auto ? ` <span class="pill src">${DL('automatic', 'otomatik')}</span>` : ''}${r.note && !r.auto ? `<div class="dim" style="font-size:11px">${esc(r.note)}</div>` : ''}</td><td>${r.qty ? dlN(r.qty, r.qty % 1 ? 4 : 0) : '—'}</td><td>${r.price ? dlN(r.price, 4) : '—'}</td><td>${r.amountTRY !== undefined ? N(r.amountTRY) : r.ccy === 'USD' ? N(r.amount * dlFx(r.date)) : N(r.amount)}</td><td>${r.fee ? N(r.fee) : '—'}</td><td>${r.bsmv ? N(r.bsmv) : '—'}</td><td>${r.id && !closed ? `<button class="quiet" data-dlx-deltx="${esc(r.id)}" title="${DL('Delete this entry', 'Bu kaydı sil')}">✕</button>` : ''}</td></tr>`).join('')}</table>` : `<div class="empty">${DL('No transactions yet.', 'Henüz işlem yok.')}</div>`}
-    <p class="note">${DL('Share and fund purchases come from the fund lines (fills); cash, currency and deposit entries can be deleted here. Edit share lines with “Edit”.', 'Hisse ve fon alışları fon satırlarından (gerçekleşmelerden) gelir; nakit, döviz ve mevduat kayıtları buradan silinebilir. Hisse satırları “Düzenle” ile değiştirilir.')}</p></div></div>`;
+  return `<div class="panel wide" id="dlx-ledger"><h2>${DL('Transaction ledger', 'İşlem defteri')} <span class="sub">${rows.length} ${DL('entries, newest first', 'kayıt, en yeni üstte')}</span></h2><div class="body">${rows.length ? `<table><tr><th class="l">${DL('Date', 'Tarih')}</th><th class="l">${DL('Transaction', 'İşlem')}</th><th>${DL('Quantity', 'Adet')}</th><th>${DL('Price', 'Fiyat')}</th><th>${DL('Amount, TRY', 'Tutar, TL')}</th><th>${DL('Commission', 'Komisyon')}</th><th>BSMV</th><th></th></tr>${rows.map(r => `<tr><td class="l mono">${esc(r.date)}</td><td class="l txt">${esc(r.text)}${r.auto ? ` <span class="pill src">${DL('automatic', 'otomatik')}</span>` : ''}${r.note && !r.auto ? `<div class="dim" style="font-size:11px">${esc(r.note)}</div>` : ''}</td><td>${r.qty ? dlN(r.qty, r.qty % 1 ? 4 : 0) : '—'}</td><td>${r.price ? dlN(r.price, 4) : '—'}</td><td>${r.amountTRY !== undefined ? N(r.amountTRY) : r.ccy === 'USD' ? N(r.amount * dlFx(r.date)) : N(r.amount)}</td><td>${r.fee ? N(r.fee) : '—'}</td><td>${r.bsmv ? N(r.bsmv) : '—'}</td><td style="white-space:nowrap">${closed ? '' : dlRowButtons(r)}</td></tr>`).join('')}</table>` : `<div class="empty">${DL('No transactions yet.', 'Henüz işlem yok.')}</div>`}
+    <p class="note">${DL('✎ changes the date of an entry, ✕ removes it as if it had never been entered; the fund is recalculated and its start date follows the earliest entry. Automatic entries (matured deposits, expired futures) follow their deposit or contract.', '✎ kaydın tarihini değiştirir, ✕ kaydı hiç girilmemiş gibi kaldırır; fon yeniden hesaplanır ve başlangıç tarihi en eski kayda göre ayarlanır. Otomatik kayıtlar (vadesi dolan mevduat, vadesi biten vadeli işlem) bağlı oldukları mevduatı veya sözleşmeyi izler.')}</p></div></div>`;
 }
 function dlCompareHTML(p) {
   const flows = pkgFlows(p); if (!flows.length) return ''; let alt; try { alt = E.alternatives(flows, today(), { ...ctx(), fx: dlFx, inst: state.inst }); } catch (e) { return ''; }
@@ -143,12 +143,7 @@ document.addEventListener('click', e => {
   const p = state.sheet && state.packages.find(q => q.id === state.sheet.id); if (!p) return;
   if (a) dlActionDialog(p, a.dataset.dlxAct);
   else if (b) dlActionDialog(p, 'dep-close', b.dataset.dlxBreak);
-  else if (c) { if (!c.dataset.sure) { c.dataset.sure = '1'; c.textContent = DL('Delete?', 'Silinsin mi?'); return; }
-    const t = (p.tx || []).find(z => z.id === c.dataset.dlxDeltx); if (!t) return; const before = JSON.stringify(p.tx);
-    p.tx = p.tx.filter(z => z !== t && !(t.type === 'dep-open' && z.type === 'dep-close' && z.depId === t.depId));
-    if (DX.replay(p.tx, today(), dlFx, dlSettleAt).warn.length) { p.tx = JSON.parse(before); toast(DL('Not deleted: later entries need this money. Delete those first.', 'Silinmedi: sonraki kayıtlar bu paraya ihtiyaç duyuyor. Önce onları silin.')); return; }
-    dlNormalize(p); journal(`${p.name}: ${DL('entry deleted', 'kayıt silindi')} — ${DX.txText(t, k => k)} (${t.date}).`, { kind: 'order', pkg: p.id }); saveUser('packages'); renderAll(); reopenSheet();
-    toast(DL('Entry deleted', 'Kayıt silindi'), () => { p.tx = JSON.parse(before); dlNormalize(p); saveUser('packages'); renderAll(); reopenSheet(); }); }
+  else if (c) { /* replaced by the ledger editor below */ }
 }, true);
 
 /* ---- new fund on any date (empty, or with money / trades added afterwards) ---- */
@@ -519,6 +514,81 @@ if (DLS) {
       if (m) m.textContent = DL(`Prices are updated automatically on GitHub: last ${w(i.generatedAt)}, next about ${w(i.nextRun)}. The page picks up new data by itself.`, `Fiyatlar GitHub'da otomatik güncellenir: son ${w(i.generatedAt)}, sonraki yaklaşık ${w(i.nextRun)}. Sayfa yeni veriyi kendiliğinden alır.`); }; }
   // the VİOP download button runs on GitHub, not here
   state.hooks.push(() => { const b = $('vp-refresh'); if (b && !b.dataset.static) { b.dataset.static = '1'; b.style.display = 'none'; } });
+}
+
+
+/* ================= ledger editor: delete any entry as if never entered, change entry dates; the fund start follows ================= */
+const dlRefKey = r => r.id ? 'tx:' + r.id : r.ref ? [r.ref.t, r.ref.li, r.ref.i].filter(v => v !== undefined).join(':') : null;
+function dlRowButtons(r) { const k = dlRefKey(r); if (!k || r.auto) return ''; return `<button class="quiet" data-dlx-edit="${esc(k)}" title="${esc(DL('Change the date', 'Tarihi değiştir'))}">✎</button><button class="quiet" data-dlx-del="${esc(k)}" title="${esc(DL('Delete this entry', 'Bu kaydı sil'))}">✕</button>`; }
+function dlEntry(p, key) { const [t, a, b] = key.split(':');
+  if (t === 'tx') { const x = (p.tx || []).find(z => z.id === key.slice(3)); return x ? { t, x, date: x.date } : null; }
+  const l = (p.lines || [])[+a]; if (!l) return null;
+  if (t === 'fill') { const f = (l.fills || [])[+b]; return f ? { t, l, f, i: +b, date: f.date } : null; }
+  if (t === 'sale') { const s = (l.sales || [])[+b]; return s ? { t, l, s, i: +b, date: s.date } : null; }
+  if (t === 'close') return l.closed ? { t, l, date: l.closed.date } : null; return null; }
+// the fund starts with its earliest entry; the date in its name and the reference levels follow
+function dlFixStart(p, earlierOnly) {
+  const ds = [...(p.lines || []).flatMap(l => (l.fills || []).map(f => f.date)), ...(p.tx || []).map(t => t.date)].filter(Boolean).sort(); const start = ds[0]; if (!start || start === p.date || (earlierOnly && start > p.date)) return false;
+  const old = p.date; p.date = start; if (p.ordered !== false) p.orderedAt = start;
+  try { if (/\(([^()]*)\)$/.test(p.name)) p.name = p.name.replace(/\(([^()]*)\)$/, `(${E.longDate(start)})`); } catch (e) { }
+  p.usdtryAt = dlFx(start); try { const xu = typeof impCloseAt === 'function' ? impCloseAt('XU100', start) : null; if (xu) p.xu100At = xu; } catch (e) { }
+  for (const tr of p.tranches || []) if (tr.n === 1 && tr.date === old) { tr.date = start; if (tr.doneDate === old) tr.doneDate = start; }
+  try { p.fundId = typeof fundIdOf === 'function' ? fundIdOf(p) : p.fundId; } catch (e) { }
+  return true;
+}
+function dlAfterLines(p) { p.lines = (p.lines || []).filter(l => !(l.__drop)); if (p.lines.length && p.lines.every(l => l.closed)) { if (p.status !== 'closed') { p.status = 'closed'; p.closedAt = p.lines.map(l => l.closed.date).sort().pop(); p.closedValue = p.lines.reduce((a, l) => a + (+l.closed.value || 0), 0); } } else if (p.status === 'closed' && !p.__keepClosed) { p.status = 'open'; delete p.closedAt; delete p.closedValue; }
+  p.total = D_r2(p.lines.reduce((a, l) => a + (+l.amount || 0), 0)); dlNormalize(p); dlFixStart(p); }
+const D_r2 = v => Math.round(v * 100) / 100;
+function dlDeleteEntry(p, key) {
+  const e = dlEntry(p, key); if (!e) return DL('Entry not found.', 'Kayıt bulunamadı.');
+  if (e.t === 'tx') { const x = e.x; p.tx = p.tx.filter(z => z !== x && !(x.type === 'dep-open' && z.type === 'dep-close' && z.depId === x.depId) && !(x.type === 'viop-open' && z.type === 'viop-close' && z.posId === x.posId)); }
+  else if (e.t === 'fill') { const l = e.l; l.fills.splice(e.i, 1); l.amount = Math.max(0, (+l.amount || 0) - (+e.f.amount || 0)); lineRecompute(l); if (!l.fills.length && !(l.sales || []).length && !l.closed) l.__drop = true; else l.amount = Math.max(l.amount, l.filled || 0); }
+  else if (e.t === 'sale') { const l = e.l, s = e.s, q = +l.qty || 0, k = q > 0 ? (q + (+s.qty || 0)) / q : 1; l.fills = (l.fills || []).map(f => ({ ...f, qty: f.qty * k, amount: f.amount * k })); l.amount = (+l.amount || 0) * k; l.sales.splice(e.i, 1); lineRecompute(l); }
+  else if (e.t === 'close') { delete e.l.closed; }
+  dlAfterLines(p); return null;
+}
+function dlRedateEntry(p, key, date) {
+  const e = dlEntry(p, key); if (!e) return DL('Entry not found.', 'Kayıt bulunamadı.'); if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date > today()) return DL('Choose a date up to today.', 'Bugün veya öncesine ait bir tarih seçin.');
+  if (e.t === 'tx') { const x = e.x; if (x.type === 'dep-open' && x.maturity && x.maturity <= date) return DL('The deposit would start on or after its maturity.', 'Mevduat vade tarihinde veya sonrasında başlamış olur.'); if (x.type === 'viop-open' && x.expiry && date > x.expiry) return DL('The date is after the contract expiry.', 'Tarih sözleşmenin vade sonundan sonra.');
+    if (x.type === 'dep-close' || x.type === 'viop-close') { const o = p.tx.find(z => (z.depId && z.depId === x.depId && z.type === 'dep-open') || (z.posId && z.posId === x.posId && z.type === 'viop-open')); if (o && date < o.date) return DL('The closing date is before the opening.', 'Kapanış tarihi açılıştan önce.'); }
+    if (x.type === 'dep-open' || x.type === 'viop-open') { const c = p.tx.find(z => (z.type === 'dep-close' && z.depId === x.depId) || (z.type === 'viop-close' && z.posId === x.posId)); if (c && c.date < date) return DL('The position was closed before that date.', 'Pozisyon o tarihten önce kapanmış.'); }
+    x.date = date; if (x.type === 'in' || x.type === 'out') { if (x.ccy === 'USD') x.fx = dlFx(date); } }
+  else if (e.t === 'fill') { const l = e.l, f = e.f; if (l.ccy === 'USD' && f.price && f.qty) { const fx = dlFx(date); f.amount = D_r2(f.qty * f.price * fx + (+f.commission || 0) + (+f.bsmv || 0)); } f.date = date; l.fills.sort((a, b) => a.date < b.date ? -1 : 1); lineRecompute(l); l.amount = Math.max(+l.filled || 0, l.fills.reduce((a, z) => a + (+z.amount || 0), 0)); }
+  else if (e.t === 'sale') e.s.date = date; else if (e.t === 'close') e.l.closed.date = date;
+  dlAfterLines(p); return null;
+}
+function dlEntryChange(p, fn, label) {
+  const before = JSON.stringify(p); const err = fn(); const chk = !err && DX.replay(p.tx || [], today(), dlFx, dlSettleAt);
+  if (err || (chk && chk.warn.length)) { const keep = JSON.parse(before); for (const k of Object.keys(p)) delete p[k]; Object.assign(p, keep); toast(err || DL('Not changed: later entries need this money on that date — ', 'Değiştirilmedi: sonraki kayıtlar o tarihte bu paraya ihtiyaç duyuyor — ') + chk.warn[0]); return false; }
+  journal(`${p.name}: ${label}.`, { kind: 'order', pkg: p.id }); saveUser('packages'); renderAll(); reopenSheet();
+  toast(DL('Saved', 'Kaydedildi'), () => { const keep = JSON.parse(before); for (const k of Object.keys(p)) delete p[k]; Object.assign(p, keep); saveUser('packages'); renderAll(); reopenSheet(); toast(DL('Undone', 'Geri alındı')); }); return true;
+}
+document.addEventListener('click', ev => {
+  const d = ev.target.closest('button[data-dlx-del]'), ed = ev.target.closest('button[data-dlx-edit]'); if (!d && !ed) return; ev.stopPropagation();
+  const p = state.sheet && state.packages.find(q => q.id === state.sheet.id); if (!p) return;
+  if (d) { if (!d.dataset.sure) { d.dataset.sure = '1'; d.textContent = DL('Delete?', 'Silinsin mi?'); setTimeout(() => { if (d.isConnected) { delete d.dataset.sure; d.textContent = '✕'; } }, 4000); return; }
+    const key = d.dataset.dlxDel, e = dlEntry(p, key), what = e ? `${e.t === 'tx' ? DX.txText(e.x, k => k) : (e.l && e.l.symbol) + ' ' + e.t} (${e.date})` : key; dlEntryChange(p, () => dlDeleteEntry(p, key), `${DL('entry deleted', 'kayıt silindi')} — ${what}`); return; }
+  const key = ed.dataset.dlxEdit, e = dlEntry(p, key); if (!e) return;
+  $('modal').hidden = false; $('modal').innerHTML = `<div class="modal" role="dialog" aria-label="Change date" style="width:min(460px,100%)"><h3>${DL('Change the date', 'Tarihi değiştir')}</h3><p class="hint">${esc(e.t === 'tx' ? DX.txText(e.x, k => k) : `${e.l.symbol} · ${e.t === 'fill' ? DL('buy', 'alış') : DL('sell', 'satış')}`)}</p>
+    <div class="form"><label for="de-date">${DL('Date', 'Tarih')}</label><input id="de-date" type="date" value="${esc(e.date)}" max="${today()}"></div><p class="hint" style="margin-top:8px">${DL('The fund start date follows the earliest entry. US shares are revalued at that day’s USD/TRY.', 'Fonun başlangıç tarihi en eski kayda göre ayarlanır. ABD hisseleri o günün USD/TRY kuruyla yeniden değerlenir.')}</p>
+    <div class="row-inline" style="justify-content:flex-end;gap:8px;margin-top:12px"><button id="de-cancel">${DL('Cancel', 'Vazgeç')}</button><button class="primary" id="de-ok">${DL('Save', 'Kaydet')}</button></div></div>`;
+  $('de-cancel').onclick = closeModal; $('de-ok').onclick = () => { const nd = $('de-date').value; closeModal(); dlEntryChange(p, () => dlRedateEntry(p, key, nd), `${DL('date changed', 'tarih değiştirildi')} ${e.date} → ${nd}`); };
+}, true);
+
+/* ================= fund cards: everything the fund holds ================= */
+{ const rp = renderPackages; renderPackages = function () { rp.apply(this, arguments); try { for (const card of document.querySelectorAll('#pkg-cards .card[data-pkg]')) { const p = state.packages.find(q => q.id === card.dataset.pkg); if (!p || card.querySelector('.dlx-card')) continue; const h = dlCardHTML(p); if (!h) continue; const kv = card.querySelector('dl.kv'); (kv || card.querySelector('h3')).insertAdjacentHTML('afterend', h); } } catch (e) { console.error(e); } }; }
+function dlCardHTML(p) {
+  if (p.status === 'closed') return ''; const m = ctx().M, rows = []; let hv = []; try { hv = (p.lines || []).some(l => !l.closed) ? E.holdingsView([], [{ ...p, lines: p.lines.filter(l => !l.closed) }], state.map, m, state.S) : []; } catch (e) { }
+  for (const r of hv) rows.push([r.symbol, `${fmtN(r.qty, r.qty % 1 ? 3 : 0)} ${DL('units', 'adet')}`, r.value, r.plNet ?? r.pl ?? null, 'eq']);
+  if (dlHasSleeve(p)) { const sl = dlSleeve(p), fx = dlFx(today());
+    if (Math.abs(sl.cash.TRY) > 0.5) rows.push([DL('TRY cash', 'TL nakit'), '', sl.cash.TRY, null, 'cash']);
+    if (Math.abs(sl.cash.USD) > 0.005) rows.push([DL('USD cash', 'USD nakit'), `${fmtN(sl.cash.USD, 2)} USD`, sl.cash.USD * fx, null, 'cash']);
+    for (const d of sl.open) rows.push([d.maturity ? DL('Time deposit', 'Vadeli mevduat') : DL('Demand deposit', 'Vadesiz mevduat'), `${fmtN(d.principal, 0)} ${d.ccy} · %${fmtN(d.rate, 1)}${d.maturity ? ' · ' + DL('maturity', 'vade') + ' ' + d.maturity + ` (${DX.daysBetween(today(), d.maturity)} ${DL('d', 'g')})` : ''}`, (d.principal + d.accrued.net) * (d.ccy === 'USD' ? fx : 1), null, 'dep']);
+    for (const v of sl.viop) rows.push([v.code, `${v.side === 'short' ? DL('short', 'kısa') : DL('long', 'uzun')} ${v.qty} · ${DL('P/L', 'K/Z')} ${fmtN(v.pnl, 0)} TRY`, v.equity, v.margin * v.qty ? v.pnl / (v.margin * v.qty) * 100 : null, 'viop']); }
+  if (!rows.length) return '';
+  const tot = rows.reduce((a, r) => a + (+r[2] || 0), 0) || 1, lab = { eq: DL('Shares / funds / gold', 'Hisse / fon / altın'), cash: DL('Cash', 'Nakit'), dep: DL('Deposits', 'Mevduat'), viop: 'VİOP' };
+  const mix = Object.entries(rows.reduce((a, r) => { a[r[4]] = (a[r[4]] || 0) + (+r[2] || 0); return a; }, {})).map(([k, v]) => `${lab[k]} ${Math.round(v / tot * 100)}%`).join(' · ');
+  return `<div class="dlx-card" style="margin:6px 0 8px;border-top:1px solid var(--line, #ddd);padding-top:6px"><div class="hint" style="margin-bottom:4px">${esc(mix)}</div><table style="font-size:12px;width:100%">${rows.map(r => `<tr><td class="l acc" style="padding:2px 4px">${esc(r[0])}</td><td class="l dim" style="padding:2px 4px">${esc(r[1])}</td><td style="padding:2px 4px">${fmtN(r[2], 0)}</td><td style="padding:2px 4px">${r[3] == null ? '' : P(r[3])}</td></tr>`).join('')}</table></div>`;
 }
 
 Object.assign(TR, { 'GitHub version · prices update about every 30–60 minutes on weekdays · your data stays in this browser': 'GitHub sürümü · fiyatlar iş günleri yaklaşık 30–60 dakikada bir güncellenir · verileriniz bu tarayıcıda kalır',

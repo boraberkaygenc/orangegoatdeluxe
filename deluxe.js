@@ -138,11 +138,11 @@ const DELUXE = (() => {
   /* ---------------- transaction list for display (fills + sales + sleeve) ---------------- */
   function txList(p, label) {
     const L = label || (k => k), rows = [];
-    for (const l of p.lines || []) {
-      for (const f of l.fills || []) rows.push({ date: f.date, kind: 'buy', text: `${L('Buy')} ${l.symbol}`, qty: +f.qty, price: +f.price, ccy: l.ccy || 'TRY', amountTRY: +f.amount, fee: +f.commission || 0, bsmv: +f.bsmv || 0, src: f.src || '' });
-      for (const s of l.sales || []) rows.push({ date: s.date, kind: 'sell', text: `${L('Sell')} ${l.symbol}`, qty: +s.qty, price: +s.price, ccy: l.ccy || 'TRY', amountTRY: +s.value, fee: 0, src: '' });
-      if (l.closed) rows.push({ date: l.closed.date, kind: 'sell', text: `${L('Sell')} ${l.symbol}`, qty: +l.closed.qty || null, price: +l.closed.price || null, ccy: l.ccy || 'TRY', amountTRY: +l.closed.value, fee: 0, src: '' });
-    }
+    (p.lines || []).forEach((l, li) => {
+      (l.fills || []).forEach((f, i) => rows.push({ date: f.date, kind: 'buy', ref: { t: 'fill', li, i }, text: `${L('Buy')} ${l.symbol}`, qty: +f.qty, price: +f.price, ccy: l.ccy || 'TRY', amountTRY: +f.amount, fee: +f.commission || 0, bsmv: +f.bsmv || 0, src: f.src || '' }));
+      (l.sales || []).forEach((s, i) => rows.push({ date: s.date, kind: 'sell', ref: { t: 'sale', li, i }, text: `${L('Sell')} ${l.symbol}`, qty: +s.qty, price: +s.price, ccy: l.ccy || 'TRY', amountTRY: +s.value, fee: 0, src: '' }));
+      if (l.closed) rows.push({ date: l.closed.date, kind: 'sell', ref: { t: 'close', li }, text: `${L('Sell')} ${l.symbol}`, qty: +l.closed.qty || null, price: +l.closed.price || null, ccy: l.ccy || 'TRY', amountTRY: +l.closed.value, fee: 0, src: '' });
+    });
     for (const t of p.tx || []) rows.push({ date: t.date, kind: t.type, id: t.id, text: txText(t, L), ccy: t.ccy, amount: +t.amount, fee: +t.fee || 0, bsmv: +t.bsmv || 0, auto: !!t.auto, note: t.note || '' });
     return rows.sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
   }
