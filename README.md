@@ -14,6 +14,7 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 ## Verileriniz
 - Fonlar, işlem defteri, günlük ve ayarlar **yalnızca bu cihazdaki tarayıcıda** tutulur; hiçbir yere gönderilmez.
+- Aracı kurum raporları (Ak Yatırım İşlem Sonuç Formu, Midas, diğer PDF/CSV) **tarayıcıda okunur**; dosya hiçbir yere gönderilmez.
 - Düzenli olarak **Yedek indir** düğmesiyle yedek alın. Başka bir cihazda kullanmak için yedeği orada geri yükleyin.
 
 ## Piyasa verisi
