@@ -5511,10 +5511,10 @@ function dlNewFundDialog() {
 }
 
 /* ---- manual trades on any date: the broker-report preview with empty, editable rows ---- */
-function dlManualEntry(pkgId) {
+function dlManualEntry(pkgId, pre) {
   const p = pkgId ? state.packages.find(q => q.id === pkgId) : null, d0 = p ? (p.date > today() ? today() : today()) : today();
   impOpen(); IMP.manual = true;
-  const res = { broker: DL('Manual entry', 'Elle giriş'), kind: 'manual', file: '', trades: [{ date: d0, side: 'BUY', symbol: '', qty: 0, price: 0, amount: 0, commission: 0, bsmv: 0, sig: null }] };
+  const res = { broker: DL('Manual entry', 'Elle giriş'), kind: 'manual', file: '', trades: [{ date: d0, side: 'BUY', symbol: '', qty: 0, price: 0, amount: 0, commission: 0, bsmv: 0, sig: null, ...(pre || {}) }] };
   impUse([res]); if (p) { IMP.mode = 'add'; IMP.target = p.id; } impRender();
 }
 // re-rendering the dialog inside a 'change' fired by a blur removes the focused node mid-event (Chromium error): defer it
@@ -5585,7 +5585,7 @@ function dlMonteCarlo(items, detAt, days, opts = {}) {
   const qs = { p05: 0.05, p25: 0.25, p50: 0.5, p75: 0.75, p95: 0.95 }, paths = {}; for (const q of Object.keys(qs)) paths[q] = [];
   for (let s = 0; s <= steps; s++) { const a = Float64Array.from(vals[s]).sort(); for (const [q, pq] of Object.entries(qs)) paths[q].push(a[Math.round(pq * (n - 1))]); }
   const term = vals[steps]; let mean = 0, beat = 0; for (const v of term) { mean += v; if (opts.bench !== undefined && v > opts.bench) beat++; }
-  return { method: 'montecarlo', paths, stepDays, mean: mean / n, pBeat: opts.bench !== undefined ? beat / n : null, ...Object.fromEntries(Object.keys(qs).map(q => [q, paths[q][steps]])) };
+  return { method: 'montecarlo', term: vals[steps], paths, stepDays, mean: mean / n, pBeat: opts.bench !== undefined ? beat / n : null, ...Object.fromEntries(Object.keys(qs).map(q => [q, paths[q][steps]])) };
 }
 async function dlSimulate(p, days) {
   const pos = dlPositions(p), t = days / 365, S = state.S, m = ctx().M, sk = [];
@@ -5657,9 +5657,8 @@ function dlSimOutHTML(p, r, sug) {
 }
 document.addEventListener('click', async e => { const b = e.target.closest('#dlx-run'); if (!b) return; e.stopPropagation();
   const p = state.sheet && state.packages.find(q => q.id === state.sheet.id); if (!p) return; const days = dlHorizonDays(p, $('dlx-hz').value);
-  b.disabled = true; $('dlx-sim-msg').textContent = DL('Loading prices and simulating…', 'Fiyatlar yükleniyor, simülasyon çalışıyor…');
-  try { const r = await dlSimulate(p, days), sug = dlSuggestions(p, days); state.dlxSim = { id: p.id, r, sug, at: Date.now() }; $('dlx-sim-out').innerHTML = dlSimOutHTML(p, r, sug);
-    f4FanSVG($('dlx-fan'), r, { days, bench: r.stepDays.map(d => r.total0 * (1 + E.benchNet(state.S, d, undefined, ctx().M) / 100)), benchLabel: dlBench(), endLabel: dlDate(r.end), height: 200 }); $('dlx-sim-msg').textContent = ''; }
+  b.disabled = true; $('dlx-sim-msg').textContent = DL('Simulating…', 'Simülasyon çalışıyor…'); await new Promise(r => setTimeout(r, 30));
+  try { const r = dlSim2(p, days); state.dlxSim = { id: p.id, r, at: Date.now() }; dlRenderSim2(p, r); $('dlx-sim-msg').textContent = ''; }
   catch (err) { console.error(err); $('dlx-sim-msg').textContent = DL('Simulation failed: ', 'Simülasyon başarısız: ') + err.message; }
   b.disabled = false; }, true);
 document.addEventListener('click', e => { const s = e.target.closest('#dlx-sim [data-sym]'); if (!s) return; e.stopPropagation(); openSheet({ type: 'sym', symbol: s.dataset.sym }); }, true);
@@ -5672,7 +5671,7 @@ function dlStressHTML(p) {
 }
 { const _rs = renderSheet; renderSheet = function () { _rs(); const w = state.sheet; if (!w || w.type !== 'pkg') return; const p = state.packages.find(q => q.id === w.id); if (!p || p.status === 'closed') return; const anchor = $('dlx-hist'); if (!anchor || $('dlx-sim')) return;
     anchor.insertAdjacentHTML('afterend', dlSimHTML(p) + dlStressHTML(p));
-    const c = state.dlxSim; if (c && c.id === p.id && Date.now() - c.at < 10 * 60000) { $('dlx-sim-out').innerHTML = dlSimOutHTML(p, c.r, c.sug); try { f4FanSVG($('dlx-fan'), c.r, { days: c.r.days, bench: c.r.stepDays.map(d => c.r.total0 * (1 + E.benchNet(state.S, d, undefined, ctx().M) / 100)), benchLabel: dlBench(), endLabel: dlDate(c.r.end), height: 200 }); } catch (e) { } } }; }
+    const c = state.dlxSim; if (c && c.id === p.id && c.r && c.r.v2 && Date.now() - c.at < 10 * 60000) try { dlRenderSim2(p, c.r); } catch (e) { } }; }
 
 /* benchmarks: the existing "same money elsewhere" table gains gram gold and plain USD cash */
 { const alt = E.alternatives; E.alternatives = function (flows, to, c) { const r = alt(flows, to, c); try {
@@ -5932,6 +5931,230 @@ function dlCardHTML(p) {
   const mix = Object.entries(rows.reduce((a, r) => { a[r[4]] = (a[r[4]] || 0) + (+r[2] || 0); return a; }, {})).map(([k, v]) => `${lab[k]} ${Math.round(v / tot * 100)}%`).join(' · ');
   return `<div class="dlx-card" style="margin:6px 0 8px;border-top:1px solid var(--line, #ddd);padding-top:6px"><div class="hint" style="margin-bottom:4px">${esc(mix)}</div><table style="font-size:12px;width:100%">${rows.map(r => `<tr><td class="l acc" style="padding:2px 4px">${esc(r[0])}</td><td class="l dim" style="padding:2px 4px">${esc(r[1])}</td><td style="padding:2px 4px">${fmtN(r[2], 0)}</td><td style="padding:2px 4px">${r[3] == null ? '' : P(r[3])}</td></tr>`).join('')}</table></div>`;
 }
+
+
+/* ================= Phase 6: one model for simulation, plan and outlook; fund content editor with per-item statistics ================= */
+const dlNum = v => +String(v ?? '').replace(',', '.');
+// every holding as a modelled item for a horizon of `days`: risky items {key, name, kind, expo (TRY, signed for short futures), mult, sig (at horizon), factor}; deterministic values det(dd)
+function dlModel(p, days) {
+  const t = Math.max(days, 1) / 365, S = state.S, items = [], det = [];
+  for (const q of dlPositions(p)) {
+    if (q.kind === 'try_cash') det.push({ key: 'cash:TRY', name: q.name, f: () => q.valueTRY, value: q.valueTRY });
+    else if (q.kind === 'try_dep') { const d = q.dep; det.push({ key: 'dep:' + d.id, name: q.name, value: q.valueTRY, f: dd => d.principal + DX.depositInterest(d, DX.addDays(today(), dd)).net }); }
+    else if (q.kind === 'usd_cash' || q.kind === 'usd_dep') { const g = q.kind === 'usd_dep' ? (q.dep.principal + DX.depositInterest(q.dep, DX.addDays(today(), days)).net) / (q.dep.principal + q.dep.accrued.net) : 1; items.push({ key: q.kind === 'usd_dep' ? 'dep:' + q.dep.id : 'cash:USD', name: q.name, kind: q.kind, expo: q.valueTRY, value: q.valueTRY, mult: dlFxMult(t) * g, sig: (+S.fxVol || 8) / 100 * Math.sqrt(t), factor: 'fx' }); }
+    else if (q.kind === 'viop') { const sign = q.side === 'short' ? -1 : 1, expo = sign * q.notionalNow; items.push({ key: 'viop:' + q.code, name: q.name, kind: 'viop', expo, value: q.valueTRY, mult: Math.pow(q.uMultAnn, t), sig: q.uSig * Math.sqrt(t), factor: q.underKind === 'usd' ? 'fx' : 'mkt', q }); det.push({ key: 'viopm:' + q.code, f: () => q.valueTRY - expo, value: 0, hidden: true }); }
+    else if (q.x) { const ex = dlLineExpect(q.x, q.valueTRY, t); items.push({ key: 'line:' + q.symbol, name: q.symbol, kind: q.kind, expo: q.valueTRY, value: q.valueTRY, mult: ex ? ex.mult : 1, sig: ex ? ex.sig : 0.3 * Math.sqrt(t), factor: 'mkt', x: q.x }); }
+    else det.push({ key: 'other:' + q.name, name: q.name, f: () => q.valueTRY, value: q.valueTRY });
+  }
+  const detAt = dd => det.reduce((a, d) => a + d.f(dd), 0), total0 = dlPositions(p).reduce((a, q) => a + q.valueTRY, 0);
+  return { items, det, detAt, total0, t, days };
+}
+const dlRho = (a, b) => a === b ? 1 : (a.factor === 'fx' || b.factor === 'fx') ? (a.factor === b.factor ? 1 : 0.1) : 0.4;
+function dlMoments(items, detAt, days) { let mean = detAt(days), v = 0; for (const a of items) mean += a.expo * a.mult; for (const a of items) for (const b of items) v += dlRho(a, b) * a.expo * a.sig * b.expo * b.sig; return { mean, sd: Math.sqrt(Math.max(0, v)) }; }
+
+/* ---- simulation (v2): Monte Carlo of every holding, probabilities, distribution, contributions ---- */
+function dlSim2(p, days) {
+  const md = dlModel(p, days), S = state.S, m = ctx().M, benchPct = E.benchNet(S, days, undefined, m), bench = md.total0 * (1 + benchPct / 100);
+  const mcItems = md.items.map(it => ({ expo: it.expo, mu: Math.log(Math.max(1e-6, it.mult)) / md.t, sig: it.sig / Math.sqrt(md.t), factor: it.factor }));
+  const mc = dlMonteCarlo(mcItems, md.detAt, days, { bench, n: 3000 }), term = Array.from(mc.term).sort((a, b) => a - b), n = term.length, share = f => term.filter(f).length / n;
+  const contrib = md.items.map(it => ({ name: it.name, kind: it.kind, gain: it.expo * (it.mult - 1), risk: Math.abs(it.expo) * it.sig })).concat(md.det.filter(d => !d.hidden && d.key.startsWith('dep:')).map(d => ({ name: d.name, kind: 'dep', gain: d.f(days) - d.value, risk: 0 })));
+  const lines = md.items.filter(it => it.kind !== 'viop').map(it => { const x = it.x, px = x && x.e ? x.e.price : null, usd = it.kind === 'usd_cash' || it.kind === 'usd_dep', fxm = x && x.ccy === 'USD' ? dlFxMult(md.t) : 1, k = it.mult / fxm;
+    return { name: it.name, value0: it.value, valueExp: it.value * it.mult, price: usd ? dlFx(today()) : px, priceExp: usd ? dlFx(today()) * dlFxMult(md.t) : px ? px * k : null, lo: px ? px * k * Math.exp(-1.645 * it.sig) : null, hi: px ? px * k * Math.exp(1.645 * it.sig) : null, ccy: usd ? 'TRY' : (x ? x.ccy : 'TRY') }; });
+  return { v2: true, days, end: DX.addDays(today(), days), total0: md.total0, bench, benchPct, ...mc, term, p05: term[Math.floor(n * 0.05)], p25: term[Math.floor(n * 0.25)], p50: term[Math.floor(n * 0.5)], p75: term[Math.floor(n * 0.75)], p95: term[Math.floor(n * 0.95)],
+    pLoss: share(v => v < md.total0), pBeat: share(v => v > bench), pUp20: share(v => v > md.total0 * 1.2), pDown10: share(v => v < md.total0 * 0.9), contrib, lines };
+}
+function dlHistSVG(term, marks, w = 640) {
+  const n = term.length, lo = term[Math.floor(n * 0.005)], hi = term[Math.floor(n * 0.995)], B = 36, bw = (hi - lo) / B || 1, bins = new Array(B).fill(0); for (const v of term) { const i = Math.min(B - 1, Math.max(0, Math.floor((v - lo) / bw))); bins[i]++; }
+  const H = 150, L = 6, R = 6, T = 8, Bm = 34, mx = Math.max(...bins), sx = v => L + (v - lo) / (hi - lo || 1) * (w - L - R), bwPx = (w - L - R) / B;
+  let g = bins.map((c, i) => { const x0 = lo + i * bw, col = x0 + bw / 2 < marks.today ? 'var(--down, #c0392b)' : x0 + bw / 2 < marks.bench ? 'var(--warn, #c58a00)' : 'var(--up, #1e8e3e)'; const h = c / mx * (H - T - Bm); return `<rect x="${(L + i * bwPx + 0.5).toFixed(1)}" y="${(H - Bm - h).toFixed(1)}" width="${Math.max(1, bwPx - 1).toFixed(1)}" height="${h.toFixed(1)}" fill="${col}" opacity=".75"/>`; }).join('');
+  for (const [v, lab, y] of [[marks.today, DL('today', 'bugün'), H - 20], [marks.bench, DL('deposit', 'mevduat'), H - 8]]) if (v >= lo && v <= hi) g += `<line x1="${sx(v).toFixed(1)}" x2="${sx(v).toFixed(1)}" y1="${T}" y2="${H - Bm}" stroke="var(--fg, #333)" stroke-dasharray="3 3"/><text x="${sx(v).toFixed(1)}" y="${y}" text-anchor="middle">${esc(lab)} ${esc(VIZ.fmtBig(v))}</text>`;
+  return `<svg class="chart" viewBox="0 0 ${w} ${H}" style="height:${H}px;width:100%">${g}</svg><div class="legend"><div><i style="background:var(--down,#c0392b)"></i>${DL('loss', 'zarar')}</div><div><i style="background:var(--warn,#c58a00)"></i>${DL('gain, below the deposit', 'kazanç, mevduatın altında')}</div><div><i style="background:var(--up,#1e8e3e)"></i>${DL('above the deposit', 'mevduatın üstünde')}</div></div>`;
+}
+function dlBarsSVG(rows, w = 640) { if (!rows.length) return ''; const mx = Math.max(...rows.map(r => Math.abs(r.gain)), 1), rh = 20, H = rows.length * rh + 6, L = 150, mid = L + (w - L - 70) / 2, sc = (w - L - 70) / 2 / mx;
+  return `<svg class="chart" viewBox="0 0 ${w} ${H}" style="height:${H}px;width:100%">${rows.map((r, i) => { const y = 3 + i * rh, x = r.gain >= 0 ? mid : mid + r.gain * sc, ww = Math.abs(r.gain) * sc; return `<text x="${L - 6}" y="${y + 13}" text-anchor="end">${esc(String(r.name).slice(0, 22))}</text><rect x="${x.toFixed(1)}" y="${y + 3}" width="${Math.max(1, ww).toFixed(1)}" height="12" fill="${r.gain >= 0 ? 'var(--up,#1e8e3e)' : 'var(--down,#c0392b)'}" opacity=".75"/><text x="${(r.gain >= 0 ? x + ww + 4 : x - 4).toFixed(1)}" y="${y + 13}" text-anchor="${r.gain >= 0 ? 'start' : 'end'}">${r.gain >= 0 ? '+' : ''}${esc(VIZ.fmtBig(r.gain))}</text>`; }).join('')}<line x1="${mid}" x2="${mid}" y1="0" y2="${H}" stroke="var(--fg2,#888)"/></svg>`; }
+function dlProbBar(label, p, good) { const pc = Math.round(p * 100); return `<div style="display:grid;grid-template-columns:minmax(150px,1.3fr) 3fr 50px;gap:8px;align-items:center;margin:4px 0"><span class="txt">${esc(label)}</span><span style="background:var(--bg2,#eee);border-radius:3px;height:12px;position:relative"><i style="position:absolute;left:0;top:0;bottom:0;width:${pc}%;background:${good ? 'var(--up,#1e8e3e)' : 'var(--down,#c0392b)'};opacity:.7;border-radius:3px"></i></span><b>${pc}%</b></div>`; }
+function dlRenderSim2(p, r) {
+  const out = $('dlx-sim-out'); if (!out) return; const pct = v => r.total0 ? (v / r.total0 - 1) * 100 : null, bl = dlBench(), n100 = v => Math.round(v * 100);
+  const tiles = [[DL('Middle case', 'Orta durum'), T(r.p50), P(pct(r.p50))], [DL('Bad case (1 in 20)', 'Kötü durum (20’de 1)'), T(r.p05), P(pct(r.p05))], [DL('Good case (1 in 20)', 'İyi durum (20’de 1)'), T(r.p95), P(pct(r.p95))], [bl, T(r.bench), P(r.benchPct)]];
+  const sentence = DL(`Out of 100 possible futures up to ${dlDate(r.end)}, the fund ends above the ${bl} in ${n100(r.pBeat)}, makes a loss in ${n100(r.pLoss)} and gains more than 20% in ${n100(r.pUp20)}. In the middle case it is worth ${T(r.p50)}.`, `${dlDate(r.end)} tarihine kadar 100 olası gelecekten ${n100(r.pBeat)} tanesinde fon ${bl}’ın üstünde bitiyor, ${n100(r.pLoss)} tanesinde zarar ediyor, ${n100(r.pUp20)} tanesinde %20’den fazla kazanıyor. Orta durumda değeri ${T(r.p50)}.`);
+  const contrib = r.contrib.slice().sort((a, b) => Math.abs(b.gain) - Math.abs(a.gain)).slice(0, 12);
+  out.innerHTML = `<div class="tiles" style="margin-top:10px">${tiles.map(([l, v, c]) => `<div class="tile"><div class="lbl">${l}</div><div class="val" style="font-size:16px">${v}</div><div style="font-size:12px">${c}</div></div>`).join('')}</div>
+    <p style="margin:10px 0"><b>${sentence}</b></p>
+    <h4 class="hint" style="margin:12px 0 4px">${DL('Chances', 'Olasılıklar')}</h4>${dlProbBar(DL(`Ending above the ${bl}`, `${bl}’ı geçme`), r.pBeat, true)}${dlProbBar(DL('Any gain', 'Herhangi bir kazanç'), 1 - r.pLoss, true)}${dlProbBar(DL('Gain above 20%', '%20’den fazla kazanç'), r.pUp20, true)}${dlProbBar(DL('Any loss', 'Herhangi bir zarar'), r.pLoss, false)}${dlProbBar(DL('Loss above 10%', '%10’dan fazla zarar'), r.pDown10, false)}
+    <h4 class="hint" style="margin:14px 0 4px">${DL('Value over time (bands: half of the futures inside the dark band, 9 in 10 inside the light one)', 'Zaman içinde değer (koyu bant: geleceklerin yarısı, açık bant: 10’da 9’u)')}</h4><div id="dlx-fan"></div>
+    <h4 class="hint" style="margin:14px 0 4px">${DL(`Where the fund ends on ${dlDate(r.end)} (each bar: how many of the 3,000 futures end there)`, `Fonun ${dlDate(r.end)} tarihinde nerede bittiği (her çubuk: 3.000 gelecekten kaçının orada bittiği)`)}</h4><div id="dlx-hist-sim"></div>
+    <h4 class="hint" style="margin:14px 0 4px">${DL('Expected gain from each holding (TRY, middle case)', 'Her kalemin beklenen katkısı (TL, orta durum)')}</h4><div id="dlx-contrib"></div>
+    ${r.lines.length ? `<h4 class="hint" style="margin:14px 0 4px">${DL('Expected prices on', 'Tahmini fiyatlar,')} ${esc(dlDate(r.end))}</h4><table><tr><th class="l">${DL('Holding', 'Varlık')}</th><th>${DL('Price now', 'Bugünkü fiyat')}</th><th>${DL('Expected price', 'Beklenen fiyat')}</th><th>${DL('Likely range (90%)', 'Olası aralık (%90)')}</th><th>${DL('Value now', 'Bugünkü değer')}</th><th>${DL('Expected value', 'Beklenen değer')}</th></tr>${r.lines.map(l => `<tr><td class="l acc">${esc(l.name)}</td><td>${l.price ? dlN(l.price) + ' ' + esc(l.ccy) : '—'}</td><td>${l.priceExp ? dlN(l.priceExp) : '—'}</td><td>${l.lo ? dlN(l.lo) + ' – ' + dlN(l.hi) : '—'}</td><td>${T(l.value0)}</td><td>${T(l.valueExp)}</td></tr>`).join('')}</table>` : ''}
+    <p class="note">${DL('Method: 3,000 Monte Carlo futures. Each share, fund and gold line follows the model’s expected return and its own volatility; they move partly together (correlation 0.4), USD/TRY on its own. Deposits earn their own rate until maturity; futures are leveraged exposure to their underlying (long or short). These are model estimates, not guarantees.', 'Yöntem: 3.000 senaryolu Monte Carlo. Her hisse, fon ve altın kalemi modelin beklenen getirisini ve kendi oynaklığını izler; birlikte kısmen hareket ederler (korelasyon 0,4), USD/TRY bağımsızdır. Mevduatlar vadeye kadar kendi faizini kazanır; vadeli sözleşmeler dayanak varlığa kaldıraçlı (uzun veya kısa) pozisyondur. Bunlar model tahminidir, garanti değildir.')}</p>`;
+  try { f4FanSVG($('dlx-fan'), r, { days: r.days, bench: r.stepDays.map(d => r.total0 * (1 + E.benchNet(state.S, d, undefined, ctx().M) / 100)), benchLabel: bl, endLabel: dlDate(r.end), height: 200 }); } catch (e) { }
+  $('dlx-hist-sim').innerHTML = dlHistSVG(r.term, { today: r.total0, bench: r.bench }); $('dlx-contrib').innerHTML = dlBarsSVG(contrib);
+}
+
+/* ---- plan: concrete steps to get closer to (or beat) the deposit ---- */
+const dlRiskLevels = { low: [3, DL('Low', 'Düşük')], mid: [1, DL('Medium', 'Orta')], high: [0.3, DL('High', 'Yüksek')] };
+function dlPlanCandidates(p, days, allowViop) {
+  const t = days / 365, S = state.S, out = [], held = new Set((p.lines || []).filter(l => !l.closed).map(l => l.symbol));
+  const rate = +S.depRate || 0, stop = +(S.dlxStopaj ?? 17.5); out.push({ key: 'dep', kind: 'dep', name: DL(`TRY time deposit ${dlN(rate, 1)}%`, `TL vadeli mevduat %${dlN(rate, 1)}`), mult: 1 + rate / 100 * (1 - stop / 100) * Math.min(days, 365) / 365, sig: 0, factor: 'none', rate });
+  out.push({ key: 'usd', kind: 'usd', name: DL('Buy USD', 'USD al'), mult: dlFxMult(t), sig: (+S.fxVol || 8) / 100 * Math.sqrt(t), factor: 'fx' });
+  const g = state.map.GAUTRY; if (g && g.e && g.e.price) { const ex = dlLineExpect(g, 1e5, t); if (ex) out.push({ key: 'line:GAUTRY', kind: 'stock', sym: 'GAUTRY', x: g, name: DL('Gram gold', 'Gram altın'), mult: ex.mult, sig: ex.sig, factor: 'mkt' }); }
+  const pool = (state.scored || []).filter(x => x && x.e && x.e.price && x.score != null && (!x.gate || x.gate.ok) && (x.cls === 'TR_EQ' || x.cls === 'US_EQ' || x.cls === 'TEFAS') && !held.has(x.symbol)).sort((a, b) => b.score - a.score).slice(0, 80);
+  for (const x of pool) { const ex = dlLineExpect(x, 50000, t); if (ex && ex.mult > 1) out.push({ key: 'line:' + x.symbol, kind: 'stock', sym: x.symbol, x, name: x.symbol, mult: ex.mult, sig: ex.sig, factor: 'mkt', lowLiq: x.gate && x.gate.lowLiq }); }
+  if (allowViop) { const items = ((state.dlxViop && state.dlxViop.items) || []).filter(c => c.kind === 'stock' && c.settle > 0 && c.expiry > DX.addDays(today(), 10)), byU = new Map(); for (const c of items) { const o = byU.get(c.under); if (!o || c.expiry < o.expiry) byU.set(c.under, c); }
+    for (const c of byU.values()) { const r = dlContractRisk(c), tv = Math.min(t, r.rk.years), m1 = Math.pow(r.u.multAnn, tv); if (!(m1 > 1.01) || !(r.mg.im > 0)) continue; out.push({ key: 'viop:' + c.code, kind: 'viop', code: c.code, c, name: `${c.code} ${DL('long', 'uzun')}`, notional: c.settle * c.mult, margin: r.mg.im, mult: m1, sig: r.u.vol / 100 * Math.sqrt(tv), factor: 'mkt' }); } }
+  return out.sort((a, b) => (b.mult - 1) - (a.mult - 1)).slice(0, 60);
+}
+function dlPlan(p, days, level, allowViop, allowSell) {
+  const md = dlModel(p, days), lam = (dlRiskLevels[level] || dlRiskLevels.mid)[0], V0 = md.total0 || 1, S = state.S, bench = V0 * (1 + E.benchNet(S, days, undefined, ctx().M) / 100);
+  let items = md.items.map(it => ({ ...it })), detAdd = 0, cash = Math.max(0, (dlHasSleeve(p) ? dlSleeve(p).cash.TRY : 0));
+  const J = (its, da) => { const mo = dlMoments(its, d => md.detAt(d) + da, days); return mo.mean - lam * mo.sd * mo.sd / V0; };
+  const cands = dlPlanCandidates(p, days, allowViop), actions = new Map(), chunk = Math.max(5000, Math.round(V0 * 0.05 / 1000) * 1000);
+  // money that could be freed: idle TRY cash, and (if allowed) the weakest share lines
+  const sellable = allowSell ? items.filter(it => it.kind === 'tr_eq' || it.kind === 'us_eq').filter(it => it.mult < 1 + E.benchNet(S, days, undefined, ctx().M) / 100).sort((a, b) => a.mult - b.mult) : [];
+  for (const it of sellable) { const amt = it.expo; items = items.filter(z => z !== it); detAdd += amt; cash += amt; actions.set('sell:' + it.name, { type: 'sell', sym: it.name, amount: amt, x: it.x, why: DL(`expected ${fmtPct((it.mult - 1) * 100)} — below the deposit`, `beklenen ${fmtPct((it.mult - 1) * 100)} — mevduatın altında`) }); }
+  let budget = cash, base = J(items, detAdd); const add = (c, amt) => { detAdd -= amt; if (c.kind === 'dep') { detAdd += amt * c.mult; return; } const ex = c.kind === 'viop' ? { expo: c.notional * Math.max(1, Math.round(amt / c.margin)), mult: c.mult, sig: c.sig, factor: c.factor } : { expo: amt, mult: c.mult, sig: c.sig, factor: c.factor }; items.push(ex); if (c.kind === 'viop') detAdd += amt - ex.expo; };
+  for (let step = 0; step < 60 && budget >= Math.min(chunk, 1000); step++) { const amt = Math.min(chunk, budget); let best = null;
+    for (const c of cands) { if (c.kind === 'viop' && amt < c.margin) continue; const its = items.slice(), save = detAdd; const camt = c.kind === 'viop' ? c.margin * Math.max(1, Math.floor(amt / c.margin)) : amt; add(c, camt); const j = J(items, detAdd); items = its; detAdd = save; if (!best || j > best.j) best = { c, camt, j }; }
+    // leaving the money as cash keeps the score at "base"; a step must beat that
+    if (!best || best.j <= base + 1) break;
+    add(best.c, best.camt); budget -= best.camt; base = J(items, detAdd); const k = best.c.key, a = actions.get(k) || { type: best.c.kind, cand: best.c, amount: 0 }; a.amount += best.camt; actions.set(k, a);
+    if (best.c.kind === 'viop' && best.camt < chunk) cands.splice(cands.indexOf(best.c), 1); }
+  const after = dlMoments(items, d => md.detAt(d) + detAdd, days), before = dlMoments(md.items, md.detAt, days);
+  return { days, bench, V0, before, after, left: budget, actions: [...actions.values()], level };
+}
+function dlPlanHTML(p) { return `<div class="panel wide" id="dlx-plan"><h2>${DL('Plan: get closer to (or beat) the deposit', 'Plan: mevduata yaklaş (veya geç)')} <span class="sub">${DL('concrete steps for the fund, model estimates', 'fon için somut adımlar, model tahmini')}</span></h2><div class="body">
+  <div class="row-inline" style="gap:8px;flex-wrap:wrap"><label class="hint" for="pl-hz">${DL('Horizon', 'Ufuk')}</label><select id="pl-hz"><option value="span">${DL('end of the hold period', 'tutma süresi sonu')}</option><option value="91">${DL('3 months', '3 ay')}</option><option value="182" selected>${DL('6 months', '6 ay')}</option><option value="365">${DL('1 year', '1 yıl')}</option></select>
+  <label class="hint" for="pl-risk">${DL('Risk', 'Risk')}</label><select id="pl-risk"><option value="low">${dlRiskLevels.low[1]}</option><option value="mid" selected>${dlRiskLevels.mid[1]}</option><option value="high">${dlRiskLevels.high[1]}</option></select>
+  <label class="hint"><input type="checkbox" id="pl-sell" checked> ${DL('may sell weak lines', 'zayıf satırlar satılabilir')}</label><label class="hint"><input type="checkbox" id="pl-viop"> ${DL('may use VİOP', 'VİOP kullanılabilir')}</label><button class="primary" id="pl-run">${DL('Make a plan', 'Plan oluştur')}</button></div><div id="pl-out"></div></div></div>`; }
+function dlRenderPlan(p, r) {
+  const el = $('pl-out'); if (!el) return; const pct = v => r.V0 ? (v / r.V0 - 1) * 100 : null, bl = dlBench(), gapB = r.bench - r.before.mean, gapA = r.bench - r.after.mean;
+  const row = a => { const c = a.cand || {}; let what = '', key = '';
+    if (a.type === 'sell') { const px = a.x && a.x.e ? a.x.e.price * (a.x.ccy === 'USD' ? dlFx(today()) : 1) : null; what = DL(`Sell ${a.sym}${px ? ` (about ${fmtN(a.amount / px, 0)} units)` : ''} — ${a.why}`, `${a.sym} sat${px ? ` (yaklaşık ${fmtN(a.amount / px, 0)} adet)` : ''} — ${a.why}`); key = 'sell|' + a.sym + '|' + (px ? Math.round(a.amount / px) : ''); }
+    else if (a.type === 'stock') { const x = c.x, px = x.e.price * (x.ccy === 'USD' ? dlFx(today()) : 1), q = Math.max(1, Math.floor(a.amount / px)); what = DL(`Buy ${c.sym} — about ${fmtN(q, 0)} units at ${fmtN(x.e.price)} ${x.ccy} (expected ${fmtPct((c.mult - 1) * 100)}, volatility ${fmtN(x.e.volUsed, 0)}% a year)${c.lowLiq ? ' · low liquidity' : ''}`, `${c.sym} al — yaklaşık ${fmtN(q, 0)} adet, ${fmtN(x.e.price)} ${x.ccy} (beklenen ${fmtPct((c.mult - 1) * 100)}, yıllık oynaklık %${fmtN(x.e.volUsed, 0)})${c.lowLiq ? ' · düşük likidite' : ''}`); key = 'buy|' + c.sym + '|' + q; }
+    else if (a.type === 'usd') { what = DL(`Convert ${T(a.amount)} to USD (expected ${fmtPct((c.mult - 1) * 100)} from USD/TRY)`, `${T(a.amount)} USD’ye çevir (USD/TRY’den beklenen ${fmtPct((c.mult - 1) * 100)})`); key = 'usd|' + Math.round(a.amount); }
+    else if (a.type === 'dep') { what = DL(`Put ${T(a.amount)} in a TRY time deposit at ${dlN(c.rate, 1)}% (certain, after withholding)`, `${T(a.amount)} TL vadeli mevduata koy, %${dlN(c.rate, 1)} (kesin, stopaj sonrası)`); key = 'dep|' + Math.round(a.amount) + '|' + c.rate; }
+    else if (a.type === 'viop') { const n = Math.max(1, Math.round(a.amount / c.margin)); what = DL(`Open ${n} long ${c.code} (margin ${T(n * c.margin)}, exposure ${T(n * c.notional)} — leveraged: losses can exceed the margin)`, `${c.code}’da ${n} uzun pozisyon aç (teminat ${T(n * c.margin)}, pozisyon ${T(n * c.notional)} — kaldıraçlı: zarar teminatı aşabilir)`); key = 'viop|' + c.code + '|' + n; }
+    return `<tr><td class="l txt">${what}</td><td>${a.type === 'sell' ? '' : T(a.amount)}</td><td><button class="quiet" data-pl-apply="${esc(key)}">${DL('Apply…', 'Uygula…')}</button></td></tr>`; };
+  const msg = r.actions.length ? (gapA <= 0 ? DL(`With these steps the fund’s expected value is ${T(r.after.mean)} (${fmtPct(pct(r.after.mean))}) — above the ${bl} (${T(r.bench)}).`, `Bu adımlarla fonun beklenen değeri ${T(r.after.mean)} (${fmtPct(pct(r.after.mean))}) — ${bl}’ın (${T(r.bench)}) üstünde.`) : DL(`These steps move the expected value from ${T(r.before.mean)} to ${T(r.after.mean)}; the ${bl} would be ${T(r.bench)}. At this risk level the gap cannot be closed fully${r.level !== 'high' ? ' — a higher risk level, or VİOP, may close more of it' : ''}.`, `Bu adımlar beklenen değeri ${T(r.before.mean)}’den ${T(r.after.mean)}’ye taşıyor; ${bl} ${T(r.bench)} olurdu. Bu risk düzeyinde fark tamamen kapanmıyor${r.level !== 'high' ? ' — daha yüksek risk düzeyi veya VİOP farkı daha çok kapatabilir' : ''}.`))
+    : DL(`No step improves the fund at this risk level. Expected value ${T(r.before.mean)}, ${bl} ${T(r.bench)}.${r.left < 1000 ? ' There is no idle cash to use — add money or allow selling weak lines.' : ''}`, `Bu risk düzeyinde fonu iyileştiren bir adım bulunamadı. Beklenen değer ${T(r.before.mean)}, ${bl} ${T(r.bench)}.${r.left < 1000 ? ' Kullanılacak atıl nakit yok — para ekleyin veya zayıf satırların satılmasına izin verin.' : ''}`);
+  el.innerHTML = `<div class="tiles" style="margin-top:10px">${[[DL('Expected now', 'Şimdiki beklenen'), T(r.before.mean)], [DL('Expected with the plan', 'Planla beklenen'), T(r.after.mean)], [bl, T(r.bench)], [DL('Risk (1 σ) now → plan', 'Risk (1 σ) şimdi → plan'), `${VIZ.fmtBig(r.before.sd)} → ${VIZ.fmtBig(r.after.sd)}`]].map(([l, v]) => `<div class="tile"><div class="lbl">${l}</div><div class="val" style="font-size:16px">${v}</div></div>`).join('')}</div>
+    <p style="margin:10px 0"><b>${msg}</b></p>${r.actions.length ? `<table><tr><th class="l">${DL('Step', 'Adım')}</th><th>${DL('Amount', 'Tutar')}</th><th></th></tr>${r.actions.map(row).join('')}</table>` : ''}
+    <p class="note">${DL('“Apply…” opens the matching form already filled in — nothing is recorded until you save it. Expected returns are the model’s estimates after costs and tax; only the deposit is certain. Risk level: how much extra swing the plan accepts for extra expected gain.', '“Uygula…” ilgili formu doldurulmuş olarak açar — siz kaydetmeden hiçbir şey kaydedilmez. Beklenen getiriler modelin maliyet ve vergi sonrası tahminidir; yalnızca mevduat kesindir. Risk düzeyi: planın ek beklenen kazanç için ne kadar ek dalgalanmayı kabul ettiği.')}</p>`;
+}
+document.addEventListener('click', ev => {
+  const run = ev.target.closest('#pl-run'), ap = ev.target.closest('[data-pl-apply]'); if (!run && !ap) return; ev.stopPropagation();
+  const p = state.sheet && state.packages.find(q => q.id === state.sheet.id); if (!p) return;
+  if (run) { const r = dlPlan(p, dlHorizonDays(p, $('pl-hz').value), $('pl-risk').value, $('pl-viop').checked, $('pl-sell').checked); state.dlxPlan = { id: p.id, r }; dlRenderPlan(p, r); return; }
+  const [type, a, b, c] = ap.dataset.plApply.split('|'), setV = (id, v) => { const el = $(id); if (el) { el.value = v; el.dispatchEvent(new Event('input')); el.dispatchEvent(new Event('change')); } };
+  if (type === 'buy' || type === 'sell') { const x = state.map[a], px = x && x.e ? x.e.price : 0, q = +b || 0; dlManualEntry(p.id, { symbol: a, side: type === 'buy' ? 'BUY' : 'SELL', qty: q, price: px, amount: Math.round(q * px * 100) / 100, date: today() }); }
+  else if (type === 'usd') { dlActionDialog(p, 'fx'); setV('dx-amt', a); }
+  else if (type === 'dep') { dlActionDialog(p, 'dep-open'); setV('dx-amt', a); setV('dx-rate', b); setV('dx-mat', DX.addDays(today(), 32)); }
+  else if (type === 'viop') { dlViopAddDialog(a, p.id); setTimeout(() => setV('va-qty', b), 50); }
+}, true);
+// the older swap search panel is replaced by the plan
+{ const _rs = renderSheet; renderSheet = function () { _rs(); const w = state.sheet; if (!w || w.type !== 'pkg') return; const p = state.packages.find(q => q.id === w.id); if (!p || p.status === 'closed') return; const old = $('f4-bd-panel'); if (old) old.remove(); const sim = $('dlx-sim'); if (!sim || $('dlx-plan')) return;
+    sim.insertAdjacentHTML('afterend', dlPlanHTML(p)); const c = state.dlxPlan; if (c && c.id === p.id) try { dlRenderPlan(p, c.r); } catch (e) { } }; }
+
+/* ---- fund content: every holding with edit / remove and its own statistics and chart ---- */
+function dlContentItems(p) {
+  const out = [], sl = dlHasSleeve(p) ? dlSleeve(p) : null, fx = dlFx(today()); let hv = []; try { hv = E.holdingsView([], [{ ...p, lines: (p.lines || []).filter(l => !l.closed) }], state.map, ctx().M, state.S); } catch (e) { }
+  (p.lines || []).forEach((l, li) => { const r = hv.find(z => z.symbol === l.symbol) || {}; out.push({ id: 'line:' + li, kind: 'line', title: l.symbol, sub: l.closed ? DL('sold ', 'satıldı ') + l.closed.date : `${fmtN(l.qty, l.qty % 1 ? 3 : 0)} ${DL('units', 'adet')} · ${DL('avg.', 'ort.')} ${fmtN(l.priceAt)} ${l.ccy || 'TRY'}`, value: l.closed ? +l.closed.value : r.value, cost: +l.amount || 0, date: (l.fills || [])[0] ? l.fills[0].date : p.date, l, li }); });
+  for (const t of p.tx || []) {
+    if (t.type === 'dep-open') { const d = sl && sl.open.find(z => z.id === t.depId), cl = sl && sl.closed.find(z => z.id === t.depId); out.push({ id: 'tx:' + t.id, kind: 'dep', title: `${t.maturity ? DL('Time deposit', 'Vadeli mevduat') : DL('Demand deposit', 'Vadesiz mevduat')} ${t.ccy}`, sub: `${fmtN(t.amount, 0)} ${t.ccy} · %${fmtN(t.rate, 1)}${t.maturity ? ' · ' + t.maturity : ''}${cl ? ' · ' + DL('closed', 'kapandı') : ''}`, value: d ? (d.principal + d.accrued.net) * (d.ccy === 'USD' ? fx : 1) : null, cost: t.amount * (t.ccy === 'USD' ? (t.fx || dlFx(t.date)) : 1), date: t.date, t }); }
+    else if (t.type === 'viop-open') { const v = sl && sl.viop.find(z => z.id === t.posId), vc = sl && sl.viopClosed.find(z => z.id === t.posId); out.push({ id: 'tx:' + t.id, kind: 'viop', title: `${t.code}`, sub: `${t.side === 'short' ? DL('short', 'kısa') : DL('long', 'uzun')} ${t.qty} @ ${fmtN(t.price, 2)}${vc ? ' · ' + DL('closed', 'kapandı') + ' ' + vc.closed : ''}`, value: v ? v.equity : vc ? (+t.margin || 0) * t.qty + vc.pnl : null, cost: (+t.margin || 0) * t.qty, date: t.date, t }); }
+    else if (t.type === 'fx') out.push({ id: 'tx:' + t.id, kind: 'fx', title: `${t.ccy} → ${t.toCcy}`, sub: `${fmtN(t.amount, 2)} ${t.ccy} → ${fmtN(t.toAmount, 2)} ${t.toCcy} @ ${fmtN(t.fx, 4)}`, value: t.toCcy === 'USD' ? t.toAmount * fx : t.toAmount, cost: t.ccy === 'USD' ? t.amount * (t.fx || dlFx(t.date)) : t.amount, date: t.date, t });
+    else if (t.type === 'in' || t.type === 'out') out.push({ id: 'tx:' + t.id, kind: t.type, title: t.type === 'in' ? DL('Money in', 'Para girişi') : DL('Money out', 'Para çıkışı'), sub: `${fmtN(t.amount, 2)} ${t.ccy}${t.note ? ' · ' + t.note : ''}`, value: null, cost: null, date: t.date, t });
+  }
+  return out.sort((a, b) => a.date < b.date ? -1 : 1);
+}
+function dlContentHTML(p) {
+  const items = dlContentItems(p); if (!items.length) return ''; const closed = p.status === 'closed';
+  return `<div class="panel wide" id="dlx-content"><h2>${DL('Fund content — edit, remove, statistics', 'Fon içeriği — düzenle, kaldır, istatistik')} <span class="sub">${DL('click a row for its chart', 'grafik için satıra tıklayın')}</span></h2><div class="body"><table><tr><th class="l">${DL('Item', 'Kalem')}</th><th class="l">${DL('Details', 'Ayrıntı')}</th><th class="l">${DL('Since', 'Başlangıç')}</th><th>${DL('Value TRY', 'Değer TL')}</th><th>${DL('Return', 'Getiri')}</th><th></th></tr>
+    ${items.map(it => `<tr class="row" data-ci="${esc(it.id)}" style="cursor:pointer"><td class="l acc">${esc(it.title)}</td><td class="l txt dim" style="font-size:12px">${esc(it.sub)}</td><td class="l mono">${esc(it.date)}</td><td>${it.value != null ? N(it.value, 0) : '—'}</td><td>${it.value != null && it.cost ? P((it.value / it.cost - 1) * 100) : '—'}</td><td style="white-space:nowrap">${closed ? '' : `<button class="quiet" data-ci-edit="${esc(it.id)}">${DL('Edit', 'Düzenle')}</button><button class="quiet" data-ci-del="${esc(it.id)}">${DL('Remove', 'Kaldır')}</button>`}</td></tr><tr class="dlx-ci-detail" data-ci-for="${esc(it.id)}" hidden><td colspan="6"></td></tr>`).join('')}</table>
+    <p class="note">${DL('“Remove” takes the item out with all its entries (buys, sales, closing, maturity) as if it had never been entered. “Edit” corrects dates, quantities, prices, amounts, rates and fees. Every change can be undone from the message at the bottom.', '“Kaldır” kalemi tüm kayıtlarıyla (alış, satış, kapanış, vade) hiç girilmemiş gibi çıkarır. “Düzenle” tarih, adet, fiyat, tutar, faiz ve masrafları düzeltir. Her değişiklik alttaki mesajdan geri alınabilir.')}</p></div></div>`;
+}
+function dlRemoveItem(p, id) { const [k, v] = [id.slice(0, id.indexOf(':')), id.slice(id.indexOf(':') + 1)];
+  if (k === 'line') { const l = p.lines[+v]; if (!l) return DL('Not found.', 'Bulunamadı.'); l.__drop = true; for (const tr of p.tranches || []) tr.lines = (tr.lines || []).filter(z => z.symbol !== l.symbol); p.tranches = (p.tranches || []).filter(tr => (tr.lines || []).length); dlAfterLines(p); return null; }
+  const t = (p.tx || []).find(z => z.id === v); if (!t) return DL('Not found.', 'Bulunamadı.'); p.tx = p.tx.filter(z => z !== t && !(t.depId && z.depId === t.depId) && !(t.posId && z.posId === t.posId)); dlAfterLines(p); return null; }
+function dlEditItem(p, id) {
+  const k = id.slice(0, id.indexOf(':')), v = id.slice(id.indexOf(':') + 1), f = (lid, label, val, type = 'number', extra = '') => `<label for="${lid}">${label}</label><input id="${lid}" type="${type}" step="any" value="${esc(val ?? '')}" ${extra}>`;
+  let body = '', apply = null;
+  if (k === 'line') { const l = p.lines[+v]; if (!l) return;
+    body = `<table><tr><th class="l">${DL('Date', 'Tarih')}</th><th>${DL('Quantity', 'Adet')}</th><th>${DL('Price', 'Fiyat')} (${esc(l.ccy || 'TRY')})</th><th>${DL('Commission', 'Komisyon')}</th><th>BSMV</th></tr>${(l.fills || []).map((fl, i) => `<tr><td><input type="date" id="ef-d${i}" value="${esc(fl.date)}" max="${today()}"></td><td><input type="number" step="any" id="ef-q${i}" value="${fl.qty}" style="width:90px"></td><td><input type="number" step="any" id="ef-p${i}" value="${fl.price}" style="width:100px"></td><td><input type="number" step="any" id="ef-c${i}" value="${+fl.commission || 0}" style="width:80px"></td><td><input type="number" step="any" id="ef-b${i}" value="${+fl.bsmv || 0}" style="width:70px"></td></tr>`).join('')}</table>`;
+    apply = () => { for (let i = 0; i < (l.fills || []).length; i++) { const fl = l.fills[i], d = $('ef-d' + i).value, q = dlNum($('ef-q' + i).value), pr = dlNum($('ef-p' + i).value), c = dlNum($('ef-c' + i).value) || 0, b = dlNum($('ef-b' + i).value) || 0; if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || d > today() || !(q > 0) || !(pr > 0)) return DL('Check dates (up to today), quantities and prices.', 'Tarih (bugüne kadar), adet ve fiyatları kontrol edin.');
+        const fxr = l.ccy === 'USD' ? dlFx(d) : 1; Object.assign(fl, { date: d, qty: q, price: pr, commission: c, bsmv: b, amount: Math.round((q * pr * fxr + c + b) * 100) / 100 }); }
+      l.fills.sort((a, b) => a.date < b.date ? -1 : 1); lineRecompute(l); l.amount = l.filled; dlAfterLines(p); return null; }; }
+  else { const t = (p.tx || []).find(z => z.id === v); if (!t) return; const fee = f('ei-fee', DL('Commission', 'Komisyon'), t.fee || 0) + f('ei-bsmv', 'BSMV', t.bsmv || 0);
+    if (t.type === 'dep-open') body = f('ei-date', DL('Start date', 'Başlangıç tarihi'), t.date, 'date', `max="${today()}"`) + f('ei-amt', DL('Principal', 'Anapara'), t.amount) + f('ei-rate', DL('Interest rate, % a year', 'Yıllık faiz, %'), t.rate) + f('ei-mat', DL('Maturity (empty = demand deposit)', 'Vade (boş = vadesiz)'), t.maturity || '', 'date') + f('ei-stop', DL('Withholding tax, %', 'Stopaj, %'), t.stopaj || 0) + fee;
+    else if (t.type === 'viop-open') body = f('ei-date', DL('Date', 'Tarih'), t.date, 'date', `max="${today()}"`) + `<label for="ei-side">${DL('Direction', 'Yön')}</label><select id="ei-side"><option value="long" ${t.side !== 'short' ? 'selected' : ''}>${DL('long', 'uzun')}</option><option value="short" ${t.side === 'short' ? 'selected' : ''}>${DL('short', 'kısa')}</option></select>` + f('ei-qty', DL('Contracts', 'Adet'), t.qty) + f('ei-px', DL('Price', 'Fiyat'), t.price) + f('ei-mg', DL('Initial margin a contract', 'Sözleşme başına teminat'), t.margin) + fee;
+    else if (t.type === 'fx') body = f('ei-date', DL('Date', 'Tarih'), t.date, 'date', `max="${today()}"`) + f('ei-amt', `${DL('Amount', 'Tutar')} (${t.ccy})`, t.amount) + f('ei-fx', DL('Rate (TRY per USD)', 'Kur'), t.fx) + f('ei-to', `${DL('Received', 'Alınan')} (${t.toCcy})`, t.toAmount) + fee;
+    else body = f('ei-date', DL('Date', 'Tarih'), t.date, 'date', `max="${today()}"`) + f('ei-amt', `${DL('Amount', 'Tutar')} (${t.ccy})`, t.amount) + fee;
+    apply = () => { const g = id2 => $(id2) ? $(id2).value : undefined, d = g('ei-date'); if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || d > today()) return DL('Choose a date up to today.', 'Bugün veya öncesine ait bir tarih seçin.');
+      const nv = { date: d, fee: dlNum(g('ei-fee')) || 0, bsmv: dlNum(g('ei-bsmv')) || 0 };
+      if (t.type === 'dep-open') Object.assign(nv, { amount: dlNum(g('ei-amt')), rate: dlNum(g('ei-rate')), maturity: g('ei-mat') || null, stopaj: dlNum(g('ei-stop')) || 0 });
+      else if (t.type === 'viop-open') Object.assign(nv, { side: g('ei-side'), qty: Math.round(dlNum(g('ei-qty'))), price: dlNum(g('ei-px')), margin: dlNum(g('ei-mg')) });
+      else if (t.type === 'fx') Object.assign(nv, { amount: dlNum(g('ei-amt')), fx: dlNum(g('ei-fx')), toAmount: dlNum(g('ei-to')) });
+      else Object.assign(nv, { amount: dlNum(g('ei-amt')) });
+      if (nv.amount !== undefined && !(nv.amount > 0)) return DL('Enter an amount above zero.', 'Sıfırdan büyük bir tutar girin.'); if (t.type === 'dep-open' && nv.maturity && nv.maturity <= d) return DL('The maturity must be after the start.', 'Vade başlangıçtan sonra olmalı.');
+      if (t.type === 'viop-open' && (!(nv.qty > 0) || !(nv.price > 0) || !(nv.margin > 0))) return DL('Enter contracts, price and margin.', 'Adet, fiyat ve teminatı girin.');
+      Object.assign(t, nv); if ((t.type === 'in' || t.type === 'out') && t.ccy === 'USD') t.fx = dlFx(d); dlAfterLines(p); return null; }; }
+  $('modal').hidden = false; $('modal').innerHTML = `<div class="modal" role="dialog" aria-label="Edit" style="width:min(680px,100%)"><h3>${DL('Edit', 'Düzenle')}</h3><p class="hint">${esc(p.name)}</p><div class="${k === 'line' ? '' : 'form'}" style="margin-top:8px">${body}</div><p class="down" id="ei-err"></p><div class="row-inline" style="justify-content:flex-end;gap:8px;margin-top:12px"><button id="ei-cancel">${DL('Cancel', 'Vazgeç')}</button><button class="primary" id="ei-ok">${DL('Save', 'Kaydet')}</button></div></div>`;
+  $('ei-cancel').onclick = closeModal; $('ei-ok').onclick = () => { let msg = null; const okk = dlEntryChange(p, () => (msg = apply()), DL('item corrected', 'kalem düzeltildi')); if (msg) { $('modal').hidden = false; } else if (okk) closeModal(); };
+}
+// statistics and chart of one item, from its own start date
+function dlItemStats(p, it) {
+  const pts = []; const end = today(); let d0 = it.date;
+  if (it.kind === 'line') { const l = it.l, cl = f4LongCloses(l.symbol) || (state.map[l.symbol] || state.inst[l.symbol] || {}).closes || [], usd = (l.ccy || 'TRY') === 'USD';
+    for (const [d, c] of cl) { if (d < d0 || (l.closed && d > l.closed.date)) continue; const q = DX.lineQtyAt(l, d); if (!(q > 0)) continue; pts.push([d, q * c * (usd ? dlFx(d) : 1), DX.investedAt({ lines: [l] }, d)]); } }
+  else if (it.kind === 'dep') { const t = it.t, mat = t.maturity || end; for (let d = t.date; d <= (mat < end ? mat : end); d = DX.addDays(d, 1)) { const v = (t.amount + DX.depositInterest({ principal: t.amount, rate: t.rate, start: t.date, maturity: t.maturity, stopaj: t.stopaj }, d).net) * (t.ccy === 'USD' ? dlFx(d) : 1); pts.push([d, v, it.cost]); } }
+  else if (it.kind === 'fx') { const t = it.t; for (let d = t.date; d <= end; d = DX.addDays(d, 1)) pts.push([d, t.toCcy === 'USD' ? t.toAmount * dlFx(d) : t.toAmount, it.cost]); }
+  else if (it.kind === 'viop') { const t = it.t, s = (state.dlxSettles && state.dlxSettles[t.code]) || []; pts.push([t.date, it.cost, it.cost]); for (const [d, px] of s) if (d > t.date) pts.push([d, it.cost + (t.side === 'short' ? -1 : 1) * (px - t.price) * (t.mult || 1) * t.qty, it.cost]); }
+  if (pts.length < 2) return { pts, stats: null };
+  const v = pts.map(r => r[1]), r1 = []; for (let i = 1; i < v.length; i++) if (v[i - 1] > 0) r1.push(v[i] / v[i - 1] - 1); const days = DX.daysBetween(pts[0][0], pts[pts.length - 1][0]) || 1, last = v[v.length - 1], cost = pts[pts.length - 1][2] || it.cost || v[0];
+  let peak = -Infinity, mdd = 0; for (const x of v) { peak = Math.max(peak, x); mdd = Math.min(mdd, x / peak - 1); }
+  const m = r1.reduce((a, b) => a + b, 0) / (r1.length || 1), sd = Math.sqrt(r1.reduce((a, b) => a + (b - m) ** 2, 0) / Math.max(1, r1.length - 1)), tot = cost ? last / cost - 1 : null;
+  const fundV = pkgValue(p) || 1;
+  return { pts, stats: { ret: tot != null ? tot * 100 : null, ann: tot != null && days >= 30 ? (Math.pow(1 + tot, 365 / days) - 1) * 100 : null, vol: r1.length > 5 ? sd * Math.sqrt(252) * 100 : null, mdd: mdd * 100, best: r1.length ? Math.max(...r1) * 100 : null, worst: r1.length ? Math.min(...r1) * 100 : null, days, pl: last - cost, share: last / fundV * 100 } };
+}
+function dlItemChart(pts, w = 640) { const H = 150, L = 6, R = 70, T = 8, B = 18, vals = pts.flatMap(r => [r[1], r[2]]).filter(x => x > 0); let mn = Math.min(...vals), mx = Math.max(...vals); const pad = (mx - mn) * 0.08 || mx * 0.02 || 1; mn -= pad; mx += pad;
+  const sx = i => L + i * ((w - L - R) / Math.max(1, pts.length - 1)), sy = v => T + (H - T - B) - (v - mn) / (mx - mn) * (H - T - B), path = k => pts.map((r, i) => (i ? 'L' : 'M') + sx(i).toFixed(1) + ',' + sy(r[k]).toFixed(1)).join('');
+  return `<svg class="chart" viewBox="0 0 ${w} ${H}" style="height:${H}px;width:100%"><path d="${path(2)}" fill="none" stroke="var(--fg2,#888)" stroke-dasharray="4 3"/><path d="${path(1)}" fill="none" stroke="var(--c1)" stroke-width="2"/><text x="${w - R + 6}" y="${(sy(pts[pts.length - 1][1]) + 4).toFixed(1)}">${esc(VIZ.fmtBig(pts[pts.length - 1][1]))}</text><text x="${L}" y="${H - 4}">${esc(pts[0][0])}</text><text x="${w - R}" y="${H - 4}" text-anchor="end">${esc(pts[pts.length - 1][0])}</text></svg><div class="legend"><div><i style="background:var(--c1)"></i>${DL('value', 'değer')}</div><div><i style="background:var(--fg2,#888)"></i>${DL('cost', 'maliyet')}</div></div>`; }
+document.addEventListener('click', ev => {
+  const ed = ev.target.closest('[data-ci-edit]'), del = ev.target.closest('[data-ci-del]'), row = ev.target.closest('#dlx-content tr[data-ci]'); if (!ed && !del && !row) return; ev.stopPropagation();
+  const p = state.sheet && state.packages.find(q => q.id === state.sheet.id); if (!p) return;
+  if (ed) return dlEditItem(p, ed.dataset.ciEdit);
+  if (del) { if (!del.dataset.sure) { del.dataset.sure = '1'; del.textContent = DL('Remove?', 'Kaldırılsın mı?'); setTimeout(() => { if (del.isConnected) { delete del.dataset.sure; del.textContent = DL('Remove', 'Kaldır'); } }, 4000); return; }
+    const it = dlContentItems(p).find(z => z.id === del.dataset.ciDel); dlEntryChange(p, () => dlRemoveItem(p, del.dataset.ciDel), `${DL('removed as if never entered', 'hiç girilmemiş gibi kaldırıldı')} — ${it ? it.title + ' ' + it.sub : ''}`); return; }
+  const id = row.dataset.ci, det = document.querySelector(`#dlx-content tr[data-ci-for="${CSS.escape(id)}"]`); if (!det) return; if (!det.hidden) { det.hidden = true; return; }
+  const it = dlContentItems(p).find(z => z.id === id); const go = () => { const { pts, stats } = dlItemStats(p, it), td = det.firstElementChild;
+    td.innerHTML = stats ? `<div class="tiles" style="margin:6px 0">${[[DL('Return', 'Getiri'), P(stats.ret)], [DL('A year', 'Yıllık'), P(stats.ann)], [DL('Profit / loss', 'Kâr / zarar'), T(stats.pl)], [DL('Volatility (year)', 'Oynaklık (yıllık)'), stats.vol != null ? dlN(stats.vol, 0) + '%' : '—'], [DL('Largest fall', 'En büyük düşüş'), P(stats.mdd)], [DL('Best / worst day', 'En iyi / kötü gün'), `${fmtPct(stats.best)} / ${fmtPct(stats.worst)}`], [DL('Days', 'Gün'), String(stats.days)], [DL('Share of fund', 'Fondaki payı'), dlN(stats.share, 1) + '%']].map(([l, v]) => `<div class="tile"><div class="lbl">${l}</div><div class="val" style="font-size:14px">${v}</div></div>`).join('')}</div>${dlItemChart(pts)}` : `<p class="hint">${DL('Not enough price history since the start of this item yet.', 'Bu kalemin başlangıcından beri henüz yeterli fiyat geçmişi yok.')}</p>`; };
+  det.hidden = false; det.firstElementChild.innerHTML = `<p class="hint">${DL('Loading…', 'Yükleniyor…')}</p>`;
+  if (it.kind === 'line') f4Series([it.l.symbol]).then(go, go); else go(); }, true);
+
+/* ---- consolidated outlook and per-item suggestions (at the end of the fund sheet) ---- */
+function dlOutlookHTML(p) {
+  const hz = [[30, DL('1 month', '1 ay')], [91, DL('3 months', '3 ay')], [182, DL('6 months', '6 ay')], [365, DL('1 year', '1 yıl')]]; const sp = dlHorizonDays(p, 'span'); if (!hz.some(h => Math.abs(h[0] - sp) < 15)) hz.push([sp, DL('end of the hold period', 'tutma süresi sonu')]); hz.sort((a, b) => a[0] - b[0]);
+  const V0 = (dlModel(p, 30)).total0; if (!(V0 > 0)) return ''; const bl = dlBench();
+  const rows = hz.map(([d, lab]) => { const md = dlModel(p, d), mo = dlMoments(md.items, md.detAt, d), bench = V0 * (1 + E.benchNet(state.S, d, undefined, ctx().M) / 100); return `<tr><td class="l txt">${esc(lab)} <span class="dim">(${esc(dlDate(DX.addDays(today(), d)))})</span></td><td>${T(mo.mean)}</td><td>${P((mo.mean / V0 - 1) * 100)}</td><td class="dim">${T(mo.mean - 1.645 * mo.sd)} – ${T(mo.mean + 1.645 * mo.sd)}</td><td>${T(bench)}</td><td>${mo.mean >= bench ? `<span class="up">${DL('above', 'üstünde')}</span>` : `<span class="down">${DL('below', 'altında')}</span>`}</td></tr>`; }).join('');
+  // suggestions: exit, entry and transfer
+  const sug = [], S = state.S, sl = dlHasSleeve(p) ? dlSleeve(p) : null, depRate = +S.depRate || 0;
+  for (const l of (p.lines || []).filter(z => !z.closed)) { const x = state.map[l.symbol]; if (!x || !x.e) continue; const px = x.e.price;
+    if (l.target && px >= l.target) sug.push(['exit', `${l.symbol}: ${DL(`target ${fmtN(l.target)} reached (now ${fmtN(px)}) — consider selling (exit).`, `hedef ${fmtN(l.target)} aşıldı (şimdi ${fmtN(px)}) — satışı düşünün (çıkış).`)}`]);
+    else if (l.stop && px <= l.stop) sug.push(['exit', `${l.symbol}: ${DL(`at or below its stop ${fmtN(l.stop)} — sell to limit the loss (exit).`, `zarar-kes ${fmtN(l.stop)} seviyesinde veya altında — zararı sınırlamak için satın (çıkış).`)}`]);
+    else if (l.exitDate && today() >= l.exitDate) sug.push(['exit', `${l.symbol}: ${DL(`planned exit date ${l.exitDate} has come.`, `planlanan çıkış tarihi ${l.exitDate} geldi.`)}`]);
+    else { const ex = dlLineExpect(x, 1e5, 0.5), dep = E.benchNet(S, 182, undefined, ctx().M); if (ex && ex.roiNet < dep - 3) sug.push(['transfer', `${l.symbol}: ${DL(`expected ${fmtPct(ex.roiNet)} in 6 months vs ${fmtPct(dep)} for the ${bl} — consider moving it (see the plan above).`, `6 ayda beklenen ${fmtPct(ex.roiNet)}, ${bl} ${fmtPct(dep)} — aktarmayı düşünün (yukarıdaki plana bakın).`)}`]); } }
+  if (sl) { if (sl.cash.TRY > 5000) sug.push(['entry', DL(`Idle TRY cash ${T(sl.cash.TRY)}: a time deposit at ${dlN(depRate, 1)}% would earn about ${T(sl.cash.TRY * depRate / 100 * 0.825 / 12)} a month — or use the plan for shares.`, `Atıl TL nakit ${T(sl.cash.TRY)}: %${dlN(depRate, 1)} vadeli mevduat ayda yaklaşık ${T(sl.cash.TRY * depRate / 100 * 0.825 / 12)} getirir — veya plandaki hisseleri kullanın.`)]);
+    if (sl.cash.USD > 100) sug.push(['entry', DL(`USD cash ${fmtN(sl.cash.USD, 0)} USD earns nothing: a USD time deposit adds interest on top of the exchange rate.`, `USD nakit ${fmtN(sl.cash.USD, 0)} USD faiz kazanmıyor: USD vadeli mevduat kura ek olarak faiz kazandırır.`)]);
+    for (const d of sl.open) if (d.maturity && DX.daysBetween(today(), d.maturity) <= 7) sug.push(['transfer', DL(`Deposit ${fmtN(d.principal, 0)} ${d.ccy} matures on ${d.maturity}: renew it (today’s rate ${dlN(depRate, 1)}%) or move it into the plan’s steps.`, `${fmtN(d.principal, 0)} ${d.ccy} mevduatın vadesi ${d.maturity}: yenileyin (bugünkü faiz %${dlN(depRate, 1)}) veya plandaki adımlara aktarın.`)]);
+    for (const v of sl.viop) { const dd = v.expiry ? DX.daysBetween(today(), v.expiry) : 99; if (dd <= 7) sug.push(['transfer', DL(`${v.code} expires in ${dd} days: close it, or roll it to the next month (close and open the next contract).`, `${v.code} ${dd} gün içinde vadesi doluyor: kapatın veya sonraki aya devredin (kapatıp bir sonraki sözleşmeyi açın).`)]); if (v.equity < v.margin * v.qty * dlMaint()) sug.push(['exit', DL(`${v.code}: account value below the maintenance level — add margin or close.`, `${v.code}: hesap değeri sürdürme seviyesinin altında — teminat ekleyin veya kapatın.`)]); else if (v.margin && v.pnl / (v.margin * v.qty) > 0.5) sug.push(['exit', DL(`${v.code}: profit is ${fmtPct(v.pnl / (v.margin * v.qty) * 100)} of the margin — consider taking part of it.`, `${v.code}: kâr teminatın ${fmtPct(v.pnl / (v.margin * v.qty) * 100)}’i — bir kısmını realize etmeyi düşünün.`)]); } }
+  const lab = { exit: DL('Exit', 'Çıkış'), entry: DL('Entry', 'Giriş'), transfer: DL('Transfer', 'Aktarım') };
+  return `<div class="panel wide" id="dlx-outlook"><h2>${DL('Consolidated outlook', 'Konsolide durum ve beklenti')} <span class="sub">${DL('when and how much the fund is expected to earn', 'fonun ne zaman ne kadar kazanması bekleniyor')}</span></h2><div class="body">
+    <table><tr><th class="l">${DL('When', 'Ne zaman')}</th><th>${DL('Expected value', 'Beklenen değer')}</th><th>${DL('Return', 'Getiri')}</th><th>${DL('Likely range (90%)', 'Olası aralık (%90)')}</th><th>${esc(bl)}</th><th></th></tr>${rows}</table>
+    <h4 class="hint" style="margin:14px 0 4px">${DL('Suggested entries, exits and transfers', 'Önerilen giriş, çıkış ve aktarımlar')}</h4>${sug.length ? `<ul style="margin:0;padding-left:18px">${sug.map(([k, s]) => `<li style="margin:4px 0"><span class="pill ${k === 'exit' ? 'warn' : k === 'entry' ? 'ok' : 'src'}">${lab[k]}</span> ${s}</li>`).join('')}</ul>` : `<p class="hint">${DL('Nothing to act on right now.', 'Şu anda yapılacak bir şey yok.')}</p>`}
+    <p class="note">${DL('Expected values use each holding’s model return; the range holds about 9 in 10 outcomes. For concrete steps use “Plan” above. Model estimates, not investment advice.', 'Beklenen değerler her kalemin model getirisine dayanır; aralık sonuçların yaklaşık 10’da 9’unu kapsar. Somut adımlar için yukarıdaki “Plan”ı kullanın. Model tahminidir, yatırım tavsiyesi değildir.')}</p></div></div>`;
+}
+{ const _rs = renderSheet; renderSheet = function () { _rs(); const w = state.sheet; if (!w || w.type !== 'pkg') return; const p = state.packages.find(q => q.id === w.id); if (!p) return; const grid = $('sheet').querySelector('.grid'); if (!grid) return;
+    if (!$('dlx-content')) { const anchor = $('dlx-hist'); const h = dlContentHTML(p); if (anchor && h) anchor.insertAdjacentHTML('afterend', h); }
+    if (p.status !== 'closed' && !$('dlx-outlook')) try { grid.insertAdjacentHTML('beforeend', dlOutlookHTML(p)); } catch (e) { console.error(e); } }; }
 
 Object.assign(TR, { 'GitHub version · prices update about every 30–60 minutes on weekdays · your data stays in this browser': 'GitHub sürümü · fiyatlar iş günleri yaklaşık 30–60 dakikada bir güncellenir · verileriniz bu tarayıcıda kalır',
   'Glossary': 'Sözlük', 'Add fund from external investment report': 'Dış yatırım raporundan fon ekle', 'TRY time deposit': 'TL vadeli mevduat', 'Money-market fund': 'Para piyasası fonu', 'BIST 100 index fund': 'BIST 100 endeks fonu', 'USD deposit': 'USD mevduat', 'Inflation (CPI) — value kept': 'Enflasyon (TÜFE) — korunan değer' });
