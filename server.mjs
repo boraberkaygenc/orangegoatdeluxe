@@ -118,6 +118,17 @@ const lighthouse = safe('lighthouse', () => createLighthouse({ db, put, log, inb
 const backfill = safe('backfill', () => createBackfill({ db, put, log, inbox, coll, config: CONFIG, store2, data, edgar, isy, membership, health }), log);
 if (db.docs['status/backfill'] && db.docs['status/backfill'].running) put('status/backfill', { ...db.docs['status/backfill'], running: false, note: 'interrupted by a restart; resumes at ' + CONFIG.backfillAt });
 try { const r = universe.ensure(); log(`universe: ${r.total} instruments wanted (${r.added} added, ${r.removed} removed)`); } catch (e) { log('universe ensure failed:', e.message); }
+// model calibration (walk-forward test of the forecast on stored history; see engine.calibrate): weekly, and on demand from POST /api/calib
+function runCalib(reason) { const t0 = Date.now(); try {
+    const pick = cls => coll('instruments').map(([, x]) => x).filter(x => x.cls === cls).sort((a, b) => (b.mcap || 0) - (a.mcap || 0)).slice(0, CONFIG.calibStocks || 300);
+    const list = []; for (const x of [...pick('TR_EQ'), ...pick('US_EQ')]) { let closes = null; try { const f = store2.readSeries(x.symbol); if (f && Array.isArray(f.bars)) closes = f.bars.map(r => [r[0], +r[1]]); } catch (e) { }
+      if (!closes || closes.length < (x.closes || []).length) closes = (x.closes || []).map(r => [r[0], +r[1]]); if (closes.length >= 300) list.push({ symbol: x.symbol, ccy: x.ccy, closes }); }
+    const c = E.calibrate(list, { years: CONFIG.calibYears || 5 }); c.reason = reason; c.ms = Date.now() - t0; c.series = list.length;
+    if (c.ok) { put('model/calib', c); log(`calibration (${reason}): ${list.length} series, ${Object.entries(c.stats).map(([k, s]) => `${k} ${s.dates} dates/${s.obs} obs`).join(', ')} in ${c.ms} ms`); }
+    else log(`calibration (${reason}): not enough history yet (${list.length} series with 300+ days)`); return c;
+  } catch (e) { log('calibration failed:', e.message); return { ok: false, error: e.message }; } }
+setTimeout(() => { const c = db.docs['model/calib']; if (!c || Date.now() - new Date(c.at) > 7 * 864e5) runCalib('start-up'); }, CONFIG.calibDelayMs ?? 120000);
+setInterval(() => { const c = db.docs['model/calib']; if (!data.isRunning() && (!c || Date.now() - new Date(c.at) > 7 * 864e5)) runCalib('weekly'); }, 6 * 36e5);
 setInterval(() => { try { research.importDigests(); } catch (e) { log('digest watch:', e.message); } }, 60000);
 
 /* ---------------- scheduler ---------------- */
@@ -184,6 +195,7 @@ const server = http.createServer(async (req, res) => {
       if (p === '/api/edgar') { edgar.runSlice({ reason: 'button' }).then(() => health.update()).catch(e => log('edgar:', e.message)); return send(res, 202, { started: true }); }
       if (p === '/api/isy') { isy.runSlice({ reason: 'button' }).then(() => health.update()).catch(e => log('isyatirim:', e.message)); return send(res, 202, { started: true }); }
       if (p === '/api/membership') { membership.refresh('button').catch(e => log('membership:', e.message)); return send(res, 202, { started: true }); }
+      if (p === '/api/calib' && req.method === 'POST') { const c = runCalib('request'); return send(res, 200, { ok: !!c.ok, series: c.series, stats: c.stats, error: c.error }); }
       if (p === '/api/backfill') { const b = (await readBody(req)) || {}; if (b.action === 'stop') { const was = backfill.stop(); return send(res, 200, { stopped: was, status: backfill.status() }); } if (b.action === 'start') { if (b.phase && !PHASES.includes(b.phase)) return send(res, 400, { error: 'phase must be one of ' + PHASES.join(', ') }); if (backfill.isRunning()) return send(res, 200, { started: false, running: true, status: backfill.status() }); backfill.run('button', b.phase || null).then(() => health.update()).catch(e => log('backfill:', e.message)); return send(res, 202, { started: true }); } return send(res, 400, { error: "action must be 'start' or 'stop'" }); }
       if (p === '/api/digest') { try { const d = research.buildDigest('button'); return send(res, 200, { ok: !!d }); } catch (e) { return send(res, 500, { error: e.message }); } }
       if (p === '/api/refresh') { const b = (await readBody(req)) || {}; data.refresh(b.mode === 'full' ? 'full' : 'quick', 'button', Array.isArray(b.symbols) && b.symbols.length ? b.symbols : null); return send(res, 202, { started: true }); }

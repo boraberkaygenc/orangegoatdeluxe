@@ -12,7 +12,7 @@ export function createView({ db, log, E, ist, data, uid = 'local' }) {
   let chg = 0; const keyChg = new Map(), deleted = new Map();
   let instDirty = true, scoreDirty = true, lastScored = null, otherDirtyAt = 0, lastInstChangeAt = Date.now(), seq = 0, cache = null, computing = false, lastComputeAt = 0, lastMs = 0, settingsKey = '';
 
-  function track(k, del) { chg++; keyChg.set(k, chg); if (del) deleted.set(k, chg); else deleted.delete(k); if (k.startsWith('instruments/')) { instDirty = true; scoreDirty = true; lastInstChangeAt = Date.now(); } else if (k === 'settings/main' || k === 'macro/main') { instDirty = true; scoreDirty = true; otherDirtyAt = Date.now(); } else if (/^data\/users\/[^/]+\/(holdings|basket|packages|watch)$/.test(k)) { instDirty = true; otherDirtyAt = Date.now(); } }
+  function track(k, del) { chg++; keyChg.set(k, chg); if (del) deleted.set(k, chg); else deleted.delete(k); if (k.startsWith('instruments/')) { instDirty = true; scoreDirty = true; lastInstChangeAt = Date.now(); } else if (k === 'settings/main' || k === 'macro/main' || k === 'model/calib') { instDirty = true; scoreDirty = true; otherDirtyAt = Date.now(); } else if (/^data\/users\/[^/]+\/(holdings|basket|packages|watch)$/.test(k)) { instDirty = true; otherDirtyAt = Date.now(); } }
   function wrap() {
     if (db.docs && db.docs.__gncProxy) return;
     const target = db.docs || {};
@@ -43,7 +43,7 @@ export function createView({ db, log, E, ist, data, uid = 'local' }) {
       wrap();
       const inst = {}; for (const [k, x] of Object.entries(db.docs)) if (k.startsWith('instruments/') && x && x.symbol) inst[x.symbol] = x;
       const rescore = scoreDirty || !lastScored;
-      if (rescore) { scoreDirty = false; const S = { ...E.DEFAULT_SETTINGS, ...(db.docs['settings/main'] || {}) }, macro = db.docs['macro/main'] || {};
+      if (rescore) { scoreDirty = false; E.setCalib(db.docs['model/calib']); const S = { ...E.DEFAULT_SETTINGS, ...(db.docs['settings/main'] || {}) }, macro = db.docs['macro/main'] || {};
         const M = { ...macro, today: ist().date, usdtry: (inst['USD/TRY'] || {}).price || 49.5, xu100: (inst.XU100 || {}).price };
         lastScored = E.scoreAll(inst, S, M); slimJson = new Map();
         for (const y of lastScored) { const o = {}; for (const [k, v] of Object.entries(y)) { if (HEAVY.includes(k)) continue; if (k === 'hz') { o.hz_ = SLIM_HZ(v); continue; } o[k] = v; } o._scored = 1; slimJson.set(y.symbol, JSON.stringify(o)); } }

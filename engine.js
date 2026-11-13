@@ -247,8 +247,8 @@ function alphas(x, z) {
   const e = x.e, shrink = e.flags.includes('short history') || e.isProxy ? 0.5 : 1;
   let sRev = 0; if (z.rsiD !== undefined && z.rsiD !== null) sRev += clamp(-z.rsiD / 12, -1, 1.5);
   if (z.ma20D !== undefined && z.ma20D !== null) sRev += 0.5 * clamp(-z.ma20D / 0.06, -1, 1);
-  const aRev = 25 * sRev * shrink, aMom = 10 * clamp(z.mom || 0, -2, 2) * shrink, aVal = 3 * clamp(z.value || 0, -2, 2);
-  const trend = (e.ma200 && e.price) ? (e.price > e.ma200 ? 2 : -2) : 0;
+  const cc = x.ccy === 'USD' ? 'USD' : 'TRY', aRev = 25 * sRev * shrink * calScale(cc, 'rev'), aMom = 10 * clamp(z.mom || 0, -2, 2) * shrink * calScale(cc, 'mom'), aVal = 3 * clamp(z.value || 0, -2, 2) * calScale(cc, 'val');
+  const trend = (e.ma200 && e.price) ? (e.price > e.ma200 ? 2 : -2) * calScale(cc, 'trend') : 0;
   const w = { '1w': [1, 0, 0, 0], '2w': [0.8, 0.2, 0, 0], '3w': [0.6, 0.4, 0, 0.3], '1m': [0.3, 1, 0, 1], '2m': [0.1, 1, 0, 1], '3m': [0, 1, 0, 1], '6m': [0, 0.6, 0.7, 1], '9m': [0, 0.45, 0.85, 1], '12m': [0, 0.3, 1, 1] };
   const out = {}; for (const [k] of HORIZONS) { const [a, b, c, d] = w[k]; out[k] = a * aRev + b * aMom + c * aVal + d * trend; }
   return { by: out, aRev, aMom, aVal, trend };
@@ -268,7 +268,7 @@ function horizons(x, S, M, amount, z) {
   const c = costs(x, A, S, M), costPct = c.roundTripPct;
   const rows = HORIZONS.map(([k, label, t]) => {
     const ann = ex.E + al.by[k] - fee;
-    const mu = (Math.pow(1 + ann / 100, t) - 1) * 100, sig = vol * Math.sqrt(t);
+    const mu = (Math.pow(1 + ann / 100, t) - 1) * 100, sig = vol * Math.sqrt(t) * calSig(x.ccy === 'USD' ? 'USD' : 'TRY', t);
     const gross = mu - costPct, tax = taxPct(x, gross, t, S), net = gross - tax;
     const fxT = (Math.pow(1 + fxRate(S, M) / 100, t) - 1) * 100, usdP = S.principal === 'USD';
     const mm = usdP ? benchNet(S, t * 365, 'USD') : benchNet(S, t * 365, undefined, M), netCmp = usdP ? ((1 + net / 100) / (1 + fxT / 100) - 1) * 100 : net;
@@ -360,7 +360,7 @@ function explain(x, S) {
 /* ---------- scenarios for an amount ---------- */
 function scenario(x, A, t, S, M, z, monthVol) {
   const hz = horizons(x, S, M, A, z), c = costs(x, A, S, M, monthVol);
-  const ann = hz.E + interpAlpha(hz.alphas.by, t) - (+x.fee || 0), mu = Math.pow(1 + ann / 100, t) - 1, sig = x.e.volUsed / 100 * Math.sqrt(t);
+  const ann = hz.E + interpAlpha(hz.alphas.by, t) - (+x.fee || 0), mu = Math.pow(1 + ann / 100, t) - 1, sig = x.e.volUsed / 100 * Math.sqrt(t) * calSig(x.ccy === 'USD' ? 'USD' : 'TRY', t);
   const res = {};
   for (const [k, m] of [['exp', 0], ['best', 1], ['worst', -2]]) {
     const gross = (A - c.side) * (1 + mu) * Math.exp(m * sig), exitC = costs(x, gross, S, M, monthVol).side, after = gross - exitC;
@@ -1027,6 +1027,73 @@ function depNetCached(S, M, d) {
   if (v === undefined) { if (_depCache.size > 4000) _depCache.clear(); v = depositPath(S, M, d).net; _depCache.set(k, v); } return v;
 }
 // exponentially weighted volatility (RiskMetrics λ = 0.94), annualised %, from closes (numbers or [date, close])
+/* ---------- model calibration: walk-forward test of the forecast on stored history ----------
+   At every 21st trading day of the last `years` years, each stock's signals are computed exactly as the live model does
+   (short-term reversal, 12-1/6-1 momentum, 200-day trend; EWMA+1y volatility), using only data up to that day.
+   They are compared with what happened next (21, 63, 126 trading days):
+   - per signal, a Fama-MacBeth slope of realised (cross-sectionally demeaned) return on the model's predicted contribution:
+     1 = the model's size was right, 0 = no power, <0 = wrong way. Shrunk by its t-statistic, it scales the live alpha;
+   - rank IC and the top-minus-bottom quintile spread of the combined prediction (hit rate);
+   - volatility bands: how often outcomes fell inside the model's 90% band, and the factor that makes it 90%;
+   - fat tails: degrees of freedom of a Student-t fitted to the standardised outcomes. */
+let CAL = null;
+function setCalib(c) { CAL = c && c.ok ? c : null; }
+function getCalib() { return CAL; }
+function calScale(ccy, k) { const s = CAL && CAL.scale && CAL.scale[ccy]; return s && isFinite(s[k]) ? s[k] : 1; }
+function calSig(ccy, t) { const g = CAL && CAL.sig && CAL.sig[ccy]; if (!g || !g.length) return 1; const d = t * 252; if (d <= g[0][0]) return g[0][1]; for (let i = 1; i < g.length; i++) if (d <= g[i][0]) { const [d0, m0] = g[i - 1], [d1, m1] = g[i]; return m0 + (m1 - m0) * (d - d0) / (d1 - d0); } return g[g.length - 1][1]; }
+function calibrate(list, opts = {}) {
+  const H = [21, 63, 126], HK = { 21: '1m', 63: '3m', 126: '6m' }, W = { '1m': { rev: 0.3, mom: 1, trend: 1 }, '3m': { rev: 0, mom: 1, trend: 1 }, '6m': { rev: 0, mom: 0.6, trend: 1 } };
+  const years = opts.years || 5, step = 21, comps = ['rev', 'mom', 'trend'], out = { ok: false, at: new Date().toISOString(), years, method: 'walk-forward, Fama-MacBeth', scale: {}, sig: {}, stats: {} };
+  const median = a => { const v = a.slice().sort((p, q) => p - q); return v.length ? v[Math.floor(v.length / 2)] : 0; };
+  const rank = a => { const o = a.map((v, i) => [v, i]).sort((p, q) => p[0] - q[0]), r = new Array(a.length); o.forEach(([, i], k) => { r[i] = k; }); return r; };
+  const pear = (a, b) => { const ma = mean(a), mb = mean(b); let n = 0, da = 0, db = 0; for (let i = 0; i < a.length; i++) { n += (a[i] - ma) * (b[i] - mb); da += (a[i] - ma) ** 2; db += (b[i] - mb) ** 2; } return da && db ? n / Math.sqrt(da * db) : 0; };
+  for (const ccy of ['TRY', 'USD']) {
+    const L = list.filter(s => s.ccy === ccy && Array.isArray(s.closes) && s.closes.length >= 300); if (L.length < 30) continue;
+    const dates = [...new Set(L.flatMap(s => s.closes.map(r => r[0])))].sort(), first = dates.length - Math.round(years * 252);
+    const pos = L.map(s => { const m = new Map(); s.closes.forEach((r, i) => m.set(r[0], i)); return m; });
+    const slopes = {}, ics = {}, spreads = {}, zs = { 21: [], 63: [], 126: [] }, hits = {}; for (const h of H) { slopes[h] = { rev: [], mom: [], trend: [] }; ics[h] = []; spreads[h] = []; hits[h] = [0, 0]; }
+    let nObs = 0, nDates = 0, from = null, to = null;
+    for (let di = Math.max(260, first); di < dates.length - 21; di += step) {
+      const d = dates[di], snap = [];
+      L.forEach((s, k) => { const i = pos[k].get(d); if (i === undefined || i < 252) return; const c = s.closes, at = j => +c[j][1], px = at(i); if (!(px > 0)) return;
+        const lr = []; for (let j = i - 251; j <= i; j++) { const a = at(j - 1), b = at(j); if (a > 0 && b > 0) lr.push(Math.log(b / a)); } if (lr.length < 200 || lr.some(r => Math.abs(r) > 0.4)) return; // skip unadjusted splits
+        const vol = sd(lr) * Math.sqrt(252) * 100; let ev = mean(lr.slice(0, 20).map(r => r * r)); for (let j = 20; j < lr.length; j++) ev = 0.94 * ev + 0.06 * lr[j] * lr[j];
+        const volUsed = Math.max(ccy === 'TRY' ? 20 : 15, 0.5 * Math.sqrt(ev * 252) * 100 + 0.5 * vol);
+        const mom = (0.6 * (at(i - 21) / at(i - 252) - 1) * 100 + 0.4 * (at(i - 21) / at(i - 126) - 1) * 100) / vol;
+        let g = 0, l = 0; for (let j = i - 13; j <= i; j++) { const dd = at(j) - at(j - 1); if (dd > 0) g += dd; else l -= dd; } const rsi = l === 0 ? 100 : 100 - 100 / (1 + g / l);
+        let s20 = 0; for (let j = i - 19; j <= i; j++) s20 += at(j); let s200 = 0; for (let j = i - 199; j <= i; j++) s200 += at(j);
+        const fwd = {}; for (const h of H) if (i + h < c.length && at(i + h) > 0) fwd[h] = Math.log(at(i + h) / px);
+        snap.push({ mom, rsi, ma20D: px / (s20 / 20) - 1, trend: px > s200 / 200 ? 2 : -2, volUsed, fwd }); });
+      if (snap.length < 20) continue; nDates++; from = from || d; to = d;
+      const mm = mean(snap.map(o => o.mom)), sm = sd(snap.map(o => o.mom)) || 1, mr = median(snap.map(o => o.rsi)), m20 = median(snap.map(o => o.ma20D));
+      for (const o of snap) { const z = clamp((o.mom - mm) / sm, -3, 3); o.a = { rev: 25 * (clamp(-(o.rsi - mr) / 12, -1, 1.5) + 0.5 * clamp(-(o.ma20D - m20) / 0.06, -1, 1)), mom: 10 * clamp(z, -2, 2), trend: o.trend }; }
+      for (const h of H) { const g = snap.filter(o => o.fwd[h] !== undefined); if (g.length < 20) continue; const t = h / 252, w = W[HK[h]], rm = mean(g.map(o => o.fwd[h])), real = g.map(o => o.fwd[h] - rm);
+        for (const k of comps) { if (!w[k]) continue; const p = g.map(o => w[k] * o.a[k] / 100 * t), pm = mean(p), pd = p.map(v => v - pm); let num = 0, den = 0; for (let i = 0; i < g.length; i++) { num += pd[i] * real[i]; den += pd[i] * pd[i]; } if (den > 0) slopes[h][k].push(num / den); }
+        const tot = g.map(o => comps.reduce((a, k) => a + (w[k] || 0) * o.a[k], 0)); ics[h].push(pear(rank(tot), rank(real)));
+        const ord = tot.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]), q = Math.max(1, Math.floor(g.length / 5)); spreads[h].push(mean(ord.slice(0, q).map(([, i]) => real[i])) - mean(ord.slice(-q).map(([, i]) => real[i])));
+        for (let i = 0; i < g.length; i++) { const pt = tot[i] - mean(tot); if (Math.abs(pt) > 1e-9 && real[i] !== 0) { hits[h][1]++; if (Math.sign(pt) === Math.sign(real[i])) hits[h][0]++; } }
+        for (const o of g) zs[h].push(o.fwd[h] / (o.volUsed / 100 * Math.sqrt(t))); nObs += g.length; }
+    }
+    if (nDates < 12) continue;
+    // Fama-MacBeth: mean slope, t-statistic corrected for overlapping windows (effective dates = n · step / h)
+    const fm = (a, h) => { if (a.length < 6) return { b: null, t: 0 }; const b = mean(a), s = sd(a) || 1e-9, nEff = Math.max(2, a.length * Math.min(1, step / h)); return { b, t: b / s * Math.sqrt(nEff) }; };
+    const sc = {}, st = { dates: nDates, obs: nObs, stocks: L.length, from, to, signals: {}, horizons: {} };
+    for (const k of comps) { const parts = H.filter(h => W[HK[h]][k]).map(h => ({ h, ...fm(slopes[h][k], h) })).filter(r => r.b !== null);
+      const b = parts.length ? mean(parts.map(r => r.b)) : null, t = parts.length ? mean(parts.map(r => r.t)) : 0, shrink = t > 0 ? t * t / (t * t + 4) : 0;
+      sc[k] = b === null ? 1 : +clamp(b * shrink, 0, 1.25).toFixed(3); st.signals[k] = { slope: b === null ? null : +b.toFixed(3), t: +t.toFixed(2), scale: sc[k], byH: parts.map(r => ({ h: r.h, slope: +r.b.toFixed(3), t: +r.t.toFixed(2) })) }; }
+    sc.val = 1; // value needs point-in-time fundamentals, which are not stored: left as set
+    const sig = [];
+    for (const h of H) { const z = zs[h].map(v => v - mean(zs[h])), az = z.map(Math.abs).sort((a, b) => a - b); if (az.length < 200) continue; const q90 = az[Math.floor(az.length * 0.9)], inside = az.filter(v => v <= 1.645).length / az.length;
+      const m = mean(z), v2 = mean(z.map(x => (x - m) ** 2)), k4 = mean(z.map(x => (x - m) ** 4)) / (v2 * v2) - 3;
+      sig.push([h, +clamp(q90 / 1.645, 0.7, 1.8).toFixed(3)]);
+      const icm = fm(ics[h], h), spr = mean(spreads[h]);
+      st.horizons[h] = { coverage90: +(inside * 100).toFixed(1), sigMult: +(q90 / 1.645).toFixed(3), kurt: +k4.toFixed(2), ic: +(mean(ics[h]) || 0).toFixed(3), icT: +icm.t.toFixed(2), spreadAnn: +((Math.exp(spr * 252 / h) - 1) * 100).toFixed(1), hit: hits[h][1] ? +(hits[h][0] / hits[h][1] * 100).toFixed(1) : null }; }
+    const k21 = st.horizons[21] ? st.horizons[21].kurt : 3; st.df = +clamp(k21 > 0.2 ? 4 + 6 / k21 : 30, 3, 30).toFixed(1);
+    out.scale[ccy] = sc; out.sig[ccy] = sig; out.stats[ccy] = st; out.ok = true;
+  }
+  return out;
+}
+
 function ewmaVol(closes, lambda = 0.94) {
   const c = (closes || []).map(v => Array.isArray(v) ? +v[1] : +v).filter(v => v > 0); if (c.length < 21) return null;
   const r = []; for (let i = 1; i < c.length; i++) r.push(Math.log(c[i] / c[i - 1]));
@@ -1251,7 +1318,7 @@ function faberMonthly(closes, today) {
   return { met: last[1] > sma, month: last[0], close: last[1], date: last[2], sma, gap: (last[1] / sma - 1) * 100, months: me.length };
 }
 
-return { num, clamp, CLASSES, GOLD, BOND, HORIZONS, SCEN_HORIZONS, GROUPS, PRESETS, DEFAULT_SETTINGS, AK_TIERS, enrich, macroView, regime, expected, costs, akRate, minOrder, taxPct, taxLabel,
+return { setCalib, getCalib, calibrate, calScale, calSig, num, clamp, CLASSES, GOLD, BOND, HORIZONS, SCEN_HORIZONS, GROUPS, PRESETS, DEFAULT_SETTINGS, AK_TIERS, enrich, macroView, regime, expected, costs, akRate, minOrder, taxPct, taxLabel,
   horizons, scoreAll, explain, scenario, packageAnalytics, portfolioRisk, roman, longDate, addMonths, picks, holdingsView, alerts, sellList, brief, statementModel, packageModel, tearsheetModel, fundId,
   renderPDF, renderDOCX, fmtTRY, fmtPct, fmtN, DISCLAIMER, riskBucket, closesOf, seriesStats, normRating, brokerLatest, consensus, brokerSignals, brokerDigestModel,
   benchNet, benchLabel, depTax, addDays, daysBetween, makeFx, setDisplay, money, realPct, breakeven, exitPlan, earlyExit, alternatives, perfSeries, backtest, DISPLAY,

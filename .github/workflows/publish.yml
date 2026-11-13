@@ -43,7 +43,8 @@ jobs:
         env:
           EVDS_KEY: ${{ secrets.EVDS_KEY }}
           MODE: ${{ (github.event.schedule == '15 21 * * *' || inputs.mode == 'full') && 'full' || 'quick' }}
-          MAX_MIN: ${{ (github.event.schedule == '15 21 * * *' || inputs.mode == 'full') && '70' || '25' }}
+          MAX_MIN: ${{ (github.event.schedule == '15 21 * * *' || inputs.mode == 'full') && '50' || '25' }}
+          BACKFILL_MIN: '25'
         run: node tools/static-build.mjs
       - name: Keep the market data store
         if: always()

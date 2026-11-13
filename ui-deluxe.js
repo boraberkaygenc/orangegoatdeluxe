@@ -232,18 +232,39 @@ const dlFxMult = t => Math.pow(1 + (f4Fx() || 0) / 100, t);
 function dlHorizonDays(p, pick) { if (pick && pick !== 'span') return +pick; const end = DX.addDays(p.orderedAt || p.date, p.holdDays || 182), d = DX.daysBetween(today(), end); return d >= 30 ? d : 182; }
 
 // one-factor Monte Carlo (shares and gold share a market factor; USD/TRY its own): handles futures (long and short) and lines without history
-function dlMonteCarlo(items, detAt, days, opts = {}) {
-  const n = opts.n || 2000, steps = 24, stepDays = Array.from({ length: steps + 1 }, (_, s) => Math.round(days * s / steps)), rnd = (() => { let s = 20261113 >>> 0; return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; }; })();
+// factor Monte Carlo: every risky holding loads on three market factors — BIST (XU100), US shares (S&P 500) and USD/TRY — plus its own
+// noise; shocks are Student-t with the fat tails measured in the calibration, and one shared "stress" draw per step, so bad days hit
+// everything at once (as in 2018 and 2020). Items: {expo, mu, sig (annual), load: {tr, us, fx} (annual σ), idio (annual σ)}; older
+// callers pass {factor:'mkt'|'fx'} instead and get loads derived from it.
+const DL_FCORR = { tr_us: 0.35, tr_fx: -0.15, us_fx: 0.05 };
+function dlFactorVols() { const v = (s, d) => { const x = state.map[s] || state.inst[s]; const q = x && x.e && (x.e.volUsed || x.e.vol); return q > 0 ? q / 100 : d; }; return { tr: v('XU100', 0.28), us: v('SPX', 0.18), fx: (+state.S.fxVol || 8) / 100 }; }
+function dlLoads(kind, beta, sigA) { const f = dlFactorVols(), b = Math.max(0.2, Math.min(1.8, 0.5 + 0.5 * (isFinite(beta) ? beta : 1))), L = { tr: 0, us: 0, fx: 0 };
+  if (kind === 'usd_cash' || kind === 'usd_dep' || kind === 'usd') L.fx = Math.min(sigA, f.fx);
+  else if (kind === 'us_eq') { L.us = b * f.us; L.fx = f.fx; } else if (kind === 'gold') L.fx = f.fx; else if (kind === 'tr_eq' || kind === 'stock' || kind === 'mkt') L.tr = b * f.tr;
+  const sys = L.tr ** 2 + L.us ** 2 + L.fx ** 2 + 2 * (DL_FCORR.tr_us * L.tr * L.us + DL_FCORR.tr_fx * L.tr * L.fx + DL_FCORR.us_fx * L.us * L.fx);
+  if (sys > sigA * sigA * 0.9) { const k = Math.sqrt(sigA * sigA * 0.9 / sys); L.tr *= k; L.us *= k; L.fx *= k; return { load: L, idio: sigA * Math.sqrt(0.1) }; }
+  return { load: L, idio: Math.sqrt(sigA * sigA - sys) }; }
+function dlFill(it) { if (it.load) return it; const r = dlLoads(it.factor === 'fx' ? 'usd' : 'mkt', 1, it.sig); return { ...it, ...r }; }
+function dlCovA(a, b) { // annual covariance of two items' log returns
+  const A = a.load, B = b.load, c = DL_FCORR; let v = A.tr * B.tr + A.us * B.us + A.fx * B.fx + c.tr_us * (A.tr * B.us + A.us * B.tr) + c.tr_fx * (A.tr * B.fx + A.fx * B.tr) + c.us_fx * (A.us * B.fx + A.fx * B.us);
+  if (a === b) v += a.idio * a.idio; return v; }
+function dlMonteCarlo(items0, detAt, days, opts = {}) {
+  const items = items0.map(dlFill), n = opts.n || 2000, steps = 24, stepDays = Array.from({ length: steps + 1 }, (_, s) => Math.round(days * s / steps)), rnd = (() => { let s = 20261113 >>> 0; return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; }; })();
   const gauss = () => { let u = 0, v = 0; while (!u) u = rnd(); while (!v) v = rnd(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
-  const vals = Array.from({ length: steps + 1 }, () => new Float64Array(n)), dt = days / 365 / steps;
+  const df = Math.max(3, Math.round(opts.df || dlCalDf())), tsc = Math.sqrt((df - 2) / df), mix = () => { let c = 0; for (let i = 0; i < df; i++) { const g = gauss(); c += g * g; } return tsc / Math.sqrt(c / df); };
+  // Cholesky of the 3×3 factor correlation
+  const C = DL_FCORR, l11 = 1, l21 = C.tr_us, l22 = Math.sqrt(1 - l21 * l21), l31 = C.tr_fx, l32 = (C.us_fx - l31 * l21) / l22, l33 = Math.sqrt(Math.max(1e-9, 1 - l31 * l31 - l32 * l32));
+  const vals = Array.from({ length: steps + 1 }, () => new Float64Array(n)), dt = days / 365 / steps, sq = Math.sqrt(dt);
+  const drift = items.map(it => (it.mu - (dlCovA(it, it)) / 2) * dt);
   for (let k = 0; k < n; k++) { const lr = items.map(() => 0); vals[0][k] = items.reduce((a, it) => a + it.expo, 0) + detAt(0);
-    for (let s = 1; s <= steps; s++) { const zm = gauss(), zf = gauss(); let v = detAt(stepDays[s]);
-      items.forEach((it, i) => { const rho = it.factor === 'fx' ? 0 : 0.4, z = it.factor === 'fx' ? zf : Math.sqrt(rho) * zm + Math.sqrt(1 - rho) * gauss(); lr[i] += (it.mu - it.sig * it.sig / 2) * dt + it.sig * Math.sqrt(dt) * z; v += it.expo * Math.exp(lr[i]); });
+    for (let s = 1; s <= steps; s++) { const w = mix(), g1 = gauss(), g2 = gauss(), g3 = gauss(), ftr = w * l11 * g1, fus = w * (l21 * g1 + l22 * g2), ffx = w * (l31 * g1 + l32 * g2 + l33 * g3); let v = detAt(stepDays[s]);
+      items.forEach((it, i) => { lr[i] += drift[i] + sq * (it.load.tr * ftr + it.load.us * fus + it.load.fx * ffx + it.idio * w * gauss()); v += it.expo * Math.exp(lr[i]); });
       vals[s][k] = v; } }
   const qs = { p05: 0.05, p25: 0.25, p50: 0.5, p75: 0.75, p95: 0.95 }, paths = {}; for (const q of Object.keys(qs)) paths[q] = [];
   for (let s = 0; s <= steps; s++) { const a = Float64Array.from(vals[s]).sort(); for (const [q, pq] of Object.entries(qs)) paths[q].push(a[Math.round(pq * (n - 1))]); }
   const term = vals[steps]; let mean = 0, beat = 0; for (const v of term) { mean += v; if (opts.bench !== undefined && v > opts.bench) beat++; }
-  return { method: 'montecarlo', term: vals[steps], paths, stepDays, mean: mean / n, pBeat: opts.bench !== undefined ? beat / n : null, ...Object.fromEntries(Object.keys(qs).map(q => [q, paths[q][steps]])) };
+  const sorted = Float64Array.from(term).sort(), v0 = vals[0][0], i5 = Math.floor(n * 0.05), var95 = v0 - sorted[i5]; let cv = 0; for (let i = 0; i <= i5; i++) cv += sorted[i]; const es95 = v0 - cv / (i5 + 1);
+  return { method: 'montecarlo', df, term: vals[steps], paths, stepDays, mean: mean / n, var95, es95, pBeat: opts.bench !== undefined ? beat / n : null, ...Object.fromEntries(Object.keys(qs).map(q => [q, paths[q][steps]])) };
 }
 async function dlSimulate(p, days) {
   const pos = dlPositions(p), t = days / 365, S = state.S, m = ctx().M, sk = [];
@@ -604,16 +625,16 @@ function dlModel(p, days) {
     else if (q.x) { const ex = dlLineExpect(q.x, q.valueTRY, t); items.push({ key: 'line:' + q.symbol, name: q.symbol, kind: q.kind, expo: q.valueTRY, value: q.valueTRY, mult: ex ? ex.mult : 1, sig: ex ? ex.sig : 0.3 * Math.sqrt(t), factor: 'mkt', x: q.x }); }
     else det.push({ key: 'other:' + q.name, name: q.name, f: () => q.valueTRY, value: q.valueTRY });
   }
+  for (const it of items) { const sigA = it.sig / Math.sqrt(t), kind = it.kind === 'viop' ? (it.factor === 'fx' ? 'usd' : it.q && it.q.underKind === 'gold' ? 'gold' : 'stock') : it.kind, beta = it.kind === 'viop' ? (it.q && it.q.beta) : it.x && it.x.e ? it.x.e.beta : 1; Object.assign(it, { sigA }, dlLoads(kind, beta, sigA)); }
   const detAt = dd => det.reduce((a, d) => a + d.f(dd), 0), total0 = dlPositions(p).reduce((a, q) => a + q.valueTRY, 0);
   return { items, det, detAt, total0, t, days };
 }
-const dlRho = (a, b) => a === b ? 1 : (a.factor === 'fx' || b.factor === 'fx') ? (a.factor === b.factor ? 1 : 0.1) : 0.4;
-function dlMoments(items, detAt, days) { let mean = detAt(days), v = 0; for (const a of items) mean += a.expo * a.mult; for (const a of items) for (const b of items) v += dlRho(a, b) * a.expo * a.sig * b.expo * b.sig; return { mean, sd: Math.sqrt(Math.max(0, v)) }; }
+function dlMoments(items0, detAt, days) { const items = items0.map(dlFill), t = Math.max(days, 1) / 365; let mean = detAt(days), v = 0; for (const a of items) mean += a.expo * a.mult; for (const a of items) for (const b of items) v += a.expo * b.expo * dlCovA(a, b) * t; return { mean, sd: Math.sqrt(Math.max(0, v)) }; }
 
 /* ---- simulation (v2): Monte Carlo of every holding, probabilities, distribution, contributions ---- */
 function dlSim2(p, days) {
   const md = dlModel(p, days), S = state.S, m = ctx().M, benchPct = E.benchNet(S, days, undefined, m), bench = md.total0 * (1 + benchPct / 100);
-  const mcItems = md.items.map(it => ({ expo: it.expo, mu: Math.log(Math.max(1e-6, it.mult)) / md.t, sig: it.sig / Math.sqrt(md.t), factor: it.factor }));
+  const mcItems = md.items.map(it => ({ expo: it.expo, mu: Math.log(Math.max(1e-6, it.mult)) / md.t, sig: it.sigA, load: it.load, idio: it.idio }));
   const mc = dlMonteCarlo(mcItems, md.detAt, days, { bench, n: 3000 }), term = Array.from(mc.term).sort((a, b) => a - b), n = term.length, share = f => term.filter(f).length / n;
   const contrib = md.items.map(it => ({ name: it.name, kind: it.kind, gain: it.expo * (it.mult - 1), risk: Math.abs(it.expo) * it.sig })).concat(md.det.filter(d => !d.hidden && d.key.startsWith('dep:')).map(d => ({ name: d.name, kind: 'dep', gain: d.f(days) - d.value, risk: 0 })));
   const lines = md.items.filter(it => it.kind !== 'viop').map(it => { const x = it.x, px = x && x.e ? x.e.price : null, usd = it.kind === 'usd_cash' || it.kind === 'usd_dep', fxm = x && x.ccy === 'USD' ? dlFxMult(md.t) : 1, k = it.mult / fxm;
@@ -624,13 +645,13 @@ function dlSim2(p, days) {
 function dlHistSVG(term, marks, w = 640) {
   const n = term.length, lo = term[Math.floor(n * 0.005)], hi = term[Math.floor(n * 0.995)], B = 36, bw = (hi - lo) / B || 1, bins = new Array(B).fill(0); for (const v of term) { const i = Math.min(B - 1, Math.max(0, Math.floor((v - lo) / bw))); bins[i]++; }
   const H = 150, L = 6, R = 6, T = 8, Bm = 34, mx = Math.max(...bins), sx = v => L + (v - lo) / (hi - lo || 1) * (w - L - R), bwPx = (w - L - R) / B;
-  let g = bins.map((c, i) => { const x0 = lo + i * bw, col = x0 + bw / 2 < marks.today ? 'var(--down, #c0392b)' : x0 + bw / 2 < marks.bench ? 'var(--warn, #c58a00)' : 'var(--up, #1e8e3e)'; const h = c / mx * (H - T - Bm); return `<rect x="${(L + i * bwPx + 0.5).toFixed(1)}" y="${(H - Bm - h).toFixed(1)}" width="${Math.max(1, bwPx - 1).toFixed(1)}" height="${h.toFixed(1)}" fill="${col}" opacity=".75"/>`; }).join('');
-  for (const [v, lab, y] of [[marks.today, DL('today', 'bugün'), H - 20], [marks.bench, DL('deposit', 'mevduat'), H - 8]]) if (v >= lo && v <= hi) g += `<line x1="${sx(v).toFixed(1)}" x2="${sx(v).toFixed(1)}" y1="${T}" y2="${H - Bm}" stroke="var(--fg, #333)" stroke-dasharray="3 3"/><text x="${sx(v).toFixed(1)}" y="${y}" text-anchor="middle">${esc(lab)} ${esc(VIZ.fmtBig(v))}</text>`;
+  let g = bins.map((c, i) => { const x0 = lo + i * bw, col = x0 + bw / 2 < marks.today ? 'var(--down)' : x0 + bw / 2 < marks.bench ? 'var(--warn)' : 'var(--up)'; const h = c / mx * (H - T - Bm); return `<rect x="${(L + i * bwPx + 0.5).toFixed(1)}" y="${(H - Bm - h).toFixed(1)}" width="${Math.max(1, bwPx - 1).toFixed(1)}" height="${h.toFixed(1)}" fill="${col}" opacity=".75"/>`; }).join('');
+  for (const [v, lab, y] of [[marks.today, DL('today', 'bugün'), H - 20], [marks.bench, DL('deposit', 'mevduat'), H - 8]]) if (v >= lo && v <= hi) g += `<line x1="${sx(v).toFixed(1)}" x2="${sx(v).toFixed(1)}" y1="${T}" y2="${H - Bm}" stroke="var(--fg)" stroke-dasharray="3 3"/><text x="${sx(v).toFixed(1)}" y="${y}" text-anchor="middle">${esc(lab)} ${esc(VIZ.fmtBig(v))}</text>`;
   return `<svg class="chart" viewBox="0 0 ${w} ${H}" style="height:${H}px;width:100%">${g}</svg><div class="legend"><div><i style="background:var(--down,#c0392b)"></i>${DL('loss', 'zarar')}</div><div><i style="background:var(--warn,#c58a00)"></i>${DL('gain, below the deposit', 'kazanç, mevduatın altında')}</div><div><i style="background:var(--up,#1e8e3e)"></i>${DL('above the deposit', 'mevduatın üstünde')}</div></div>`;
 }
 function dlBarsSVG(rows, w = 640) { if (!rows.length) return ''; const mx = Math.max(...rows.map(r => Math.abs(r.gain)), 1), rh = 20, H = rows.length * rh + 6, L = 150, mid = L + (w - L - 70) / 2, sc = (w - L - 70) / 2 / mx;
-  return `<svg class="chart" viewBox="0 0 ${w} ${H}" style="height:${H}px;width:100%">${rows.map((r, i) => { const y = 3 + i * rh, x = r.gain >= 0 ? mid : mid + r.gain * sc, ww = Math.abs(r.gain) * sc; return `<text x="${L - 6}" y="${y + 13}" text-anchor="end">${esc(String(r.name).slice(0, 22))}</text><rect x="${x.toFixed(1)}" y="${y + 3}" width="${Math.max(1, ww).toFixed(1)}" height="12" fill="${r.gain >= 0 ? 'var(--up,#1e8e3e)' : 'var(--down,#c0392b)'}" opacity=".75"/><text x="${(r.gain >= 0 ? x + ww + 4 : x - 4).toFixed(1)}" y="${y + 13}" text-anchor="${r.gain >= 0 ? 'start' : 'end'}">${r.gain >= 0 ? '+' : ''}${esc(VIZ.fmtBig(r.gain))}</text>`; }).join('')}<line x1="${mid}" x2="${mid}" y1="0" y2="${H}" stroke="var(--fg2,#888)"/></svg>`; }
-function dlProbBar(label, p, good) { const pc = Math.round(p * 100); return `<div style="display:grid;grid-template-columns:minmax(150px,1.3fr) 3fr 50px;gap:8px;align-items:center;margin:4px 0"><span class="txt">${esc(label)}</span><span style="background:var(--bg2,#eee);border-radius:3px;height:12px;position:relative"><i style="position:absolute;left:0;top:0;bottom:0;width:${pc}%;background:${good ? 'var(--up,#1e8e3e)' : 'var(--down,#c0392b)'};opacity:.7;border-radius:3px"></i></span><b>${pc}%</b></div>`; }
+  return `<svg class="chart" viewBox="0 0 ${w} ${H}" style="height:${H}px;width:100%">${rows.map((r, i) => { const y = 3 + i * rh, x = r.gain >= 0 ? mid : mid + r.gain * sc, ww = Math.abs(r.gain) * sc; return `<text x="${L - 6}" y="${y + 13}" text-anchor="end">${esc(String(r.name).slice(0, 22))}</text><rect x="${x.toFixed(1)}" y="${y + 3}" width="${Math.max(1, ww).toFixed(1)}" height="12" fill="${r.gain >= 0 ? 'var(--up,#1e8e3e)' : 'var(--down,#c0392b)'}" opacity=".75"/><text x="${(r.gain >= 0 ? x + ww + 4 : x - 4).toFixed(1)}" y="${y + 13}" text-anchor="${r.gain >= 0 ? 'start' : 'end'}">${r.gain >= 0 ? '+' : ''}${esc(VIZ.fmtBig(r.gain))}</text>`; }).join('')}<line x1="${mid}" x2="${mid}" y1="0" y2="${H}" stroke="var(--fg2)"/></svg>`; }
+function dlProbBar(label, p, good) { const pc = Math.round(p * 100); return `<div style="display:grid;grid-template-columns:minmax(150px,1.3fr) 3fr 50px;gap:8px;align-items:center;margin:4px 0"><span class="txt">${esc(label)}</span><span style="background:var(--panel2);border-radius:3px;height:12px;position:relative"><i style="position:absolute;left:0;top:0;bottom:0;width:${pc}%;background:${good ? 'var(--up,#1e8e3e)' : 'var(--down,#c0392b)'};opacity:.7;border-radius:3px"></i></span><b>${pc}%</b></div>`; }
 function dlRenderSim2(p, r) {
   const out = $('dlx-sim-out'); if (!out) return; const pct = v => r.total0 ? (v / r.total0 - 1) * 100 : null, bl = dlBench(), n100 = v => Math.round(v * 100);
   const tiles = [[DL('Middle case', 'Orta durum'), T(r.p50), P(pct(r.p50))], [DL('Bad case (1 in 20)', 'Kötü durum (20’de 1)'), T(r.p05), P(pct(r.p05))], [DL('Good case (1 in 20)', 'İyi durum (20’de 1)'), T(r.p95), P(pct(r.p95))], [bl, T(r.bench), P(r.benchPct)]];
@@ -659,6 +680,7 @@ function dlPlanCandidates(p, days, allowViop) {
   for (const x of pool) { const ex = dlLineExpect(x, 50000, t); if (ex && ex.mult > 1) out.push({ key: 'line:' + x.symbol, kind: 'stock', sym: x.symbol, x, name: x.symbol, mult: ex.mult, sig: ex.sig, factor: 'mkt', lowLiq: x.gate && x.gate.lowLiq }); }
   if (allowViop) { const items = ((state.dlxViop && state.dlxViop.items) || []).filter(c => c.kind === 'stock' && c.settle > 0 && c.expiry > DX.addDays(today(), 10)), byU = new Map(); for (const c of items) { const o = byU.get(c.under); if (!o || c.expiry < o.expiry) byU.set(c.under, c); }
     for (const c of byU.values()) { const r = dlContractRisk(c), tv = Math.min(t, r.rk.years), m1 = Math.pow(r.u.multAnn, tv); if (!(m1 > 1.01) || !(r.mg.im > 0)) continue; out.push({ key: 'viop:' + c.code, kind: 'viop', code: c.code, c, name: `${c.code} ${DL('long', 'uzun')}`, notional: c.settle * c.mult, margin: r.mg.im, mult: m1, sig: r.u.vol / 100 * Math.sqrt(tv), factor: 'mkt' }); } }
+  for (const c of out) if (c.sig > 0) Object.assign(c, dlLoads(c.kind === 'usd' ? 'usd' : c.kind === 'viop' ? 'stock' : c.sym === 'GAUTRY' ? 'gold' : dlKindOf(c.x), c.kind === 'viop' ? (state.map[c.c.under] && state.map[c.c.under].e ? state.map[c.c.under].e.beta : 1) : c.x && c.x.e ? c.x.e.beta : 1, c.sig / Math.sqrt(t)));
   return out.sort((a, b) => (b.mult - 1) - (a.mult - 1)).slice(0, 60);
 }
 function dlPlan(p, days, level, allowViop, allowSell) {
@@ -669,7 +691,7 @@ function dlPlan(p, days, level, allowViop, allowSell) {
   // money that could be freed: idle TRY cash, and (if allowed) the weakest share lines
   const sellable = allowSell ? items.filter(it => it.kind === 'tr_eq' || it.kind === 'us_eq').filter(it => it.mult < 1 + E.benchNet(S, days, undefined, ctx().M) / 100).sort((a, b) => a.mult - b.mult) : [];
   for (const it of sellable) { const amt = it.expo; items = items.filter(z => z !== it); detAdd += amt; cash += amt; actions.set('sell:' + it.name, { type: 'sell', sym: it.name, amount: amt, x: it.x, why: DL(`expected ${fmtPct((it.mult - 1) * 100)} — below the deposit`, `beklenen ${fmtPct((it.mult - 1) * 100)} — mevduatın altında`) }); }
-  let budget = cash, base = J(items, detAdd); const add = (c, amt) => { detAdd -= amt; if (c.kind === 'dep') { detAdd += amt * c.mult; return; } const ex = c.kind === 'viop' ? { expo: c.notional * Math.max(1, Math.round(amt / c.margin)), mult: c.mult, sig: c.sig, factor: c.factor } : { expo: amt, mult: c.mult, sig: c.sig, factor: c.factor }; items.push(ex); if (c.kind === 'viop') detAdd += amt - ex.expo; };
+  let budget = cash, base = J(items, detAdd); const add = (c, amt) => { detAdd -= amt; if (c.kind === 'dep') { detAdd += amt * c.mult; return; } const ex = { expo: c.kind === 'viop' ? c.notional * Math.max(1, Math.round(amt / c.margin)) : amt, mult: c.mult, sig: c.sig, load: c.load, idio: c.idio }; items.push(ex); if (c.kind === 'viop') detAdd += amt - ex.expo; };
   for (let step = 0; step < 60 && budget >= Math.min(chunk, 1000); step++) { const amt = Math.min(chunk, budget); let best = null;
     for (const c of cands) { if (c.kind === 'viop' && amt < c.margin) continue; const its = items.slice(), save = detAdd; const camt = c.kind === 'viop' ? c.margin * Math.max(1, Math.floor(amt / c.margin)) : amt; add(c, camt); const j = J(items, detAdd); items = its; detAdd = save; if (!best || j > best.j) best = { c, camt, j }; }
     // leaving the money as cash keeps the score at "base"; a step must beat that
@@ -775,7 +797,7 @@ function dlItemStats(p, it) {
 }
 function dlItemChart(pts, w = 640) { const H = 150, L = 6, R = 70, T = 8, B = 18, vals = pts.flatMap(r => [r[1], r[2]]).filter(x => x > 0); let mn = Math.min(...vals), mx = Math.max(...vals); const pad = (mx - mn) * 0.08 || mx * 0.02 || 1; mn -= pad; mx += pad;
   const sx = i => L + i * ((w - L - R) / Math.max(1, pts.length - 1)), sy = v => T + (H - T - B) - (v - mn) / (mx - mn) * (H - T - B), path = k => pts.map((r, i) => (i ? 'L' : 'M') + sx(i).toFixed(1) + ',' + sy(r[k]).toFixed(1)).join('');
-  return `<svg class="chart" viewBox="0 0 ${w} ${H}" style="height:${H}px;width:100%"><path d="${path(2)}" fill="none" stroke="var(--fg2,#888)" stroke-dasharray="4 3"/><path d="${path(1)}" fill="none" stroke="var(--c1)" stroke-width="2"/><text x="${w - R + 6}" y="${(sy(pts[pts.length - 1][1]) + 4).toFixed(1)}">${esc(VIZ.fmtBig(pts[pts.length - 1][1]))}</text><text x="${L}" y="${H - 4}">${esc(pts[0][0])}</text><text x="${w - R}" y="${H - 4}" text-anchor="end">${esc(pts[pts.length - 1][0])}</text></svg><div class="legend"><div><i style="background:var(--c1)"></i>${DL('value', 'değer')}</div><div><i style="background:var(--fg2,#888)"></i>${DL('cost', 'maliyet')}</div></div>`; }
+  return `<svg class="chart" viewBox="0 0 ${w} ${H}" style="height:${H}px;width:100%"><path d="${path(2)}" fill="none" stroke="var(--fg2)" stroke-dasharray="4 3"/><path d="${path(1)}" fill="none" stroke="var(--c1)" stroke-width="2"/><text x="${w - R + 6}" y="${(sy(pts[pts.length - 1][1]) + 4).toFixed(1)}">${esc(VIZ.fmtBig(pts[pts.length - 1][1]))}</text><text x="${L}" y="${H - 4}">${esc(pts[0][0])}</text><text x="${w - R}" y="${H - 4}" text-anchor="end">${esc(pts[pts.length - 1][0])}</text></svg><div class="legend"><div><i style="background:var(--c1)"></i>${DL('value', 'değer')}</div><div><i style="background:var(--fg2)"></i>${DL('cost', 'maliyet')}</div></div>`; }
 document.addEventListener('click', ev => {
   const ed = ev.target.closest('[data-ci-edit]'), del = ev.target.closest('[data-ci-del]'), row = ev.target.closest('#dlx-content tr[data-ci]'); if (!ed && !del && !row) return; ev.stopPropagation();
   const p = state.sheet && state.packages.find(q => q.id === state.sheet.id); if (!p) return;
@@ -813,6 +835,99 @@ function dlOutlookHTML(p) {
 { const _rs = renderSheet; renderSheet = function () { _rs(); const w = state.sheet; if (!w || w.type !== 'pkg') return; const p = state.packages.find(q => q.id === w.id); if (!p) return; const grid = $('sheet').querySelector('.grid'); if (!grid) return;
     if (!$('dlx-content')) { const anchor = $('dlx-hist'); const h = dlContentHTML(p); if (anchor && h) anchor.insertAdjacentHTML('afterend', h); }
     if (p.status !== 'closed' && !$('dlx-outlook')) try { grid.insertAdjacentHTML('beforeend', dlOutlookHTML(p)); } catch (e) { console.error(e); } }; }
+
+
+/* ================= Phase 7: calibrated forecast, model track record ================= */
+state.hooks.unshift(() => { if (!state.dbOk || state.__dlxCalSub) return; state.__dlxCalSub = true;
+  state.db.doc('model/calib').onSnapshot(s => { const c = s.exists ? s.data() : null; E.setCalib(c); state.dlxCalib = c; try { SCORE_MEMO = { inst: null, key: '', scored: null }; } catch (e) { } state.dlxSim = null; renderAll(); }, () => { }); });
+const dlCalDf = () => { const c = state.dlxCalib; const d = c && c.stats && c.stats.TRY && c.stats.TRY.df; return d && isFinite(d) ? d : 5; };
+{ const g = GROUPS_NAV.TODAY; if (!g.some(([k]) => k === 'MODEL')) g.push(['MODEL', 'Model']);
+  document.querySelector('main').insertAdjacentHTML('beforeend', `<section class="view" id="view-MODEL" hidden><div class="grid" id="mdl-grid"></div></section>`); }
+function dlVerdict(s) { if (!s || s.slope === null) return [DL('not enough data', 'yetersiz veri'), 'src']; if (s.scale >= 0.6) return [DL('works', 'işe yarıyor'), 'ok']; if (s.scale > 0.05) return [DL('weak — reduced', 'zayıf — azaltıldı'), 'warn']; return [DL('no power — switched off', 'gücü yok — kapatıldı'), 'bad']; }
+function renderModel() { if (state.view !== 'MODEL') return; const c = state.dlxCalib, el = $('mdl-grid'); if (!el) return;
+  const nameS = { rev: DL('Short-term reversal (RSI, 20-day average)', 'Kısa vadeli dönüş (RSI, 20 günlük ortalama)'), mom: DL('Momentum (12-1 and 6-1 months)', 'Momentum (12-1 ve 6-1 ay)'), trend: DL('Trend (above / below the 200-day average)', 'Trend (200 günlük ortalamanın üstü / altı)') };
+  const mk = { TRY: DL('Borsa İstanbul', 'Borsa İstanbul'), USD: DL('US shares', 'ABD hisseleri') }, hL = { 21: DL('1 month', '1 ay'), 63: DL('3 months', '3 ay'), 126: DL('6 months', '6 ay') };
+  if (!c || !c.ok) { el.innerHTML = `<div class="panel wide"><h2>${DL('Model track record', 'Model karnesi')}</h2><div class="body"><p class="hint">${DL('The model has not been tested yet: it needs at least 300 trading days of history per share. The nightly update fills ten years of history step by step; the test then runs by itself.', 'Model henüz test edilmedi: hisse başına en az 300 işlem günü geçmiş gerekiyor. Gece güncellemesi on yıllık geçmişi adım adım dolduruyor; test ardından kendiliğinden çalışıyor.')}</p></div></div>`; return; }
+  el.innerHTML = Object.entries(c.stats).map(([ccy, st]) => { const h1 = st.horizons[21] || {}, h3 = st.horizons[63] || {}, h6 = st.horizons[126] || {};
+    return `<div class="panel wide"><h2>${DL('Model track record', 'Model karnesi')} — ${esc(mk[ccy] || ccy)} <span class="sub">${DL('walk-forward test', 'ileriye dönük test')} · ${esc(dlDate(st.from))} – ${esc(dlDate(st.to))} · ${fmtN(st.stocks, 0)} ${DL('shares', 'hisse')} · ${fmtN(st.obs, 0)} ${DL('forecasts checked', 'tahmin kontrol edildi')}</span></h2><div class="body">
+      <div class="tiles">${[[DL('Hit rate, 3 months', 'İsabet oranı, 3 ay'), h3.hit != null ? dlN(h3.hit, 1) + '%' : '—', DL('right direction vs. the average share (50% = coin toss)', 'ortalama hisseye göre doğru yön (%50 = yazı tura)')], [DL('Rank IC, 3 months', 'Sıra korelasyonu (IC), 3 ay'), dlN(h3.ic, 3), `t = ${dlN(h3.icT, 1)} · ${DL('above 0.05 is good on Wall Street', 'Wall Street’te 0,05 üstü iyi sayılır')}`], [DL('Top − bottom fifth, a year', 'En iyi − en kötü beşte bir, yıllık'), P(h3.spreadAnn), DL('long the model’s top 20%, short its bottom 20%', 'modelin ilk %20’si alınıp son %20’si açığa satılsaydı')], [DL('90% band held', '%90 bandın tuttuğu oran'), `${dlN(h1.coverage90, 0)}% · ${dlN(h3.coverage90, 0)}% · ${dlN(h6.coverage90, 0)}%`, DL('1 · 3 · 6 months, before correction', '1 · 3 · 6 ay, düzeltme öncesi')], [DL('Fat tails', 'Kalın kuyruk'), `df ${dlN(st.df, 1)}`, DL('lower = more extreme days than a normal curve', 'düşük = normal eğriden daha fazla uç gün')]].map(([l, v, s]) => `<div class="tile"><div class="lbl">${l}</div><div class="val" style="font-size:18px">${v}</div><div class="hint" style="font-size:11px">${s}</div></div>`).join('')}</div>
+      <h4 class="hint" style="margin:14px 0 4px">${DL('Signals: what the history says, and the weight the forecast now gives each', 'Sinyaller: geçmiş ne diyor ve tahmin artık her birine ne ağırlık veriyor')}</h4>
+      <table><tr><th class="l">${DL('Signal', 'Sinyal')}</th><th>${DL('Realised / predicted', 'Gerçekleşen / öngörülen')}</th><th>${DL('t-statistic', 't-istatistiği')}</th><th>${DL('Weight used', 'Kullanılan ağırlık')}</th><th class="l">${DL('Verdict', 'Sonuç')}</th></tr>
+      ${Object.entries(st.signals).map(([k, s]) => { const [v, cls] = dlVerdict(s); return `<tr><td class="l txt">${esc(nameS[k] || k)}</td><td>${s.slope === null ? '—' : dlN(s.slope, 2)}</td><td>${dlN(s.t, 1)}</td><td><b>${dlN(s.scale * 100, 0)}%</b></td><td class="l"><span class="pill ${cls}">${esc(v)}</span></td></tr>`; }).join('')}
+      <tr><td class="l txt">${DL('Value (earnings yield, book value)', 'Değer (kâr verimi, defter değeri)')}</td><td>—</td><td>—</td><td><b>100%</b></td><td class="l"><span class="pill src">${DL('not testable: needs past balance sheets', 'test edilemiyor: geçmiş bilançolar gerekli')}</span></td></tr></table>
+      <h4 class="hint" style="margin:14px 0 4px">${DL('Risk bands, widened so that 9 in 10 outcomes fall inside', 'Risk bantları, sonuçların 10’da 9’u içinde kalacak şekilde genişletildi')}</h4>
+      <table><tr><th class="l">${DL('Horizon', 'Ufuk')}</th><th>${DL('Inside the 90% band (history)', '%90 bandın içinde (geçmiş)')}</th><th>${DL('Band multiplier now', 'Şimdiki bant çarpanı')}</th></tr>${(c.sig[ccy] || []).map(([h, m]) => `<tr><td class="l">${esc(hL[h] || h)}</td><td>${dlN((st.horizons[h] || {}).coverage90, 1)}%</td><td>×${dlN(m, 2)}</td></tr>`).join('')}</table>
+      <p class="note">${DL('How to read it: every month of the last five years, the model’s forecast was rebuilt with only the data known that day, then compared with what happened next (Fama-MacBeth regression, t-statistics corrected for overlapping periods). “Realised / predicted” 1.0 means the signal delivered exactly what the model assumed, 0 means nothing, below 0 the opposite. The weight used is that ratio shrunk by its statistical confidence. Updated every week.', 'Nasıl okunur: son beş yılın her ayında modelin tahmini yalnızca o gün bilinen verilerle yeniden kuruldu ve sonrasında gerçekleşenle karşılaştırıldı (Fama-MacBeth regresyonu, örtüşen dönemler için düzeltilmiş t-istatistikleri). “Gerçekleşen / öngörülen” 1,0 sinyalin modelin varsaydığını tam verdiği, 0 hiç vermediği, 0’ın altı tersini verdiği anlamına gelir. Kullanılan ağırlık bu oranın istatistiksel güvenle küçültülmüş hâlidir. Her hafta güncellenir.')}</p></div></div>`; }).join('');
+}
+state.hooks.push(v => { if (v === 'MODEL') renderModel(); });
+{ const _ra = renderAll; renderAll = function () { _ra.apply(this, arguments); try { renderModel(); } catch (e) { console.error(e); } }; }
+
+
+/* ---- fund at a glance (term-sheet strip) and section navigation ---- */
+// risk class 1–7 from annual volatility (the EU fund key-information scale)
+const dlRiskClass = vol => vol == null ? null : vol < 0.5 ? 1 : vol < 2 ? 2 : vol < 5 ? 3 : vol < 10 ? 4 : vol < 15 ? 5 : vol < 25 ? 6 : 7;
+function dlGlanceStats(p, sr) {
+  const S = state.S, v = pkgValue(p), inv = +p.total || 0, out = { nav: v, inv, pl: v - inv, ret: inv > 0 ? (v / inv - 1) * 100 : null };
+  if (sr && sr.length >= 2) { // deposit for the same money on the same days, daily returns of value ÷ invested (flows removed), max drawdown, beta to BIST 100
+    let dep = 0, prev = 0; for (const r of sr) { const fl = r.invested - prev; prev = r.invested; if (Math.abs(fl) > 0.5) dep += fl * (1 + E.benchNet(S, DX.daysBetween(r.date, today()), undefined, ctx().M) / 100); }
+    out.dep = dep; out.depRet = inv > 0 ? (dep / inv - 1) * 100 : null; out.alpha = out.ret != null && out.depRet != null ? out.ret - out.depRet : null;
+    const k = sr.map(r => r.invested > 0 ? r.value / r.invested : null), rr = [], dates = []; for (let i = 1; i < k.length; i++) if (k[i] > 0 && k[i - 1] > 0) { rr.push(k[i] / k[i - 1] - 1); dates.push(sr[i].date); }
+    const days = DX.daysBetween(sr[0].date, sr[sr.length - 1].date);
+    if (rr.length >= 10) { const m = rr.reduce((a, b) => a + b, 0) / rr.length, sd = Math.sqrt(rr.reduce((a, b) => a + (b - m) ** 2, 0) / (rr.length - 1)); out.vol = sd * Math.sqrt(252) * 100;
+      const annR = days >= 30 && out.ret != null ? (Math.pow(1 + out.ret / 100, 365 / days) - 1) * 100 : null, annD = days >= 30 && out.depRet != null ? (Math.pow(1 + out.depRet / 100, 365 / days) - 1) * 100 : null;
+      out.annRet = annR; out.sharpe = annR != null && annD != null && out.vol > 0.5 ? (annR - annD) / out.vol : null;
+      const xc = new Map(((state.map.XU100 || state.inst.XU100 || {}).closes || []).map(r => [r[0], +r[1]])), px = [], py = []; for (let i = 1; i < dates.length; i++) { const a = xc.get(dates[i - 1]), b = xc.get(dates[i]); if (a > 0 && b > 0) { px.push(b / a - 1); py.push(rr[i]); } }
+      if (px.length >= 10) { const mx = px.reduce((a, b) => a + b, 0) / px.length, my = py.reduce((a, b) => a + b, 0) / py.length; let c = 0, vx = 0; for (let i = 0; i < px.length; i++) { c += (px[i] - mx) * (py[i] - my); vx += (px[i] - mx) ** 2; } out.beta = vx > 0 ? c / vx : null; } }
+    let peak = -Infinity, mdd = 0; for (const x of k) if (x > 0) { peak = Math.max(peak, x); mdd = Math.min(mdd, x / peak - 1); } out.mdd = mdd * 100; out.days = days; }
+  try { const md = dlModel(p, 21), mo = dlMoments(md.items, md.detAt, 21); if (md.items.length) { const mc = dlMonteCarlo(md.items.map(it => ({ expo: it.expo, mu: Math.log(Math.max(1e-6, it.mult)) / md.t, sig: it.sigA, load: it.load, idio: it.idio })), md.detAt, 21, { n: 1500 }); out.var1m = Math.max(0, mc.var95); out.es1m = Math.max(0, mc.es95); } else out.var1m = 0; out.volFwd = md.total0 > 0 ? mo.sd / md.total0 * Math.sqrt(365 / 21) * 100 : null;
+    const m12 = dlModel(p, 365), mo12 = dlMoments(m12.items, m12.detAt, 365); out.exp12 = m12.total0 > 0 ? (mo12.mean / m12.total0 - 1) * 100 : null; out.dep12 = E.benchNet(state.S, 365, undefined, ctx().M); } catch (e) { }
+  out.risk = dlRiskClass(out.volFwd ?? out.vol);
+  return out;
+}
+function dlGlanceHTML(p) { return `<div class="panel wide dlx-glance" id="dlx-glance"><div class="body" id="dlx-glance-body">${dlGlanceBody(p, null)}</div></div>`; }
+function dlGlanceBody(p, sr) {
+  const g = dlGlanceStats(p, sr), bl = dlBench(), sgn = v => v == null ? '' : v >= 0 ? 'up' : 'down', pts = v => v == null ? '—' : `${v >= 0 ? '+' : ''}${dlN(v, 1)} ${DL('pts', 'puan')}`;
+  const riskWords = [null, DL('very low', 'çok düşük'), DL('low', 'düşük'), DL('low–medium', 'düşük–orta'), DL('medium', 'orta'), DL('medium–high', 'orta–yüksek'), DL('high', 'yüksek'), DL('very high', 'çok yüksek')];
+  const cell = (lab, val, sub, cls = '', tip = '') => `<div class="gl-cell"${tip ? ` title="${esc(tip)}"` : ''}><div class="gl-lab">${lab}</div><div class="gl-val ${cls}">${val}</div>${sub ? `<div class="gl-sub">${sub}</div>` : ''}</div>`;
+  const risk = g.risk ? `<span class="gl-risk">${[1, 2, 3, 4, 5, 6, 7].map(i => `<i class="${i === g.risk ? 'on' : ''}">${i}</i>`).join('')}</span>` : '—';
+  let say = [];
+  if (g.alpha != null) say.push(g.alpha >= 0 ? DL(`The fund is <b class="up">${pts(g.alpha)}</b> ahead of the ${bl} since the start.`, `Fon başlangıçtan beri ${bl}’ın <b class="up">${pts(g.alpha)}</b> önünde.`) : DL(`The fund is <b class="down">${pts(-g.alpha).replace('+', '')}</b> behind the ${bl} since the start.`, `Fon başlangıçtan beri ${bl}’ın <b class="down">${pts(-g.alpha).replace('+', '')}</b> gerisinde.`));
+  if (g.exp12 != null) say.push(DL(`Model expects ${fmtPct(g.exp12)} over the next 12 months (deposit ${fmtPct(g.dep12)}).`, `Model önümüzdeki 12 ay için ${fmtPct(g.exp12)} bekliyor (mevduat ${fmtPct(g.dep12)}).`));
+  if (g.var1m != null && g.nav > 0) say.push(DL(`In a bad month (1 in 20) the fund could lose about ${T(g.var1m)}.`, `Kötü bir ayda (20’de 1) fon yaklaşık ${T(g.var1m)} kaybedebilir.`));
+  return `<div class="gl-head"><div><div class="gl-lab">${DL('Net asset value', 'Net varlık değeri')} · NAV</div><div class="gl-nav">${T(g.nav)}</div><div class="gl-sub"><span class="${sgn(g.pl)}">${g.pl >= 0 ? '+' : ''}${T(g.pl)} · ${fmtPct(g.ret)}</span> ${DL('since the start', 'başlangıçtan beri')}${g.days ? ` · ${g.days} ${DL('days', 'gün')}` : ''}</div></div><div class="gl-say">${say.join(' ')}</div></div>
+  <div class="gl-row">${cell(DL('Alpha vs deposit', 'Mevduata göre alfa'), pts(g.alpha), g.depRet != null ? `${bl} ${fmtPct(g.depRet)}` : '', sgn(g.alpha), DL('Fund return minus what the same money would have earned in a deposit on the same days', 'Fonun getirisi eksi aynı paranın aynı günlerde mevduatta kazanacağı'))}
+    ${cell(DL('Annualised', 'Yıllık'), g.annRet != null ? fmtPct(g.annRet) : '—', DL('return a year', 'yıllık getiri'), sgn(g.annRet))}
+    ${cell(DL('Volatility', 'Oynaklık'), g.vol != null ? dlN(g.vol, 1) + '%' : g.volFwd != null ? dlN(g.volFwd, 1) + '%' : '—', g.vol != null ? DL('a year, realised', 'yıllık, gerçekleşen') : DL('a year, expected', 'yıllık, beklenen'), '', DL('How much the value swings: about 2 in 3 years end within ± this much', 'Değerin ne kadar dalgalandığı: yılların yaklaşık 3’te 2’si ± bu kadar içinde biter'))}
+    ${cell('Sharpe', g.sharpe != null ? dlN(g.sharpe, 2) : '—', DL('excess return ÷ risk', 'fazla getiri ÷ risk'), g.sharpe == null ? '' : g.sharpe >= 0.5 ? 'up' : g.sharpe < 0 ? 'down' : '', DL('Above 1 is very good, 0.5–1 good, below 0 worse than the deposit', '1 üstü çok iyi, 0,5–1 iyi, 0 altı mevduattan kötü'))}
+    ${cell(DL('Max drawdown', 'En büyük düşüş'), g.mdd != null ? fmtPct(g.mdd) : '—', DL('from a peak', 'zirveden'), g.mdd < -10 ? 'down' : '')}
+    ${cell(DL('Beta to BIST 100', 'BIST 100 betası'), g.beta != null ? dlN(g.beta, 2) : '—', DL('1 = moves with the index', '1 = endeksle birlikte hareket'))}
+    ${cell(DL('1-month VaR 95%', '1 aylık VaR %95'), g.var1m != null ? T(g.var1m) : '—', g.es1m ? DL(`worst 5% average ${T(g.es1m)}`, `en kötü %5 ortalaması ${T(g.es1m)}`) : DL('loss in a bad month', 'kötü bir ayda kayıp'), '', DL('Value at Risk: the loss exceeded in only 1 month out of 20; below it, the average loss in those worst months (expected shortfall). Fat tails included.', 'Riske Maruz Değer: 20 aydan yalnızca 1’inde aşılan kayıp; altında, o en kötü aylardaki ortalama kayıp (beklenen açık). Kalın kuyruk dahil.'))}
+    ${cell(DL('Risk class', 'Risk sınıfı'), risk, g.risk ? riskWords[g.risk] : '', '', DL('1–7 scale from volatility, as on European fund information sheets', 'Avrupa fon bilgi formlarındaki gibi oynaklığa göre 1–7 ölçeği'))}</div>`;
+}
+const DL_SECTIONS = [['dlx-glance', ['Summary', 'Özet']], ['dlx-content', ['Holdings', 'İçerik']], ['dlx-hist', ['Performance', 'Performans']], ['dlx-ledger', ['Ledger', 'Defter']], ['dlx-viop', ['Futures', 'VİOP']], ['dlx-sim', ['Simulation', 'Simülasyon']], ['dlx-plan', ['Plan', 'Plan']], ['dlx-stress', ['Stress', 'Stres']], ['dlx-outlook', ['Outlook', 'Görünüm']]];
+{ const _rs = renderSheet; renderSheet = function () { _rs(); const w = state.sheet; if (!w || w.type !== 'pkg') return; const p = state.packages.find(q => q.id === w.id); if (!p) return; const sh = $('sheet'), grid = sh.querySelector('.grid'); if (!grid || $('dlx-glance')) return;
+    try { grid.insertAdjacentHTML('afterbegin', dlGlanceHTML(p)); dlFillGlance(p); } catch (e) { console.error(e); }
+    const nav = DL_SECTIONS.filter(([id]) => $(id)).map(([id, l]) => `<button class="quiet" data-dlx-jump="${id}">${DL(l[0], l[1])}</button>`).join('');
+    const bar = sh.querySelector('.sheet-bar'); if (bar && !$('dlx-nav')) bar.insertAdjacentHTML('afterend', `<nav id="dlx-nav" class="dlx-nav">${nav}</nav>`); }; }
+function dlFillGlance(p) { const el = $('dlx-glance-body'); if (!el) return; try { const closesOf = s => f4LongCloses(s) || (state.map[s] && state.map[s].closes) || (state.inst[s] && state.inst[s].closes) || []; const sr = DX.valueSeries(p, { today: today(), closesOf, ccyOf: s => (state.map[s] || state.inst[s] || {}).ccy, fxAt: dlFx, settleAt: dlSettleAt }); el.innerHTML = dlGlanceBody(p, sr); } catch (e) { console.error(e); } }
+{ const _dh = dlDrawHistory; dlDrawHistory = function (p) { _dh(p); dlFillGlance(p); }; }
+document.addEventListener('click', e => { const b = e.target.closest('[data-dlx-jump]'); if (!b) return; const t = $(b.dataset.dlxJump); if (t) { t.scrollIntoView({ behavior: 'smooth', block: 'start' }); document.querySelectorAll('#dlx-nav button').forEach(x => x.classList.toggle('active', x === b)); } });
+document.head.insertAdjacentHTML('beforeend', `<style>
+.dlx-nav{position:sticky;top:0;z-index:3;display:flex;gap:4px;flex-wrap:wrap;padding:6px 14px;background:var(--panel);border-bottom:1px solid var(--rule)}
+.dlx-nav button{font-size:12px;padding:3px 9px;border-radius:999px}.dlx-nav button.active{background:var(--sel);color:var(--accent)}
+.dlx-glance{border-top:3px solid var(--accent)}
+.dlx-glance .gl-head{display:grid;grid-template-columns:minmax(220px,auto) 1fr;gap:18px;align-items:end;padding-bottom:12px;border-bottom:1px solid var(--rule)}
+.dlx-glance .gl-nav{font-family:var(--mono);font-size:28px;font-weight:600;letter-spacing:-.5px;font-variant-numeric:tabular-nums;line-height:1.15}
+.dlx-glance .gl-say{font-size:13.5px;line-height:1.5;color:var(--fg2)}
+.dlx-glance .gl-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0;margin-top:10px}
+.dlx-glance .gl-cell{padding:8px 10px;border-right:1px solid var(--rule)}.dlx-glance .gl-cell:last-child{border-right:0}
+.dlx-glance .gl-lab{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.dlx-glance .gl-val{font-family:var(--mono);font-size:17px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:2px}
+.dlx-glance .gl-sub{font-size:11.5px;color:var(--muted);margin-top:1px}
+.gl-risk{display:inline-flex;gap:2px}.gl-risk i{font-style:normal;font-size:11px;width:16px;height:18px;display:inline-grid;place-items:center;border:1px solid var(--rule);color:var(--muted)}
+.gl-risk i.on{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+@media (max-width:640px){.dlx-glance .gl-head{grid-template-columns:1fr}.dlx-glance .gl-cell{border-right:0;border-bottom:1px solid var(--rule)}}
+</style>`);
 
 Object.assign(TR, { 'GitHub version · prices update about every 30–60 minutes on weekdays · your data stays in this browser': 'GitHub sürümü · fiyatlar iş günleri yaklaşık 30–60 dakikada bir güncellenir · verileriniz bu tarayıcıda kalır',
   'Glossary': 'Sözlük', 'Add fund from external investment report': 'Dış yatırım raporundan fon ekle', 'TRY time deposit': 'TL vadeli mevduat', 'Money-market fund': 'Para piyasası fonu', 'BIST 100 index fund': 'BIST 100 endeks fonu', 'USD deposit': 'USD mevduat', 'Inflation (CPI) — value kept': 'Enflasyon (TÜFE) — korunan değer' });
