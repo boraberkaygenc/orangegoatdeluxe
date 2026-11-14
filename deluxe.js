@@ -39,16 +39,18 @@ const DELUXE = (() => {
       else if (t.type === 'dep-close') { const d = deps.get(t.depId); if (!d || !d.open) { warn.push(`${t.date}: deposit ${t.depId} is not open`); continue; }
         const it = t.interest !== undefined && t.interest !== null && t.interest !== '' ? { net: r2(+t.interest * (1 - d.stopaj / 100)), gross: +t.interest } : depositInterest(d, t.date);
         d.open = false; d.closed = t.date; d.interestNet = it.net; cash[d.ccy] += d.principal + it.net - cost; }
-      else if (t.type === 'viop-open') { cash.TRY -= (+t.margin || 0) * (+t.qty || 0) + cost; vp.set(t.posId, { id: t.posId, code: t.code, side: t.side === 'short' ? 'short' : 'long', qty: +t.qty || 0, price: +t.price, mult: +t.mult || 1, margin: +t.margin || 0, date: t.date, expiry: t.expiry || null, under: t.under || null, open: true }); }
+      else if (t.type === 'viop-open') { cash.TRY -= (+t.margin || 0) * (+t.qty || 0) + cost; vp.set(t.posId, { id: t.posId, code: t.code, side: t.side === 'short' ? 'short' : 'long', qty: +t.qty || 0, price: +t.price, mult: +t.mult || 1, margin: +t.margin || 0, date: t.date, expiry: t.expiry || null, under: t.under || null, ccy: t.ccy === 'USD' ? 'USD' : 'TRY', open: true }); }
       else if (t.type === 'viop-close') { const v = vp.get(t.posId); if (!v || !v.open) { warn.push(`${t.date}: futures position ${t.posId} is not open`); continue; }
-        const pnl = (v.side === 'short' ? -1 : 1) * ((+t.price) - v.price) * v.mult * v.qty; v.open = false; v.closed = t.date; v.closePrice = +t.price; v.pnl = r2(pnl); cash.TRY += v.margin * v.qty + pnl - cost; }
+        const pnl = (v.side === 'short' ? -1 : 1) * ((+t.price) - v.price) * v.mult * v.qty * (v.ccy === 'USD' && fxAt ? (fxAt(t.date) || 1) : 1); v.open = false; v.closed = t.date; v.closePrice = +t.price; v.pnl = r2(pnl); cash.TRY += v.margin * v.qty + pnl - cost; }
+      // v2.1: a trade or deposit recorded in the fund means the money existed: a shortfall is booked as money in on that date (implicit funding)
+      if (t.type !== 'out' && t.type !== 'in') for (const k of CCYS) if (cash[k] < -0.005) { const add = -cash[k]; cash[k] = 0; flows.push({ date: t.date, amount: r2(k === 'USD' ? add * (fxAt ? fxAt(t.date) : 0) : add), implicit: true, ccy: k, native: r2(add) }); }
       for (const k of CCYS) if (cash[k] < -0.005) { warn.push(`${t.date}: ${k} cash below zero (${r2(cash[k])}) after ${t.type}`); }
     }
     const open = [...deps.values()].filter(d => d.open).map(d => ({ ...d, accrued: depositInterest(d, asOf) }));
     const closed = [...deps.values()].filter(d => !d.open);
     const fx = fxAt ? fxAt(asOf) : 0, toTRY = (v, c) => c === 'USD' ? v * fx : v;
-    const viop = [...vp.values()].filter(v => v.open).map(v => { const s = settleAt ? settleAt(v.code, asOf) : null, px = s > 0 && (!v.date || asOf >= v.date) ? s : v.price, pnl = (v.side === 'short' ? -1 : 1) * (px - v.price) * v.mult * v.qty;
-      return { ...v, last: px, pnl: r2(pnl), equity: r2(v.margin * v.qty + pnl), notional: r2(px * v.mult * v.qty) }; });
+    const viop = [...vp.values()].filter(v => v.open).map(v => { const s = settleAt ? settleAt(v.code, asOf) : null, px = s > 0 && (!v.date || asOf >= v.date) ? s : v.price, k = v.ccy === 'USD' ? (fx || 1) : 1, pnl = (v.side === 'short' ? -1 : 1) * (px - v.price) * v.mult * v.qty * k;
+      return { ...v, last: px, pnl: r2(pnl), equity: r2(v.margin * v.qty + pnl), notional: r2(px * v.mult * v.qty * k) }; });
     const viopClosed = [...vp.values()].filter(v => !v.open);
     const value = r2(toTRY(cash.TRY, 'TRY') + toTRY(cash.USD, 'USD') + open.reduce((a, d) => a + toTRY(d.principal + d.accrued.net, d.ccy), 0) + viop.reduce((a, v) => a + v.equity, 0));
     return { cash: { TRY: r2(cash.TRY), USD: r2(cash.USD) }, open, closed, viop, viopClosed, flows, netIn: r2(flows.reduce((a, f) => a + f.amount, 0)), value, warn };
@@ -185,7 +187,7 @@ const DELUXE = (() => {
       const b = isFinite(q.beta) ? Math.max(0, Math.min(2, q.beta)) : 1; let ch = 0;
       if (q.kind === 'tr_eq') ch = scen.bist * b + scen.fxUp * 0.5 + (scen.key === 'rate5' ? 0 : 0);
       else if (q.kind === 'us_eq' || q.kind === 'usd_cash' || q.kind === 'usd_dep') ch = scen.fxUp;
-      else if (q.kind === 'gold') ch = scen.fxUp * 0.95;
+      else if (q.kind === 'gold' || q.kind === 'cmdty') ch = scen.fxUp * 0.95;
       else if (q.kind === 'try_cash') ch = 0;
       else if (q.kind === 'try_dep') ch = q.demand ? scen.rate / 100 * 0.25 : 0;
       else if (q.kind === 'try_mm') ch = scen.rate / 100 * 0.25;

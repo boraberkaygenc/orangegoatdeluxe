@@ -163,14 +163,17 @@ export function createData({ db, put, log, inbox, coll, ist, config, issuePicks,
         db.docs[k] = stamp(y, x.cls === 'TR_EQ' || x.cls === 'TR_ETF' || x.symbol === 'XU100' ? 'Yahoo Finance (BIST, ~15 min delayed)' : 'Yahoo Finance', q.pe !== undefined ? 'quote' : 'spark', q.at); okSet.add(x.symbol); setP({ done: progress.done + 1 });
       }
       // 2) per-symbol history (full) or chart fallback for what the batch missed
-      const queue = full ? ya.slice() : missing; let idx = 0;
+      // quick runs also give new or thin instruments a year of history (at most 150 a run, once a day each), so they need not wait for the nightly run
+      const day0 = new Date().toISOString().slice(0, 10), mk = new Set(missing.map(m => m[0])), thin = full ? [] : ya.filter(([k, x]) => !mk.has(k) && barsOf(db.docs[k] || x).length < 60 && (db.docs[k] || x).histTriedAt !== day0).slice(0, 150);
+      const queue = full ? ya.slice() : missing.concat(thin); let idx = 0;
       if (queue.length) setP({ phase: full ? 'history' : 'quotes (fallback)' });
       async function work() {
         while (idx < queue.length) {
           const [k, x] = queue[idx++];
-          try { const got = await yahooChart(yahooSymbol(x), full ? '1y' : '5d'); const y = { ...(db.docs[k] || x) };
+          const want1y = full || barsOf(db.docs[k] || x).length < 60;
+          try { const got = await yahooChart(yahooSymbol(x), want1y ? '1y' : '5d'); const y = { ...(db.docs[k] || x) }; if (!full && want1y) y.histTriedAt = day0;
             y.bars = full ? mergeBars([], got.bars) : mergeBars(barsOf(y), got.bars); if (got.splits && got.splits.length) y.splits = got.splits.slice(-5);
-            if (got.price) y.price = got.price; if (got.name && (!y.name || y.name === y.symbol)) y.name = got.name; if (full) keepSeries(x, got.bars, got.splits, srcLabel(x)); derive(y); if (full) integrity(y);
+            if (got.price) y.price = got.price; if (got.name && (!y.name || y.name === y.symbol)) y.name = got.name; if (full || want1y) keepSeries(x, got.bars, got.splits, srcLabel(x)); derive(y); if (full) integrity(y);
             db.docs[k] = stamp(y, srcLabel(x), okSet.has(x.symbol) ? (db.docs[k].priceSrc || 'chart') : 'chart', got.at); okSet.add(x.symbol); }
           catch (e) { const why = errMsg(e); if (!okSet.has(x.symbol)) { fails.push(x.symbol); if (!firstErr) firstErr = `${x.symbol}: ${why}`; } db.docs[k] = { ...(db.docs[k] || x), fetchError: why.slice(0, 80), fetchErrorAt: new Date().toISOString() }; }
           setP({ done: progress.done + 1 }); await sleep(full ? 200 : 150);
@@ -180,6 +183,7 @@ export function createData({ db, put, log, inbox, coll, ist, config, issuePicks,
       if (queue.length) mark('Yahoo history', fails.length < Math.max(3, queue.length * 0.5), firstErr, { rows: queue.length - fails.length, partial: fails.length > 0 });
       // 2b) Deluxe: gram gold (TRY) = COMEX gold (USD/oz) × USD/TRY ÷ 31.1035, day by day
       try { const g = deriveGold(); if (g) { okSet.add('GAUTRY'); mark('Gold (derived)', true); } } catch (e) { log('gold:', errMsg(e)); }
+      try { if (deriveSilver()) okSet.add('GAGTRY'); } catch (e) { log('silver:', errMsg(e)); }
       // 3) TEFAS
       if (tf.length) setP({ phase: 'TEFAS funds' });
       for (const [k, x] of tf) {
@@ -216,8 +220,10 @@ export function createData({ db, put, log, inbox, coll, ist, config, issuePicks,
     })().finally(() => { running = null; });
     return running;
   }
-  function deriveGold() {
-    const gk = 'instruments/GAUTRY', xk = 'instruments/XAUUSD', fk = 'instruments/USD_TRY', g0 = db.docs[gk], xa = db.docs[xk], fx = db.docs[fk];
+  function deriveGold() { return deriveGram('instruments/GAUTRY', 'instruments/XAUUSD', 'Derived: COMEX gold (Yahoo GC=F) × USD/TRY ÷ 31.1035'); }
+  function deriveSilver() { return deriveGram('instruments/GAGTRY', 'instruments/XAGUSD', 'Derived: COMEX silver (Yahoo SI=F) × USD/TRY ÷ 31.1035'); }
+  function deriveGram(gk, xk, src) {
+    const fk = 'instruments/USD_TRY', g0 = db.docs[gk], xa = db.docs[xk], fx = db.docs[fk];
     if (!g0 || !xa || !fx || !(xa.price > 0) || !(fx.price > 0)) return false;
     const OZ = 31.1035, fxC = Array.isArray(fx.closes) ? fx.closes : [], xaRows = barsOf(xa), fxBy = new Map(fxC.map(r => [r[0], r[1]]));
     // walk both series in date order so a day without a USD/TRY close uses the previous one
@@ -225,7 +231,7 @@ export function createData({ db, put, log, inbox, coll, ist, config, issuePicks,
     for (const d of all) { const f0 = fxBy.get(d); if (f0 > 0) lastFx = f0; const r = xaBy.get(d); if (!r || !(lastFx > 0) || !(r[1] > 0)) continue;
       const k = lastFx / OZ; bars.push([d, r[1] * k, r[2] ? r[2] * k : null, r[3] ? r[3] * k : null, null]); }
     const y = { ...g0, price: xa.price * fx.price / OZ, asOf: [xa.asOf, fx.asOf].filter(Boolean).sort()[0] || null, bars: bars.slice(-262) };
-    derive(y); db.docs[gk] = stamp(y, 'Derived: COMEX gold (Yahoo GC=F) × USD/TRY ÷ 31.1035', 'derived', null); return true;
+    derive(y); db.docs[gk] = stamp(y, src, 'derived', null); return true;
   }
   function updateHealth() {
     if (health2) { try { return health2.update(); } catch (e) { log('health:', e.message); } }

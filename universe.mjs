@@ -54,6 +54,24 @@ export function screenerRows(rows, minMcap = DEFAULT_US_MIN_MCAP) {
   return out;
 }
 
+// commodities: symbol, Yahoo futures code, name; VİOP metal underlyings (XAG/USD, XPT/USD …) map onto these symbols
+export const CMDTY = [
+  { symbol: 'XAUUSD', yahoo: 'GC=F', name: 'Gold (USD per troy ounce)', sub: 'gold', unit: 'oz' },
+  { symbol: 'XAGUSD', yahoo: 'SI=F', name: 'Silver (USD per troy ounce)', sub: 'silver', unit: 'oz' },
+  { symbol: 'XPTUSD', yahoo: 'PL=F', name: 'Platinum (USD per troy ounce)', sub: 'metal', unit: 'oz' },
+  { symbol: 'XPDUSD', yahoo: 'PA=F', name: 'Palladium (USD per troy ounce)', sub: 'metal', unit: 'oz' },
+  { symbol: 'XCUUSD', yahoo: 'HG=F', name: 'Copper (USD per pound)', sub: 'metal', unit: 'lb' },
+  { symbol: 'BRENT', yahoo: 'BZ=F', name: 'Brent crude oil (USD per barrel)', sub: 'energy', unit: 'bbl' },
+  { symbol: 'WTI', yahoo: 'CL=F', name: 'WTI crude oil (USD per barrel)', sub: 'energy', unit: 'bbl' },
+  { symbol: 'NATGAS', yahoo: 'NG=F', name: 'Natural gas (USD per MMBtu)', sub: 'energy', unit: 'MMBtu' },
+];
+// BIST-listed commodity funds (BYF); their own history is thin on Yahoo, so returns and risk come from the gram gold / silver series
+export const CMDTY_BYF = [
+  { symbol: 'GLDTR', name: 'QNB Portföy Altın BYF', sub: 'gold', proxy: 'GAUTRY' },
+  { symbol: 'ZGOLD', name: 'Ziraat Portföy Altın BYF', sub: 'gold', proxy: 'GAUTRY' },
+  { symbol: 'ISGLK', name: 'İş Portföy Altın Katılım BYF', sub: 'gold', proxy: 'GAUTRY' },
+  { symbol: 'GMSTR', name: 'QNB Portföy Gümüş BYF', sub: 'silver', proxy: 'GAGTRY' },
+];
 export function readStatic(dir) {
   const out = { us: [], usExt: [], bist: [], byf: [], tefas: [] };
   const lines = f => { try { return fs.readFileSync(path.join(dir, 'universe', f), 'utf8').split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith('#')); } catch (e) { return []; } };
@@ -111,7 +129,13 @@ export function createUniverse({ dir, db, put, log, inbox, tefasList, tefasHisto
     // Deluxe: gram gold in TRY, derived from COMEX gold (XAUUSD, a reference series) and USD/TRY — see data.mjs deriveGold
     if (on('uniGold')) want.set('GAUTRY', { symbol: 'GAUTRY', cls: 'TR_ETF', ccy: 'TRY', sector: 'Gold', sub: 'gold', name: 'Gold – gram (TRY, from XAU and USD/TRY)', derived: 'gold' });
     if (!db.docs['instruments/XAUUSD']) db.docs['instruments/XAUUSD'] = { symbol: 'XAUUSD', cls: 'MACRO', ccy: 'USD', name: 'Gold (COMEX futures, USD per troy ounce)', yahoo: 'GC=F', price: null, closes: [], addedAt: stamp };
-    if (on('uniTefas')) for (const r of U.tefas) want.set(r.code, { symbol: r.code, cls: 'TEFAS', ccy: 'TRY', sector: r.hy ? 'BIST equity index' : (r.sub === 'mm' ? 'Money market' : 'Mixed / other'), name: r.name, hy: !!r.hy, b51: !!r.b51, sub: r.sub || (r.hy ? 'equity' : 'other'), fee: r.fee ?? (r.hy ? 1.5 : 1.0) });
+    // Deluxe: commodities (front-month futures on Yahoo, USD), gram silver in TRY, and BIST-listed gold / silver funds (BYF)
+    if (on('uniCmdty')) {
+      for (const c of CMDTY) { const k = 'instruments/' + c.symbol, x = db.docs[k]; if (x && x.cls === 'MACRO') db.docs[k] = { ...x, ...c, cls: 'CMDTY' }; want.set(c.symbol, { ...c, cls: 'CMDTY', ccy: 'USD', sector: 'Commodities' }); }
+      want.set('GAGTRY', { symbol: 'GAGTRY', cls: 'TR_ETF', ccy: 'TRY', sector: 'Commodities', sub: 'silver', name: 'Silver – gram (TRY, from XAG and USD/TRY)', derived: 'silver' });
+      for (const f of CMDTY_BYF) want.set(f.symbol, { ...f, cls: 'TR_ETF', ccy: 'TRY', sector: 'Commodities', cmdtyFund: true });
+    }
+    if (on('uniTefas')) for (const r of U.tefas) want.set(r.code, { symbol: r.code, cls: 'TEFAS', ccy: 'TRY', sector: r.hy ? 'BIST equity index' : r.cmdtyFund ? 'Commodities' : (r.sub === 'mm' ? 'Money market' : 'Mixed / other'), cmdtyFund: !!r.cmdtyFund, name: r.name, hy: !!r.hy, b51: !!r.b51, sub: r.sub || (r.hy ? 'equity' : 'other'), fee: r.fee ?? (r.hy ? 1.5 : 1.0) });
     let added = 0, removed = 0; const dead = [], now = Date.now(), today = stamp.slice(0, 10);
     for (const [k, x] of Object.entries(db.docs)) {
       if (!k.startsWith('instruments/') || x.cls === 'MACRO') continue;
@@ -164,9 +188,10 @@ export function createUniverse({ dir, db, put, log, inbox, tefasList, tefasHisto
     const list = await tefasList(); if (!list || !list.length) throw new Error('empty TEFAS list');
     const type = f => String(f.type || ''), hisse = list.filter(f => /hisse/i.test(type(f)) && !/yabancı|yabanci/i.test(f.name || '')), mm = list.filter(f => /para piyasas/i.test(type(f))), other = list.filter(f => !hisse.includes(f) && !mm.includes(f) && /borçlanma|borclanma|serbest|değişken|degisken|karma|fon sepeti/i.test(type(f)));
     async function sized(arr, n, pre) { const cand = arr.slice().sort((a, b) => (b.r1y || 0) - (a.r1y || 0)).slice(0, pre); const out = []; for (const f of cand) { try { const h = await tefasHistory(f.code, 7); if (h && h.size) out.push({ ...f, size: h.size }); } catch (e) { } await sleep(350); } return out.sort((a, b) => b.size - a.size).slice(0, n); }
-    const H = await sized(hisse, 20, 60), M = await sized(mm, 5, 12), O = await sized(other, 15, 40);
+    const cmd = list.filter(f => /altın|altin|gümüş|gumus|kıymetli|kiymetli|emtia|maden/i.test(type(f) + ' ' + (f.name || '')));
+    const H = await sized(hisse, 20, 60), M = await sized(mm, 5, 12), O = await sized(other.filter(f => !cmd.includes(f)), 15, 40), C = await sized(cmd, 12, 30);
     const mk = (f, sub) => ({ code: f.code, name: f.name, hy: /yoğun|yogun/i.test(f.type + ' ' + f.name) || sub === 'equity', b51: sub === 'equity' && !/yoğun|yogun/i.test(f.type + ' ' + f.name), sub, size: f.size, type: f.type });
-    return [...H.map(f => mk(f, 'equity')), ...M.map(f => mk(f, 'mm')), ...O.map(f => mk(f, 'other'))];
+    return [...H.map(f => mk(f, 'equity')), ...M.map(f => mk(f, 'mm')), ...O.map(f => mk(f, 'other')), ...C.map(f => ({ ...mk(f, /gümüş|gumus/i.test(f.name) ? 'silver' : /altın|altin/i.test(f.name) ? 'gold' : 'cmdty'), cmdtyFund: true }))];
   }
   let running = null;
   function stale(days) { const u = current(); return !u || !u.refreshedAt || (Date.now() - new Date(u.refreshedAt)) / 864e5 > days; }
