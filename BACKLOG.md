@@ -3,7 +3,7 @@
 "build" denince yapılacaklar. Numarayla seçilebilir (ör. "build 1, 7, 15") veya "build hepsi".
 
 ## Sırada (kullanıcı seçti, 2026-11-14)
-7–15, 17–21, 23–53 — "build" dendiğinde bu sırayla yapılacak.
+7–15, 17–21, 23–54 — "build" dendiğinde bu sırayla yapılacak.
 (18: renk körlüğü seçeneği hariç. 22, 27’nin içinde.)
 
 
@@ -73,6 +73,16 @@
 51. **[sırada]** Kalem bazında geriye etkili düzeltme, her yerden kolay erişimle. Mevcut “Fon içeriği → Düzenle / Kaldır” (2026-11-13'te yayında) genişletilecek: fon kartındaki ve enstrüman sayfasındaki her kalemde Düzenle / Kaldır; yanlış eklenen VİOP'u hiç etki doğurmamış gibi silme; Midas vb. rapordan çekilen alımların tarih, adet, fiyat, komisyon düzeltmesi; mevduat vadesi, faiz, başlangıç tarihi düzeltmesi; değişiklik geçmişi (ne, ne zaman, eski → yeni) ve geri alma
 52. **[sırada]** Fonda “Para ekle” kaldırılacak: bir işlem girildiğinde o paranın zaten var olduğu kabul edilir (alım tutarı fona otomatik giriş sayılır, “yetersiz nakit” uyarısı çıkmaz); satış ve vade sonu paraları fon içinde nakit olarak kalır
 53. **[sırada]** Ana sayfada toplam varlık: bütün fonlar + fon dışı vadesiz mevduat birlikte; kırılım hisse / fon / emtia / mevduat / döviz / VİOP / nakit; her satır hem TL hem USD; ana sayfada “Para ekle” ile vadesiz mevduattaki (TL veya döviz) varlığın kaydedilmesi, düzenlenmesi ve silinmesi
+
+## Yapay zekâ asistanı (2026-11-14)
+54. **[sırada]** Claude'a bağlı sohbet penceresi: uygulamanın kullanımı ve yatırım aksiyonları hakkında soru-cevap, Türkçe, akışlı (yazarken görünen) yanıt.
+    - Bağlantı: Anthropic Claude API (claude.ai aboneliğinden ayrı, kullandıkça ödenen bir API anahtarı gerekir; anahtar platform.claude.com üzerinden alınır). Varsayılan model Claude Opus 5.5 (`claude-opus-5-5`); Ayarlar'dan Sonnet 5.5 / Haiku 5.5 seçilebilir. Reddedilen isteklerde sunucu tarafı yedek model (fallbacks) açık.
+    - Anahtarın saklanması: GitHub sürümünde yalnızca bu tarayıcıda (IndexedDB), depoya ve siteye asla yazılmaz; bilgisayar sürümünde config.json'da, sunucu üzerinden çağrılır.
+    - Kod: resmî Anthropic SDK (`@anthropic-ai/sdk`). Kurulum kullanıcı onayı gerektirir (kural: Node.js dışında kurulum için izin).
+    - Asistanın araçları (yalnızca okuma ve hesaplama): fonları ve defteri okuma, enstrüman bilgisi, simülasyon, plan, konsolide durum, stres testi, model karnesi, sözlük. İşlem önerisi yalnızca doldurulmuş form olarak açılır; kullanıcı kaydetmeden hiçbir şey değişmez.
+    - Gizlilik: soru sorulduğunda ilgili fon ve piyasa verisi Anthropic'e gönderilir; ilk kullanımda açık onay, Ayarlar'dan kapatılabilir; sohbet geçmişi yalnızca cihazda.
+    - Yanıtlar uygulamadaki rakamlara dayanır ve kaynağını gösterir; “yatırım tavsiyesi değildir” notu.
+    - Maliyet: soru başına yaklaşık birkaç cent (Opus 5.5: girdi $4, çıktı $20 / milyon token); Ayarlar'da aylık harcama sayacı ve üst sınır.
 
 ## Kullanıcının ekledikleri
 (boş)
