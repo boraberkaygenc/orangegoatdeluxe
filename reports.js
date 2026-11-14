@@ -123,10 +123,10 @@ async function renderPDF2(model, PDFLib) {
   model = DLX_PREP(model);
   const { PDFDocument, StandardFonts, rgb } = PDFLib, doc = await PDFDocument.create();
   doc.setTitle(`${model.title} — ${model.subtitle || ''}`); doc.setAuthor(PREPARED_BY(model)); doc.setCreator('Personal research'); doc.setSubject(String(model.kicker || ''));
-  const F = { r: await doc.embedFont(StandardFonts.TimesRoman), b: await doc.embedFont(StandardFonts.TimesRomanBold), i: await doc.embedFont(StandardFonts.TimesRomanItalic), bi: await doc.embedFont(StandardFonts.TimesRomanBoldItalic), c: await doc.embedFont(StandardFonts.Courier) };
+  const F = { r: await doc.embedFont(StandardFonts.Helvetica), b: await doc.embedFont(StandardFonts.HelveticaBold), i: await doc.embedFont(StandardFonts.HelveticaOblique), bi: await doc.embedFont(StandardFonts.HelveticaBoldOblique), c: await doc.embedFont(StandardFonts.Courier) };
   const clean = s => { let t = String(s ?? ''); for (const [a, b] of Object.entries(PDF_MAP)) t = t.split(a).join(b); return Array.from(t).map(ch => { try { F.r.encodeText(ch); return ch; } catch (_) { return '?'; } }).join(''); };
   const W = 595.28, H = 841.89, mL = 62, mR = 62, mT = 70, mB = 64, cw = W - mL - mR;
-  const ink = rgb(0, 0, 0), accent = rgb(0.10, 0.16, 0.34), bodySize = +model.bodySize || 10;
+  const ink = rgb(0.105, 0.102, 0.09), accent = rgb(0.76, 0.35, 0.0), bodySize = +model.bodySize || 10;
   // width without kerning: drawText emits unkerned strings, while widthOfTextAtSize applies kern pairs (Y-A, A-O …) and would under-measure
   const glyphCache = new Map();
   const tw = (t, f, s) => { let m = glyphCache.get(f); if (!m) glyphCache.set(f, m = new Map()); let w = 0; for (const ch of Array.from(t)) { let g = m.get(ch); if (g === undefined) { try { g = f.widthOfTextAtSize(ch, 1000); } catch (_) { g = 500; } m.set(ch, g); } w += g; } return w * s / 1000; };
@@ -343,8 +343,8 @@ function chartPNG(block, wPx, hPx) { // browser only: draw the exhibit on a canv
   if (typeof document === 'undefined' || !document.createElement) return null;
   try {
     const scale = 2, cv = document.createElement('canvas'); cv.width = wPx * scale; cv.height = hPx * scale; const g = cv.getContext('2d'); if (!g) return null;
-    g.scale(scale, scale); g.fillStyle = '#fff'; g.fillRect(0, 0, wPx, hPx); g.strokeStyle = '#000'; g.fillStyle = '#000'; g.lineWidth = 0.8; g.font = '9px "Times New Roman", serif';
-    const font = (s, style = '') => { g.font = `${style} ${s * 1.2}px "Times New Roman", serif`.trim(); }, measure = (t, s) => { const f = g.font; font(s); const w = g.measureText(t).width; g.font = f; return w; };
+    g.scale(scale, scale); g.fillStyle = '#fff'; g.fillRect(0, 0, wPx, hPx); g.strokeStyle = '#000'; g.fillStyle = '#000'; g.lineWidth = 0.8; g.font = '9px Arial, Helvetica, sans-serif';
+    const font = (s, style = '') => { g.font = `${style} ${s * 1.2}px Arial, Helvetica, sans-serif`.trim(); }, measure = (t, s) => { const f = g.font; font(s); const w = g.measureText(t).width; g.font = f; return w; };
     const kind = block.kind || 'line';
     const pattern = (kind, box, clipPath) => { const pm = patternMarks(kind, box); g.save(); g.beginPath(); clipPath.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath(); g.clip();
       if (pm.fill !== null) { g.fillStyle = `rgb(${Math.round(pm.fill * 255)},${Math.round(pm.fill * 255)},${Math.round(pm.fill * 255)})`; g.fillRect(box.x - 1, box.y - 1, box.w + 2, box.h + 2); g.fillStyle = '#000'; }
@@ -387,7 +387,7 @@ function chartPNG(block, wPx, hPx) { // browser only: draw the exhibit on a canv
 async function renderDOCX2(model, docx) {
   model = DLX_PREP(model);
   const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, BorderStyle, PageNumber, Footer, Header, PageBreak, TabStopType, LeaderType, ImageRun, TableLayoutType } = docx;
-  const FONT = 'Times New Roman', SZ = 22, P0 = { before: 0, after: 0, line: 240 }, TW = 9638; // text width in twips (A4, 2 cm margins)
+  const FONT = 'Arial', SZ = 22, P0 = { before: 0, after: 0, line: 240 }, TW = 9638; // text width in twips (A4, 2 cm margins)
   const none = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' }, thin = { style: BorderStyle.SINGLE, size: 4, color: '000000' }, thick = { style: BorderStyle.SINGLE, size: 8, color: '000000' }, dbl = { style: BorderStyle.DOUBLE, size: 6, color: '000000' };
   const bodyHalf = Math.round((+model.bodySize || 10) * 2);
   const run = (t, o = {}) => new TextRun({ text: String(t ?? ''), font: o.font || FONT, size: o.size || SZ, bold: !!o.bold, italics: !!o.italics, smallCaps: !!o.sc, allCaps: !!o.caps, color: o.color || '000000', characterSpacing: o.spacing || undefined });

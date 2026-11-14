@@ -5,6 +5,17 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.1 yenilikleri
+- **Emtialar:** altın, gümüş, platin, paladyum, bakır, Brent ve WTI petrol, doğalgaz; gram gümüş; borsadaki altın ve gümüş fonları (GLDTR, ZGOLD, ISGLK, GMSTR). Tarama ekranında **Emtia** sekmesi.
+- **Her enstrüman için getiri öngörüsü:** 1, 3, 6, 12 ay ve tutma süresi sonu; maliyet ve vergi sonrası beklenen getiri, olası aralık, mevduatı geçme olasılığı.
+- **VİOP öngörüsü:** vadeye kadar senaryolar, başabaş, teminat çağrısı fiyatı, taşıma ve vade devri. Dolar bazlı sözleşmeler artık TL’ye çevrilerek değerlenir.
+- **Fon:** “Para ekle” gerekmez — girilen işlem paranın var olduğu anlamına gelir. Her kalem fon kartından, fon ekranından ve enstrüman sayfasından düzeltilir veya hiç girilmemiş gibi kaldırılır; **değişiklik geçmişi** ile önceki her hâle dönülür.
+- **Kırılımlar:** varlık sınıfı, gizli döviz riski, risk katkısı, getiri kaynağı, vade merdiveni, yoğunlaşma, duyarlılık, likidite.
+- **Yatırım iyileştirici:** hedef (mevduatı geç, sermayeyi koru, dolar bazında büyü, en yüksek getiri), maliyet ve vergi farkındalığı, kalem başına sınır, yeni para, stres kontrolü, önce/sonra, “neden”, koruma (hedge), mevduat merdiveni, hedef dağılım ve sapma uyarısı.
+- **Ana sayfa:** toplam varlık (TL ve USD), fon dışı hesaplar için **Para ekle**, “Bugün ne yapmalıyım?”, ısı haritası, gün sonu notu, açılışta acil uyarılar.
+- **Kullanım:** terimlerin yanında “?” açıklaması, **Basit / Uzman** görünüm, telefon düzeni, “Ya şöyle olursa” kaydırıcıları, tek sayfalık **Factsheet**.
+- **Görünüm:** Ayarlar › Görünüm’de **Private Banking** ve **Bloomberg Terminal** temaları; yazı tipi, köşeler, rakam boyutu ve istenen vurgu rengi. Yeni keçi logosu.
+
 ## Kurulum (bir kez)
 1. Adresi **Edge** veya **Chrome** ile açın.
 2. Adres çubuğundaki “Uygulamayı yükle” simgesine (veya Ayarlar › “Bu tarayıcıdaki verileriniz” › **Uygulama olarak yükle**) tıklayın.
