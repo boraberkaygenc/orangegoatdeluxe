@@ -3,7 +3,7 @@
 "build" denince yapılacaklar. Numarayla seçilebilir (ör. "build 1, 7, 15") veya "build hepsi".
 
 ## Sırada (kullanıcı seçti, 2026-11-14)
-7–15, 17–21, 23–32 — "build" dendiğinde bu sırayla yapılacak.
+7–15, 17–21, 23–53 — "build" dendiğinde bu sırayla yapılacak.
 (18: renk körlüğü seçeneği hariç. 22, 27’nin içinde.)
 
 
@@ -45,29 +45,34 @@
 29. **[sırada]** Emtialar: petrol (Brent, WTI), gümüş, altın (ons ve gram), bakır, platin, paladyum, doğalgaz ve diğerleri; fiyat, grafik, istatistik, öngörü, fona eklenebilme (TL karşılığıyla)
 30. **[sırada]** Emtia fonları: TEFAS kıymetli maden / emtia fonları ve borsada işlem gören altın-gümüş fonları; listede görülebilir, karşılaştırılabilir, fona eklenebilir
 31. **[sırada]** Her enstrüman için ayrı ROI öngörüsü: 1 ay / 3 ay / 6 ay / 1 yıl ve tutma süresi sonu için beklenen getiri, aralık, mevduata göre fark; hem fon içinde hem enstrüman sayfasında
-32. **[sırada]** Fon kartının sonunda hem kırılımlı (her kalem ayrı: değer, getiri, öngörü) hem konsolide (fonun tamamı: değer, beklenen getiri, aralık, mevduata göre) durum
+32. **[sırada]** Fon kartının sonunda hem kırılımlı (her kalem ayrı: değer, getiri, öngörü) hem konsolide (fonun tamamı: değer, beklenen getiri, aralık, mevduata göre) durum. Kullanıcı: kırılımda her enstrüman ayrı ayrı gösterilsin
 
-## Fon içi kırılım fikirleri (seçim bekliyor)
-33. Varlık sınıfı kırılımı: hisse, fon, emtia, döviz, mevduat, VİOP — ağırlık, değer, getiri, öngörü
-34. Gizli döviz riski: ABD hissesi, altın, USD mevduat ve dolar bazlı VİOP dahil gerçek TL / USD dağılımı
-35. Risk katkısı: her kalemin ağırlığı ile fonun riskine katkısı yan yana (ör. %16 ağırlık, %55 risk)
-36. Getiri katkısı (attribution): toplam getirinin hangi kalemden, varlık sınıfından ve kurdan geldiği; şelale grafik
-37. Vade merdiveni: mevduat vadeleri ve VİOP vade tarihleri takvim üzerinde, hangi ay ne kadar paranın serbest kalacağı
-38. Yoğunlaşma: en büyük 5 kalemin payı, sektör dağılımı, tek kaleme bağımlılık uyarısı
-39. Faktör maruziyeti: BIST betası, dolar, emtia ve faiz duyarlılığı tek tabloda
-40. Likidite: kalemlerin kaç günde nakde dönebileceği (düşük likidite, vadeli mevduat kırma, VİOP)
+## Fon içi kırılım (kullanıcı seçti)
+33. **[sırada]** Varlık sınıfı kırılımı: hisse, fon, emtia, döviz, mevduat, VİOP — ağırlık, değer, getiri, öngörü
+34. **[sırada]** Gizli döviz riski: ABD hissesi, altın, USD mevduat ve dolar bazlı VİOP dahil gerçek TL / USD dağılımı
+35. **[sırada]** Risk katkısı: her kalemin ağırlığı ile fonun riskine katkısı yan yana (ör. %16 ağırlık, %55 risk)
+36. **[sırada]** Getiri katkısı (attribution): toplam getirinin hangi kalemden, varlık sınıfından ve kurdan geldiği; şelale grafik
+37. **[sırada]** Vade merdiveni: mevduat vadeleri ve VİOP vade tarihleri takvim üzerinde, hangi ay ne kadar paranın serbest kalacağı
+38. **[sırada]** Yoğunlaşma: en büyük 5 kalemin payı, sektör dağılımı, tek kaleme bağımlılık uyarısı
+39. **[sırada]** Faktör maruziyeti: BIST betası, dolar, emtia ve faiz duyarlılığı tek tabloda
+40. **[sırada]** Likidite: kalemlerin kaç günde nakde dönebileceği (düşük likidite, vadeli mevduat kırma, VİOP)
 
-## Yatırım iyileştirici motor fikirleri (seçim bekliyor)
-41. Optimizasyon: beklenen getiri ile risk arasında en iyi dağılım (ortalama-varyans ve risk paritesi), kalem başına üst sınır gibi kısıtlarla; bugünkü dağılıma göre “ne alınmalı, ne satılmalı”
-42. Maliyet ve vergi farkındalığı: komisyon, BSMV, stopaj ve alış-satış farkı hesaba katılarak yalnızca maliyetini çıkaran değişikliklerin önerilmesi
-43. Yeniden dengeleme bantları: hedef ağırlıktan belirli bir oranda sapınca uyarı ve tek tıkla düzeltme planı
-44. Riskten korunma (hedge) önerileri: BIST riskine karşı endeks vadeli kısa pozisyon, kur riskine karşı dolar vadeli; ne kadar sözleşme gerektiği ve maliyeti
-45. Mevduat merdiveni optimizasyonu: nakit ihtiyacı ve faiz eğrisine göre vadelerin bölünmesi
-46. Atıl nakit süpürme: belirli tutarın üstündeki nakdin otomatik olarak mevduat / para piyasası fonu önerisi
-47. Stres dayanımlı öneri: önerilen değişikliğin kötü senaryolarda (kur şoku, endeks düşüşü) fonu daha kötüye götürmediğinin kontrolü
-48. Önce / sonra karşılaştırması: önerinin uygulanmasıyla beklenen getiri, risk, VaR ve mevduata göre farkın yan yana gösterilmesi
-49. “Neden?” açıklaması: her önerinin hangi sinyale, hangi riske ve hangi geçmiş isabet oranına dayandığının sade dille yazılması
-50. Hedefe göre motor: kullanıcının hedefi (ör. mevduatı yenmek, sermayeyi korumak, dolar bazında büyümek) seçilerek önerilerin buna göre değişmesi
+## Yatırım iyileştirici motor (kullanıcı seçti)
+41. **[sırada]** Optimizasyon: beklenen getiri ile risk arasında en iyi dağılım (ortalama-varyans ve risk paritesi), kalem başına üst sınır gibi kısıtlarla; bugünkü dağılıma göre “ne alınmalı, ne satılmalı”
+42. **[sırada]** Maliyet ve vergi farkındalığı: komisyon, BSMV, stopaj ve alış-satış farkı hesaba katılarak yalnızca maliyetini çıkaran değişikliklerin önerilmesi
+43. **[sırada]** Yeniden dengeleme bantları: hedef ağırlıktan belirli bir oranda sapınca uyarı ve tek tıkla düzeltme planı
+44. **[sırada]** Riskten korunma (hedge) önerileri: BIST riskine karşı endeks vadeli kısa pozisyon, kur riskine karşı dolar vadeli; ne kadar sözleşme gerektiği ve maliyeti
+45. **[sırada]** Mevduat merdiveni optimizasyonu: nakit ihtiyacı ve faiz eğrisine göre vadelerin bölünmesi
+46. **[sırada]** Atıl nakit süpürme: belirli tutarın üstündeki nakdin otomatik olarak mevduat / para piyasası fonu önerisi
+47. **[sırada]** Stres dayanımlı öneri: önerilen değişikliğin kötü senaryolarda (kur şoku, endeks düşüşü) fonu daha kötüye götürmediğinin kontrolü
+48. **[sırada]** Önce / sonra karşılaştırması: önerinin uygulanmasıyla beklenen getiri, risk, VaR ve mevduata göre farkın yan yana gösterilmesi
+49. **[sırada]** “Neden?” açıklaması: her önerinin hangi sinyale, hangi riske ve hangi geçmiş isabet oranına dayandığının sade dille yazılması
+50. **[sırada]** Hedefe göre motor: kullanıcının hedefi (ör. mevduatı yenmek, sermayeyi korumak, dolar bazında büyümek) seçilerek önerilerin buna göre değişmesi
+
+## Kayıt düzeltme, para ve toplam varlık (2026-11-14)
+51. **[sırada]** Kalem bazında geriye etkili düzeltme, her yerden kolay erişimle. Mevcut “Fon içeriği → Düzenle / Kaldır” (2026-11-13'te yayında) genişletilecek: fon kartındaki ve enstrüman sayfasındaki her kalemde Düzenle / Kaldır; yanlış eklenen VİOP'u hiç etki doğurmamış gibi silme; Midas vb. rapordan çekilen alımların tarih, adet, fiyat, komisyon düzeltmesi; mevduat vadesi, faiz, başlangıç tarihi düzeltmesi; değişiklik geçmişi (ne, ne zaman, eski → yeni) ve geri alma
+52. **[sırada]** Fonda “Para ekle” kaldırılacak: bir işlem girildiğinde o paranın zaten var olduğu kabul edilir (alım tutarı fona otomatik giriş sayılır, “yetersiz nakit” uyarısı çıkmaz); satış ve vade sonu paraları fon içinde nakit olarak kalır
+53. **[sırada]** Ana sayfada toplam varlık: bütün fonlar + fon dışı vadesiz mevduat birlikte; kırılım hisse / fon / emtia / mevduat / döviz / VİOP / nakit; her satır hem TL hem USD; ana sayfada “Para ekle” ile vadesiz mevduattaki (TL veya döviz) varlığın kaydedilmesi, düzenlenmesi ve silinmesi
 
 ## Kullanıcının ekledikleri
 (boş)
