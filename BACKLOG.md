@@ -3,7 +3,8 @@
 "build" denince yapılacaklar. Numarayla seçilebilir (ör. "build 1, 7, 15") veya "build hepsi".
 
 ## Sırada (kullanıcı seçti, 2026-11-14)
-7–15, 17–21, 23–53 — v2.1’de yapıldı (2026-11-14). Sırada madde yok.
+7–15, 17–21, 23–53 — v2.1’de yapıldı (2026-11-14).
+Sırada (2026-11-15): 56, 58, 59, 60, 63, 64, 65, 66, 67, 70. Yeni sekme planı (71–80) kullanıcı onayı bekliyor.
 (18: renk körlüğü seçeneği hariç. 22, 27’nin içinde.)
 
 
@@ -86,20 +87,35 @@
 
 ## Benzer uygulamalarla karşılaştırma — eksikler (2026-11-15, seçim bekliyor)
 55. Cihazlar arası şifreli eşitleme (telefon + bilgisayar aynı veri; uçtan uca şifreli, kendi Google Drive / GitHub alanınızda)
-56. Temettü ve sermaye artırımları fonlara otomatik: temettü kaydı (brüt, stopaj, net), bedelsiz / bedelli / bölünme uyarlaması, temettü takvimi ve yıllık temettü geliri tahmini
+56. **[sırada]** Temettü ve sermaye artırımları fonlara otomatik: temettü kaydı (brüt, stopaj, net), bedelsiz / bedelli / bölünme uyarlaması, temettü takvimi ve yıllık temettü geliri tahmini
 57. Vergi / beyanname yardımcısı: yıl içi gerçekleşen kazançlar (ABD hisseleri için ÜFE endekslemesi, FIFO, TCMB kuru), temettü gelirleri, kesilen stopaj; PDF / Excel çıktısı
-58. Dönemsel performans tablosu: her fon için ay / çeyrek / yıl bazında zaman ağırlıklı (TWR) ve para ağırlıklı (XIRR) getiri; getirinin fiyat, temettü ve kur etkisine ayrılması
-59. Reel (enflasyondan arındırılmış) görünüm: her getirinin TÜFE’ye göre reel karşılığı ve “enflasyonu yendim mi” göstergesi
-60. Yeni varlık türleri: kripto (BTC, ETH), Eurobond / DİBS / özel sektör tahvili, BES fonları, fiziki altın (çeyrek, cumhuriyet), gayrimenkul ve araç (elle değerleme), borçlar (kredi, kart) → gerçek net varlık
+58. **[sırada]** Dönemsel performans tablosu: her fon için ay / çeyrek / yıl bazında zaman ağırlıklı (TWR) ve para ağırlıklı (XIRR) getiri; getirinin fiyat, temettü ve kur etkisine ayrılması
+59. **[sırada]** Reel (enflasyondan arındırılmış) görünüm: her getirinin TÜFE’ye göre reel karşılığı ve “enflasyonu yendim mi” göstergesi
+60. **[sırada]** Yeni varlık türleri: kripto (BTC, ETH), Eurobond / DİBS / özel sektör tahvili, BES fonları, fiziki altın (çeyrek, cumhuriyet), gayrimenkul ve araç (elle değerleme), borçlar (kredi, kart) → gerçek net varlık
 61. Telefona bildirim: fiyat, hedef / zarar-kes, vade ve KAP uyarıları (kişisel Telegram botu veya web push; yalnızca sembol listesi paylaşılır)
 62. Hedef ve emeklilik planlayıcı: aylık düzenli yatırım (DCA), hedef tutar / tarih, Monte Carlo ile ulaşma olasılığı, düzenli yatırım hatırlatıcısı
-63. Masraf analizi: yıl bazında ödenen komisyon, BSMV, fon yönetim ücreti; 10 yıllık birikimli etkisi ve daha ucuz alternatif önerisi
-64. Ekonomik takvim ve haber akışı: TCMB faiz kararı, enflasyon, ABD verileri; elde tutulan hisselerin KAP bildirimleri kısa özetlerle; olayın fona olası etkisi
-65. Fon içi “X-ray”: TEFAS fonlarının portföy dağılımı (KAP raporlarından) ile tüm fonlardaki gerçek hisse ve sektör maruziyeti
-66. Temel analiz kartı: değerleme (F/K, PD/DD sektöre göre), büyüme, borçluluk, temettü güvenliği — tek bakışta görsel özet
-67. “Ya bunun yerine şunu alsaydım?”: her alımın aynı tarihte BIST 100, altın, dolar veya mevduat ile karşılaştırması
+63. **[sırada]** Masraf analizi: yıl bazında ödenen komisyon, BSMV, fon yönetim ücreti; 10 yıllık birikimli etkisi ve daha ucuz alternatif önerisi
+64. **[sırada]** Ekonomik takvim ve haber akışı: TCMB faiz kararı, enflasyon, ABD verileri; elde tutulan hisselerin KAP bildirimleri kısa özetlerle; olayın fona olası etkisi
+65. **[sırada]** Fon içi “X-ray”: TEFAS fonlarının portföy dağılımı (KAP raporlarından) ile tüm fonlardaki gerçek hisse ve sektör maruziyeti
+66. **[sırada]** Temel analiz kartı: değerleme (F/K, PD/DD sektöre göre), büyüme, borçluluk, temettü güvenliği — tek bakışta görsel özet
+67. **[sırada]** “Ya bunun yerine şunu alsaydım?”: her alımın aynı tarihte BIST 100, altın, dolar veya mevduat ile karşılaştırması
 68. Aracı kurum ekstrelerinin düzenli içe aktarımı: banka / aracı kurum şablonları, mükerrer kayıt tespiti, toplu içe aktarma
 69. Uygulama kilidi (PIN / Windows Hello / parmak izi) ve güvenilir kişiye acil durum dosyası (varlık listesi, hesaplar)
+
+## Emtia işlemleri (2026-11-15)
+70. **[sırada]** Emtianın kendisiyle (vadeli değil) işlem: Brent, WTI, altın ons, gümüş, platin, paladyum, bakır, doğalgaz için “Al / Sat” — birim (varil, ons, libre, MMBtu), kesirli miktar, USD fiyat ve o günün kuru; fonda “Emtia” sınıfında, VİOP’tan ayrı. Vadeli sözleşmeler ayrıca kalır; emtia sayfasında “Vadeli sözleşmeler” bölümü olarak görünür.
+
+## Yeni sekme planı ve sadeleştirme (2026-11-15, onay bekliyor)
+71. Beş ana sekme: Özet · Fonlarım · Piyasalar · Analiz (yalnızca Uzman görünümde) · Ayarlar. F tuşları etikette görünmez, kısayol olarak kalır.
+72. Özet: “Bugün ne yapmalıyım?”, toplam varlık, fon kartları (kısa), takvim (vade, temettü, ekonomik veri), ısı haritası, gün sonu notu (katlanır). Ayrı “Takvim” sekmesi kalkar.
+73. Fonlarım: fon listesi + “Tüm varlıklar” (eski Pozisyonlar), “Performans” (dönemsel ve reel getiri), “İşlem defteri” (tüm fonlar), “Vergi”. Sepet → Paket → Emirler akışı kalkar; yerine tek “Yeni fon” sihirbazı (boş, rapordan, öneriden).
+74. Fon sayfası sekmeli: Genel bakış · İçerik · Performans · Riskler (kırılımlar, stres, senaryo) · Gelecek (simülasyon, görünüm) · İyileştir · Defter ve geçmiş. Uzun tek sayfa kalkar.
+75. Piyasalar: tek “Enstrümanlar” ekranı ve üstte segmentler: BIST · ABD · Fonlar · Emtia · Döviz · VİOP; ardından Takip listesi, Makro, Halka arz. Karşılaştır, Araştırma, Lighthouse, Model karnesi ve Lab “Analiz” sekmesine taşınır.
+76. Tek enstrüman sayfası: fiyat, grafik, getiri öngörüsü, “fonlarınızda”, ilgili VİOP sözleşmeleri, KAP / haber; tek ana düğme “Al / Sat”.
+77. Tek ad, tek yer: “Paket / Sepet / Fon” yerine yalnızca “Fon”; işlem yalnızca fon veya enstrüman sayfasından girilir; “Raporlar” düğmesi yerine her sayfada “Dışa aktar”.
+78. Bildirimler tek yerde: Gelen kutusu ile “Bugün ne yapmalıyım?” birleşir.
+79. İlk açılışta 4 adımlı kısa tanıtım; yeni kullanıcı için varsayılan Basit görünüm; Sözlük ve Yardım Ayarlar altına (her terimin yanındaki “?” kalır).
+80. Dil ve birim tutarlılığı: tüm arayüz Türkçe; tutarlar TL, yanında küçük $ (tek tuşla gizlenebilir); tarih ve sayı biçimi Türkçe.
 
 ## Kullanıcının ekledikleri
 (boş)
