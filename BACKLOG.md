@@ -135,7 +135,7 @@ Sırada (2026-11-15): 56, 58, 59, 60, 63, 64, 65, 66, 67, 70. Yeni sekme planı 
 95. **[sırada]** Grafikler: tek renk paleti, ince ızgara, sağda son değer etiketi, üzerine gelince artı imleç ve değer; açık ve koyu temada aynı okunurluk.
 96. **[sırada]** Erişilebilirlik ve okunurluk: en küçük yazı 12 px, gri metinlerde yeterli kontrast, ışıkların yanında metin etiketi (renk tek başına anlam taşımaz). Kullanıcı: yazı büyüklüğü Ayarlar’dan seçilebilsin (Küçük / Normal / Büyük / Çok büyük).
 
-97. Açılıştaki “Set up GNC Terminal” penceresi (aylık katkı, ufuk, çekirdek pay, USD payı, puanlama profili) — yalnızca eski Sepet / öneri ekranlarını etkiliyor; kaldırılması öneriliyor (değerler Ayarlar’da kalır, ilk açılışta yerine 79’daki kısa tanıtım). Kullanıcı onayı bekliyor.
+97. **[sırada]** Açılıştaki “Set up GNC Terminal” penceresi kaldırılır (kullanıcı onayı 2026-11-15). Puanlama profili Ayarlar’da kalır; çekirdek pay ve USD payı hedefleri (eski Sepet / Pozisyonlar ekranı, ana sayfa öneri cümlesi, USD sapma uyarısı) fon bazlı hedef dağılımla değiştirilerek emekliye ayrılır; aylık katkı ileride 62 seçilirse orada kullanılır; kullanılmayan “ufuk” ayarı kaldırılır. İlk açılışta yerine 79’daki kısa tanıtım.
 
 ## Kullanıcının ekledikleri
 (boş)
