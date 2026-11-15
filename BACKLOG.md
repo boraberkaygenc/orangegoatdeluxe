@@ -140,5 +140,12 @@ Sırada (2026-11-15): 56, 58, 59, 60, 63, 64, 65, 66, 67, 70. Yeni sekme planı 
 98. **[yapıldı v2.3]** Puanlama v3: 10 yıllık BIST ve ABD verisiyle geriye dönük test (2017–2026). Sinyaller grup içinde sıralanıp normal puana çevrilir; değer ve kalite sektör içinde karşılaştırılır (UMS 29 nedeniyle BIST’te PD/DD yarım ağırlık); toplam puan şirket büyüklüğünden arındırılır; fiyat sinyali ağırlıkları her hafta kalibrasyonda sıralama IC’sinden öğrenilir (araştırma önceliklerine büzülerek). BIST IC 0,064 → 0,112.
 99. **[yapıldı v2.3]** Yükselenler paneli (Piyasalar): bugün / 1 hafta / 1 ay en çok yükselenler; hacim artışı, 52 hafta zirvesine uzaklık ve geçmiş teste dayalı yükseliş türü etiketi (yeşil: devam eğilimli, turuncu: geri verme eğilimli).
 
+100. **[yapıldı v2.4]** Süre önerisi: her hisse için maliyet ve vergi sonrası mevduata göre en iyi tutma süresi (puan dilimi × süre test tablosundan), mevduatı geçme olasılığı ve çıkış kuralı.
+101. **[yapıldı v2.4]** “Yanına ne eklemeli”: hisse sayfasında ve fonda, bütünün risk başına getirisini en çok artıran adaylar (marjinal Sharpe kuralı, korelasyon, yarım Kelly pay).
+102. **[yapıldı v2.4]** “Bu fon değer mi?”: fonun 12 aylık beklentisi mevduat, dolar, altın ve BIST 100 ile karşılaştırılır; devam / zayıf / mevduat daha iyi kararı ve TL kazancına göre sıralı iyileştirme listesi.
+103. **[yapıldı v2.4]** VİOP net pozisyon motoru: trend (1/3/12 ay) + taşıma, oynaklığa göre boyutlama, %30 teminat sınırı, döviz için şok koruması ve 1,5× sınır, zarar kes ve devalüasyon stres kaybı; 10 yıllık test sonuçları gösterilir.
+104. **[yapıldı v2.4]** Davranış uyarıları: al/sat penceresinde süre önerisi, piyango hissesi uyarısı, düşük puan uyarısı, “kazananı satıp kaybedeni tutma” uyarısı.
+105. **[yapıldı v2.4]** Akıcı geçişler: sekme ve fon açılışında paneller kayarak gelir, sayılar değerine doğru sayar (hareket azaltma ayarına uyar).
+
 ## Kullanıcının ekledikleri
 (boş)

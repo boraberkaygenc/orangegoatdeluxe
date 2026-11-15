@@ -128,6 +128,8 @@ export function createUniverse({ dir, db, put, log, inbox, tefasList, tefasHisto
     for (const raw of String(S.uniExtra || '').split(/[\s,;]+/)) { const sym = raw.trim().toUpperCase(); if (!sym || want.has(sym) || sym.length > 12) continue; const tr = sym.endsWith('.IS'); const base = tr ? sym.slice(0, -3) : sym; if (want.has(base)) continue; want.set(base, tr ? { symbol: base, cls: 'TR_EQ', ccy: 'TRY', sector: null, idx: [], extra: true } : { symbol: base, cls: 'US_EQ', ccy: 'USD', sector: null, yahoo: base.replace('.', '-'), extra: true }); }
     // Deluxe: gram gold in TRY, derived from COMEX gold (XAUUSD, a reference series) and USD/TRY — see data.mjs deriveGold
     if (on('uniGold')) want.set('GAUTRY', { symbol: 'GAUTRY', cls: 'TR_ETF', ccy: 'TRY', sector: 'Gold', sub: 'gold', name: 'Gold – gram (TRY, from XAU and USD/TRY)', derived: 'gold' });
+    // VİOP underlyings used by the net-position engine (trend and carry need their spot history)
+    for (const [sym, y, name, ccy] of [['XU030', 'XU030.IS', 'BIST 30 index', 'TRY'], ['XBANK', 'XBANK.IS', 'BIST Banks index', 'TRY'], ['EUR/TRY', 'EURTRY=X', 'Euro / Turkish lira', 'TRY']]) if (!db.docs['instruments/' + sym]) db.docs['instruments/' + sym] = { symbol: sym, cls: 'MACRO', ccy, name, yahoo: y, price: null, closes: [], addedAt: stamp };
     if (!db.docs['instruments/XAUUSD']) db.docs['instruments/XAUUSD'] = { symbol: 'XAUUSD', cls: 'MACRO', ccy: 'USD', name: 'Gold (COMEX futures, USD per troy ounce)', yahoo: 'GC=F', price: null, closes: [], addedAt: stamp };
     // Deluxe: commodities (front-month futures on Yahoo, USD), gram silver in TRY, and BIST-listed gold / silver funds (BYF)
     if (on('uniCmdty')) {

@@ -5,6 +5,10 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.4: tavsiye katmanı
+
+Hisse sayfası artık “Ne kadar tutmalı” (maliyet ve vergi sonrası mevduata göre en iyi süre) ve “Yanına ne eklemeli” bölümlerini gösterir. Her fonun genel bakışında “Bu fon değer mi?” kararı ve iyileştirme listesi yer alır. Piyasalar › VİOP’ta “Tutulması gereken net pozisyon” tablosu trend ve taşımaya göre kontrat sayısını, teminatı ve zarar kes seviyesini önerir.
+
 ## v2.3: puanlama v3
 
 Hisse puanı artık 2017–2026 BIST ve ABD verisiyle yapılan geriye dönük testte en iyi sonucu veren yöntemle hesaplanır: sinyaller grup içinde sıralanıp sınırlı normal puana çevrilir, değer ve kalite sektör içinde karşılaştırılır, toplam puan şirket büyüklüğünden arındırılır, fiyat sinyallerinin ağırlıkları her hafta kalibrasyonda yeniden öğrenilir. Ayrıntı: Analiz › Model › “Puan nasıl hesaplanıyor”. Piyasalar sekmesindeki “Yükselenler” paneli kısa vadeli yükselişleri, geçmişte nasıl sonuçlandıklarını gösteren etiketlerle listeler.

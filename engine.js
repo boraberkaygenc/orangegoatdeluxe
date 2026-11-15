@@ -287,7 +287,8 @@ function horizons(x, S, M, amount, z) {
   const A = amount && amount > 0 ? amount : (minOrder(x, S, M) || 20000);
   const c = costs(x, A, S, M), costPct = c.roundTripPct;
   const rows = HORIZONS.map(([k, label, t]) => {
-    const ann = ex.E + al.by[k] - fee;
+    const emp = z && z.q !== undefined && z.q !== null && (x.cls === 'TR_EQ' || x.cls === 'US_EQ'), edge = emp ? v3Edge(x.ccy === 'USD' ? 'USD' : 'TRY', z.q, Math.round(t * 252)) : null;
+    const ann = emp ? (Math.pow(Math.pow(1 + (ex.E - fee) / 100, t) * Math.exp(edge / 100), 1 / t) - 1) * 100 : ex.E + al.by[k] - fee;
     const mu = (Math.pow(1 + ann / 100, t) - 1) * 100, sig = vol * Math.sqrt(t) * calSig(x.ccy === 'USD' ? 'USD' : 'TRY', t);
     const gross = mu - costPct, tax = taxPct(x, gross, t, S), net = gross - tax;
     const fxT = (Math.pow(1 + fxRate(S, M) / 100, t) - 1) * 100, usdP = S.principal === 'USD';
@@ -331,6 +332,16 @@ function invNorm(p) { p = Math.min(0.999, Math.max(0.001, p)); const a = [-39.69
 function gaussRank(vals) { // rank → normal score; null stays null (bounded, so one extreme ratio cannot dominate)
   const idx = []; vals.forEach((v, i) => { if (v !== null && v !== undefined && isFinite(v)) idx.push(i); }); const out = vals.map(() => null); if (idx.length < 3) return out;
   idx.sort((i, j) => vals[i] - vals[j]); let k = 0; while (k < idx.length) { let j = k; while (j + 1 < idx.length && vals[idx[j + 1]] === vals[idx[k]]) j++; const z = invNorm(((k + j) / 2 + 0.5) / idx.length); for (let t = k; t <= j; t++) out[idx[t]] = z; k = j + 1; } return out; }
+// Score-quintile × holding-period table from the 2017-2026 backtest: mean forward return over the index (log %, after 5/10/21/63/126
+// trading days) for each fifth of the score, centred on the average stock. It turns a score into an expected edge per horizon.
+const V3_DEC_H = [5, 10, 21, 63, 126];
+const V3_DEC_RAW = { TRY: [[-0.65, -0.61, -1.56, -2.22, -2.46], [-0.17, 0.01, -0.47, -0.49, 0.22], [-0.2, 0.01, -0.13, 0.45, 1.23], [0.04, 0.29, 0.39, 0.82, 2.41], [0.2, 0.42, 0.78, 2.41, 4.38]],
+  USD: [[-0.05, -0.17, -0.48, -1.32, -2.16], [-0.06, -0.11, -0.21, -0.79, -1.56], [-0.06, -0.01, -0.03, -0.37, -0.97], [-0.04, -0.02, -0.11, -0.4, -0.85], [-0.17, -0.15, -0.2, -0.49, -1.14]] };
+const V3_DEC = Object.fromEntries(Object.entries(V3_DEC_RAW).map(([c, t]) => [c, t.map(row => row.map((v, j) => +(v - mean(t.map(r => r[j]))).toFixed(3)))]));
+function v3Edge(ccy, q, days) { // expected log % over the index for a holding of `days` trading days; beyond 6 months the edge keeps growing at 3/4 of its last pace
+  const t = (CAL && CAL.dec && CAL.dec[ccy]) || V3_DEC[ccy] || V3_DEC.TRY, row = t[Math.max(0, Math.min(4, q))]; if (!row) return 0; if (days <= 0) return 0;
+  let prevH = 0, prevV = 0; for (let j = 0; j < V3_DEC_H.length; j++) { const h = V3_DEC_H[j], v = row[j]; if (days <= h) return prevV + (v - prevV) * (days - prevH) / (h - prevH); prevH = h; prevV = v; }
+  const slope = (row[4] - row[3]) / (126 - 63); return row[4] + 0.75 * slope * (days - 126); }
 function v3Weights(ccy) { const c = CAL && CAL.w && CAL.w[ccy], d = V3_DEFAULT_W[ccy] || V3_DEFAULT_W.TRY; // a signal the calibration could not estimate (no index or volume history) keeps the backtested default
   const w = c && Object.keys(c).length ? (() => { const m = {}, sc = Object.keys(c).reduce((a, k) => a + (d[k] || 0), 0); for (const k of V3_SIGNALS) m[k] = k in c ? c[k] * sc : (d[k] || 0); return m; })() : d; const t = Object.values(w).reduce((a, v) => a + Math.max(0, v), 0) || 1; return Object.fromEntries(Object.entries(w).map(([k, v]) => [k, Math.max(0, v) / t])); }
 function v3Score(items, S) {
@@ -403,6 +414,7 @@ function scoreAll(inst, S, M, weightsOverride) {
   const scoreWith = (o, wts) => { let tw = 0, acc = 0; for (const [k] of GROUPS) { const p = o.pct[k], wk = wts[k] || 0; if (p === null || p === undefined || !wk) continue; tw += wk; acc += wk * p; }
     let sc = tw ? acc / tw : null; const pen = o.x.e.flags.reduce((a, f) => a + (f === 'proxy' ? 3 : f === 'stale history' ? 2 : 6), 0); return sc === null ? null : Math.max(0, Math.round(sc - pen)); };
   const HW = { '1m': horizonWeights('1m', w), '3m': horizonWeights('3m', w), '6m': horizonWeights('6m', w), '12m': horizonWeights('12m', w) };
+  if (evidence) for (const o of items) if (o.v3 !== undefined && (o.x.cls === 'TR_EQ' || o.x.cls === 'US_EQ')) { o.z.q = Math.min(4, Math.floor(o.v3 / 20)); o.hz = horizons(o.x, S, M, null, o.z); o.raw.edge = o.hz.bestAny.sharpe; }
   return items.map(o => {
     const score = evidence && o.v3 !== undefined ? o.v3 : scoreWith(o, w), scoreH = {}; for (const k of Object.keys(HW)) scoreH[k] = scoreWith(o, HW[k]);
     if (S.horizonWeights !== false) { // best span: Sharpe of the span, tilted by the factor score that fits that horizon (momentum/reversal short, value/quality/low-vol long)
@@ -1400,7 +1412,7 @@ return { setCalib, getCalib, calibrate, calScale, calSig, num, clamp, CLASSES, G
   horizons, scoreAll, explain, scenario, packageAnalytics, portfolioRisk, roman, longDate, addMonths, picks, holdingsView, alerts, sellList, brief, statementModel, packageModel, tearsheetModel, fundId,
   renderPDF, renderDOCX, fmtTRY, fmtPct, fmtN, DISCLAIMER, riskBucket, closesOf, seriesStats, normRating, brokerLatest, consensus, brokerSignals, brokerDigestModel,
   benchNet, benchLabel, depTax, addDays, daysBetween, makeFx, setDisplay, money, realPct, breakeven, exitPlan, earlyExit, alternatives, perfSeries, backtest, DISPLAY,
-  V3_DEFAULT_W, V3_SIGNALS, v3Weights, barsOf, gate, faber, stopDist, trailLevel, realisedVol, capsCheck, diversificationLabel, suggestWeights,
+  V3_DEFAULT_W, V3_SIGNALS, v3Weights, v3Edge, V3_DEC, barsOf, gate, faber, stopDist, trailLevel, realisedVol, capsCheck, diversificationLabel, suggestWeights,
   fxRate, depositPath, rfTry, ewmaVol, horizonWeights, hKeyForDays, bootstrapFan, ledgerEntry, scoreLedger, fundModel, fundMetrics, beatDeposit, rankProposals, riskBudget, swapSuggestions, earningsFlags, hedgeSleeve, faberMonthly, bizDays, dailyReturns };
 })();
 if (typeof module !== 'undefined') module.exports = ENGINE;

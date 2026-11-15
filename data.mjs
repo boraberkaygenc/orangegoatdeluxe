@@ -172,7 +172,7 @@ export function createData({ db, put, log, inbox, coll, ist, config, issuePicks,
         while (idx < queue.length) {
           const [k, x] = queue[idx++];
           const want1y = full || barsOf(db.docs[k] || x).length < 60;
-          try { const got = await yahooChart(yahooSymbol(x), want1y ? '1y' : '5d'); const y = { ...(db.docs[k] || x) }; if (!full && want1y) y.histTriedAt = day0;
+          try { const got = await yahooChart(yahooSymbol(x), want1y ? (x.cls === 'MACRO' ? '2y' : '1y') : '5d'); const y = { ...(db.docs[k] || x) }; if (!full && want1y) y.histTriedAt = day0;
             y.bars = full ? mergeBars([], got.bars) : mergeBars(barsOf(y), got.bars); if (got.splits && got.splits.length) y.splits = got.splits.slice(-5); if (got.divs && got.divs.length) { const m = new Map((y.divs || []).map(d => [d[0], d])); for (const d of got.divs) m.set(d[0], d); y.divs = [...m.values()].sort((a, b) => a[0] < b[0] ? -1 : 1).slice(-24); }
             if (got.price) y.price = got.price; if (got.name && (!y.name || y.name === y.symbol)) y.name = got.name; if (full || want1y) keepSeries(x, got.bars, got.splits, srcLabel(x)); derive(y); if (full) integrity(y);
             db.docs[k] = stamp(y, srcLabel(x), okSet.has(x.symbol) ? (db.docs[k].priceSrc || 'chart') : 'chart', got.at); okSet.add(x.symbol); }
