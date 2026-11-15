@@ -103,39 +103,39 @@ Sırada (2026-11-15): 56, 58, 59, 60, 63, 64, 65, 66, 67, 70. Yeni sekme planı 
 69. Uygulama kilidi (PIN / Windows Hello / parmak izi) ve güvenilir kişiye acil durum dosyası (varlık listesi, hesaplar)
 
 ## Emtia işlemleri (2026-11-15)
-70. **[sırada]** Emtianın kendisiyle (vadeli değil) işlem: Brent, WTI, altın ons, gümüş, platin, paladyum, bakır, doğalgaz için “Al / Sat” — birim (varil, ons, libre, MMBtu), kesirli miktar, USD fiyat ve o günün kuru; fonda “Emtia” sınıfında, VİOP’tan ayrı. Vadeli sözleşmeler ayrıca kalır; emtia sayfasında “Vadeli sözleşmeler” bölümü olarak görünür.
+70. **[yapıldı v2.2]** Emtianın kendisiyle (vadeli değil) işlem: Brent, WTI, altın ons, gümüş, platin, paladyum, bakır, doğalgaz için “Al / Sat” — birim (varil, ons, libre, MMBtu), kesirli miktar, USD fiyat ve o günün kuru; fonda “Emtia” sınıfında, VİOP’tan ayrı. Vadeli sözleşmeler ayrıca kalır; emtia sayfasında “Vadeli sözleşmeler” bölümü olarak görünür.
 
 ## Yeni sekme planı ve sadeleştirme (2026-11-15, onaylandı)
-71. **[sırada]** Beş ana sekme: Özet · Fonlarım · Piyasalar · Analiz (yalnızca Uzman görünümde) · Ayarlar. F tuşları etikette görünmez, kısayol olarak kalır.
-72. **[sırada]** Özet: “Bugün ne yapmalıyım?”, toplam varlık, fon kartları (kısa), takvim (vade, temettü, ekonomik veri), ısı haritası, gün sonu notu (katlanır). Ayrı “Takvim” sekmesi kalkar.
-73. **[sırada]** Fonlarım: fon listesi + “Tüm varlıklar” (eski Pozisyonlar), “Performans” (dönemsel ve reel getiri), “İşlem defteri” (tüm fonlar), “Vergi”. Sepet → Paket → Emirler akışı kalkar; yerine tek “Yeni fon” sihirbazı (boş, rapordan, öneriden).
-74. **[sırada]** Fon sayfası sekmeli: Genel bakış · İçerik · Performans · Riskler (kırılımlar, stres, senaryo) · Gelecek (simülasyon, görünüm) · İyileştir · Defter ve geçmiş. Uzun tek sayfa kalkar.
-75. **[sırada]** Piyasalar: tek “Enstrümanlar” ekranı ve üstte segmentler: BIST · ABD · Fonlar · Emtia · Döviz · VİOP; ardından Takip listesi, Makro, Halka arz. Karşılaştır, Araştırma, Lighthouse, Model karnesi ve Lab “Analiz” sekmesine taşınır.
-76. **[sırada]** Tek enstrüman sayfası: fiyat, grafik, getiri öngörüsü, “fonlarınızda”, ilgili VİOP sözleşmeleri, KAP / haber; tek ana düğme “Al / Sat”.
-77. **[sırada]** Tek ad, tek yer: “Paket / Sepet / Fon” yerine yalnızca “Fon”; işlem yalnızca fon veya enstrüman sayfasından girilir; “Raporlar” düğmesi yerine her sayfada “Dışa aktar”.
-78. **[sırada]** Bildirimler tek yerde: Gelen kutusu ile “Bugün ne yapmalıyım?” birleşir.
-79. **[sırada]** İlk açılışta 4 adımlı kısa tanıtım; yeni kullanıcı için varsayılan Basit görünüm; Sözlük ve Yardım Ayarlar altına (her terimin yanındaki “?” kalır).
-80. **[sırada]** Dil, para birimi ve tarih (kullanıcı kararı 2026-11-15): arayüz seçime göre tamamen İngilizce veya tamamen Türkçe (karışık metin kalmaz); USD karşılığı her tutarın yanında her zaman görünür (gizleme yok); tarih biçimi ay-gün-yıl (ör. Nov 15, 2026 / 15 Kas yerine Kas 15, 2026; kısa biçim 11/15/2026).
+71. **[yapıldı v2.2]** Beş ana sekme: Özet · Fonlarım · Piyasalar · Analiz (yalnızca Uzman görünümde) · Ayarlar. F tuşları etikette görünmez, kısayol olarak kalır.
+72. **[yapıldı v2.2]** Özet: “Bugün ne yapmalıyım?”, toplam varlık, fon kartları (kısa), takvim (vade, temettü, ekonomik veri), ısı haritası, gün sonu notu (katlanır). Ayrı “Takvim” sekmesi kalkar.
+73. **[yapıldı v2.2]** Fonlarım: fon listesi + “Tüm varlıklar” (eski Pozisyonlar), “Performans” (dönemsel ve reel getiri), “İşlem defteri” (tüm fonlar), “Vergi”. Sepet → Paket → Emirler akışı kalkar; yerine tek “Yeni fon” sihirbazı (boş, rapordan, öneriden).
+74. **[yapıldı v2.2]** Fon sayfası sekmeli: Genel bakış · İçerik · Performans · Riskler (kırılımlar, stres, senaryo) · Gelecek (simülasyon, görünüm) · İyileştir · Defter ve geçmiş. Uzun tek sayfa kalkar.
+75. **[yapıldı v2.2]** Piyasalar: tek “Enstrümanlar” ekranı ve üstte segmentler: BIST · ABD · Fonlar · Emtia · Döviz · VİOP; ardından Takip listesi, Makro, Halka arz. Karşılaştır, Araştırma, Lighthouse, Model karnesi ve Lab “Analiz” sekmesine taşınır.
+76. **[yapıldı v2.2]** Tek enstrüman sayfası: fiyat, grafik, getiri öngörüsü, “fonlarınızda”, ilgili VİOP sözleşmeleri, KAP / haber; tek ana düğme “Al / Sat”.
+77. **[yapıldı v2.2]** Tek ad, tek yer: “Paket / Sepet / Fon” yerine yalnızca “Fon”; işlem yalnızca fon veya enstrüman sayfasından girilir; “Raporlar” düğmesi yerine her sayfada “Dışa aktar”.
+78. **[yapıldı v2.2]** Bildirimler tek yerde: Gelen kutusu ile “Bugün ne yapmalıyım?” birleşir.
+79. **[yapıldı v2.2]** İlk açılışta 4 adımlı kısa tanıtım; yeni kullanıcı için varsayılan Basit görünüm; Sözlük ve Yardım Ayarlar altına (her terimin yanındaki “?” kalır).
+80. **[yapıldı v2.2]** Dil, para birimi ve tarih (kullanıcı kararı 2026-11-15): arayüz seçime göre tamamen İngilizce veya tamamen Türkçe (karışık metin kalmaz); USD karşılığı her tutarın yanında her zaman görünür (gizleme yok); tarih biçimi ay-gün-yıl (ör. Nov 15, 2026 / 15 Kas yerine Kas 15, 2026; kısa biçim 11/15/2026).
 
 ## Görünüm incelemesi (2026-11-15, seçim bekliyor)
 81. **[sırada]** Açılış ekranı: keçi logolu kısa açılış, “piyasa verisi yükleniyor %…” ilerleme çubuğu, ardından verinin saati; ilk boyamada iskelet görünüm. Kurulum penceresi ve karşılama mesajı seçilen dilde; telefonda alt menünün üstüne binmez.
 82. **[sırada]** Borsa durumu ışıkları: her borsa için renkli ışık — yeşil (açık, hafif nabız), sarı (açılış / kapanış seansı), gri (kapalı), mavi (tatil); “açılışa 20 sa 52 dk” geri sayımı; BIST, VİOP, ABD, TEFAS fiyat saati, kripto (7/24); tek satırda kompakt.
 83. **[sırada]** Veri sağlığı ışığı: “Sources 7 failing” kırmızı yazısı yerine tek ışık (yeşil taze < 1 sa, sarı eski, kırmızı sorunlu) ve tıklayınca hangi kaynağın neden çalışmadığı.
 84. **[sırada]** Fon sağlığı ışığı: her fon kartında trafik ışığı — mevduatın önünde / yakın / gerisinde; uyarı varsa turuncu nokta.
-85. **[sırada]** Üst çubuk sadeleşmesi: sürüm yazısı ve F tuşları kaldırılır (sürüm Ayarlar’da); arama kutusu “Sembol ara…” (kesilmeyen metin) ve ⌘K / Ctrl K ile açılan komut paleti; Raporlar ve ? düğmeleri tek “⋯” menüsünde.
-86. **[sırada]** Yazı: rakamlar mono yerine aynı yazı ailesinde eşit genişlikli (tabular) rakamlarla — daha kurumsal görünüm; mono yalnızca Terminal temasında. Panel başlıklarında BÜYÜK HARF yerine normal yazım; Türkçe büyük harf hatası (“SİLVER”) giderilir. Kullanıcı: yazı tipi Ayarlar’dan seçilebilsin, birkaç seçenek olsun (ör. IBM Plex Sans, Inter, Source Serif, IBM Plex Mono / Terminal).
-87. **[sırada]** Tek tarih ve saat biçimi: her yerde ay-gün-yıl (Nov 15, 2026 / Kas 15, 2026; kısa 11/15/2026), saat 13:18, “24 sa önce” gibi göreli zaman ve üzerine gelince tam tarih.
-88. **[sırada]** USD her yerde: tarayıcı, fon kartı, kırılımlar, raporlar dahil her TL tutarın yanında küçük USD karşılığı (gizleme yok).
-89. **[sırada]** Renk uyumu: logo turuncusu ile vurgu rengi (teal) çakışıyor — marka paleti: lacivert + turuncu vurgu (Paper / Slate / Private Banking temalarında uyumlu tonlar); yeşil / kırmızı yalnızca yön için, yanında ▲▼ işareti.
+85. **[yapıldı v2.2]** Üst çubuk sadeleşmesi: sürüm yazısı ve F tuşları kaldırılır (sürüm Ayarlar’da); arama kutusu “Sembol ara…” (kesilmeyen metin) ve ⌘K / Ctrl K ile açılan komut paleti; Raporlar ve ? düğmeleri tek “⋯” menüsünde.
+86. **[yapıldı v2.2]** Yazı: rakamlar mono yerine aynı yazı ailesinde eşit genişlikli (tabular) rakamlarla — daha kurumsal görünüm; mono yalnızca Terminal temasında. Panel başlıklarında BÜYÜK HARF yerine normal yazım; Türkçe büyük harf hatası (“SİLVER”) giderilir. Kullanıcı: yazı tipi Ayarlar’dan seçilebilsin, birkaç seçenek olsun (ör. IBM Plex Sans, Inter, Source Serif, IBM Plex Mono / Terminal).
+87. **[yapıldı v2.2]** Tek tarih ve saat biçimi: her yerde ay-gün-yıl (Nov 15, 2026 / Kas 15, 2026; kısa 11/15/2026), saat 13:18, “24 sa önce” gibi göreli zaman ve üzerine gelince tam tarih.
+88. **[yapıldı v2.2]** USD her yerde: tarayıcı, fon kartı, kırılımlar, raporlar dahil her TL tutarın yanında küçük USD karşılığı (gizleme yok).
+89. **[yapıldı v2.2]** Renk uyumu: logo turuncusu ile vurgu rengi (teal) çakışıyor — marka paleti: lacivert + turuncu vurgu (Paper / Slate / Private Banking temalarında uyumlu tonlar); yeşil / kırmızı yalnızca yön için, yanında ▲▼ işareti.
 90. **[sırada]** Tablolar: sabit başlık satırı, satır üzerine gelince vurgu, tekrar eden etiketler (her satırda “BIST equity”, “12 months”) yerine sütun başlığında bir kez; 1 aylık mini grafik (sparkline); “Zaman” sütunu varsayılanda gizli; satır başındaki renkli çizginin anlamı açıklanır.
 91. **[sırada]** Fiyat değişince yumuşak yanıp sönme (yeşil / kırmızı), sayıların kayarak değişmesi; panel açılış-kapanış geçişleri; odak halkası ve klavye ile gezinme.
 92. **[sırada]** Boş ve ilk kullanım durumları: “0 TRY” büyük rakamı yerine “İlk fonunuzu ekleyin” çağrısı; boş paneller gizlenir.
 93. Bugün sayfasının sadeleşmesi: eski “Bir bakışta / Gelen kutusu / Dünkü kapanıştan beri / Karar kontrolü / Son bakışınızdan beri / …” panelleri birleştirilir veya kaldırılır (72 ile birlikte); en üstte yalnızca 4–5 kart.
-94. **[sırada]** Telefon: üst çubuk tek satır (logo + arama + bildirim), kart görünümü, büyük dokunma alanları, alt menüde simgeler; bildirim balonu alt menünün üstünde.
+94. **[yapıldı v2.2]** Telefon: üst çubuk tek satır (logo + arama + bildirim), kart görünümü, büyük dokunma alanları, alt menüde simgeler; bildirim balonu alt menünün üstünde.
 95. **[sırada]** Grafikler: tek renk paleti, ince ızgara, sağda son değer etiketi, üzerine gelince artı imleç ve değer; açık ve koyu temada aynı okunurluk.
-96. **[sırada]** Erişilebilirlik ve okunurluk: en küçük yazı 12 px, gri metinlerde yeterli kontrast, ışıkların yanında metin etiketi (renk tek başına anlam taşımaz). Kullanıcı: yazı büyüklüğü Ayarlar’dan seçilebilsin (Küçük / Normal / Büyük / Çok büyük).
+96. **[yapıldı v2.2]** Erişilebilirlik ve okunurluk: en küçük yazı 12 px, gri metinlerde yeterli kontrast, ışıkların yanında metin etiketi (renk tek başına anlam taşımaz). Kullanıcı: yazı büyüklüğü Ayarlar’dan seçilebilsin (Küçük / Normal / Büyük / Çok büyük).
 
-97. **[sırada]** Açılıştaki “Set up GNC Terminal” penceresi kaldırılır (kullanıcı onayı 2026-11-15). Puanlama profili Ayarlar’da kalır; çekirdek pay ve USD payı hedefleri (eski Sepet / Pozisyonlar ekranı, ana sayfa öneri cümlesi, USD sapma uyarısı) fon bazlı hedef dağılımla değiştirilerek emekliye ayrılır; aylık katkı ileride 62 seçilirse orada kullanılır; kullanılmayan “ufuk” ayarı kaldırılır. İlk açılışta yerine 79’daki kısa tanıtım.
+97. **[yapıldı v2.2]** Açılıştaki “Set up GNC Terminal” penceresi kaldırılır (kullanıcı onayı 2026-11-15). Puanlama profili Ayarlar’da kalır; çekirdek pay ve USD payı hedefleri (eski Sepet / Pozisyonlar ekranı, ana sayfa öneri cümlesi, USD sapma uyarısı) fon bazlı hedef dağılımla değiştirilerek emekliye ayrılır; aylık katkı ileride 62 seçilirse orada kullanılır; kullanılmayan “ufuk” ayarı kaldırılır. İlk açılışta yerine 79’daki kısa tanıtım.
 
 ## Kullanıcının ekledikleri
 (boş)

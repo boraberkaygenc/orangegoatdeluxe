@@ -502,8 +502,8 @@ function alerts(ctx) {
   if (tot > 0) {
     const core = rows.filter(r => r.x && (r.x.cls === 'TR_ETF' || (r.x.cls === 'TEFAS' && r.x.hy && r.x.sub === 'index'))).reduce((a, r) => a + r.value, 0) / tot * 100;
     const usd = rows.filter(r => r.x && r.x.ccy === 'USD').reduce((a, r) => a + r.value, 0) / tot * 100, tc = (100 - S.usdPct) * S.corePct / 100;
-    if (Math.abs(core - tc) > 5) out.push({ level: 'warn', kind: 'rebalance', text: `Rebalance: core ${core.toFixed(0)}% against a ${tc.toFixed(0)}% target. Fix it with new money first.` });
-    if (Math.abs(usd - S.usdPct) > 5) out.push({ level: 'warn', kind: 'rebalance', text: `Rebalance: USD sleeve ${usd.toFixed(0)}% against a ${S.usdPct}% target.` });
+    // v2.2: the old core / USD sleeve targets are retired; each fund's own target mix (improvement engine) raises drift alerts instead
+    void core; void usd; void tc;
   }
   const cash = (+S.cashTRY || 0) + (+S.cashUSD || 0) * (M.usdtry || 49.5), days = S.cashAsOf ? Math.max(0, Math.floor((new Date(M.today) - new Date(S.cashAsOf)) / 864e5)) : 0;
   if (cash > 0 && days >= 3) out.push({ level: 'warn', kind: 'cash', text: `Idle cash: ${fmtTRY(cash)} for ${days} days, about ${fmtTRY(cash * benchNet(S, days) / 100)} forgone against a ${benchLabel(S).replace('USD', 'TRY')}. Park it in a deposit until it is invested.` });
