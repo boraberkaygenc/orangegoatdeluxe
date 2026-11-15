@@ -121,13 +121,14 @@ try { const r = universe.ensure(); log(`universe: ${r.total} instruments wanted 
 // model calibration (walk-forward test of the forecast on stored history; see engine.calibrate): weekly, and on demand from POST /api/calib
 function runCalib(reason) { const t0 = Date.now(); try {
     const pick = cls => coll('instruments').map(([, x]) => x).filter(x => x.cls === cls).sort((a, b) => (b.mcap || 0) - (a.mcap || 0)).slice(0, CONFIG.calibStocks || 300);
-    const list = []; for (const x of [...pick('TR_EQ'), ...pick('US_EQ')]) { let closes = null; try { const f = store2.readSeries(x.symbol); if (f && Array.isArray(f.bars)) closes = f.bars.map(r => [r[0], +r[1]]); } catch (e) { }
+    const list = []; for (const x of [...pick('TR_EQ'), ...pick('US_EQ')]) { let closes = null; try { const f = store2.readSeries(x.symbol); if (f && Array.isArray(f.bars)) closes = f.bars.map(r => [r[0], +r[1], +r[4] || 0]); } catch (e) { }
       if (!closes || closes.length < (x.closes || []).length) closes = (x.closes || []).map(r => [r[0], +r[1]]); if (closes.length >= 300) list.push({ symbol: x.symbol, ccy: x.ccy, closes }); }
-    const c = E.calibrate(list, { years: CONFIG.calibYears || 5 }); c.reason = reason; c.ms = Date.now() - t0; c.series = list.length;
+    const index = {}; for (const [ccy, ix] of [['TRY', 'XU100'], ['USD', 'SPX']]) { let b = null; try { const f = store2.readSeries(ix); if (f && Array.isArray(f.bars)) b = f.bars; } catch (e) { } const x = db.docs['instruments/' + ix] || {}; if (!b || b.length < (x.closes || []).length) b = x.closes || []; if (b.length > 300) index[ccy] = new Map(b.map(r => [r[0], +r[1]])); }
+    const c = E.calibrate(list, { years: CONFIG.calibYears || 5, index }); c.reason = reason; c.ms = Date.now() - t0; c.series = list.length;
     if (c.ok) { put('model/calib', c); log(`calibration (${reason}): ${list.length} series, ${Object.entries(c.stats).map(([k, s]) => `${k} ${s.dates} dates/${s.obs} obs`).join(', ')} in ${c.ms} ms`); }
     else log(`calibration (${reason}): not enough history yet (${list.length} series with 300+ days)`); return c;
   } catch (e) { log('calibration failed:', e.message); return { ok: false, error: e.message }; } }
-setTimeout(() => { const c = db.docs['model/calib']; if (!c || Date.now() - new Date(c.at) > 7 * 864e5) runCalib('start-up'); }, CONFIG.calibDelayMs ?? 120000);
+setTimeout(() => { const c = db.docs['model/calib']; if (!c || !c.w || Date.now() - new Date(c.at) > 7 * 864e5) runCalib('start-up'); }, CONFIG.calibDelayMs ?? 120000);
 setInterval(() => { const c = db.docs['model/calib']; if (!data.isRunning() && (!c || Date.now() - new Date(c.at) > 7 * 864e5)) runCalib('weekly'); }, 6 * 36e5);
 setInterval(() => { try { research.importDigests(); } catch (e) { log('digest watch:', e.message); } }, 60000);
 

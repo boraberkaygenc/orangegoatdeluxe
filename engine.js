@@ -17,7 +17,7 @@ const ETF_SECTOR = { SPY: 'US equity index', VTI: 'US equity index', QQQ: 'US eq
 const AK_TIERS = [[500000, 2], [1000000, 1.9], [2500000, 1.85], [5000000, 1.8], [7500000, 1.75], [12500000, 1.6], [20000000, 1.4], [Infinity, 1.2]];
 const HORIZONS = [['1w', '1 week', 7 / 365], ['2w', '2 weeks', 14 / 365], ['3w', '3 weeks', 21 / 365], ['1m', '1 month', 1 / 12], ['2m', '2 months', 2 / 12], ['3m', '3 months', 0.25], ['6m', '6 months', 0.5], ['9m', '9 months', 0.75], ['12m', '12 months', 1]];
 const SCEN_HORIZONS = [['1 week', 7 / 365], ['2 weeks', 14 / 365], ['3 weeks', 21 / 365], ['1 month', 1 / 12], ['2 months', 2 / 12], ['3 months', 0.25], ['6 months', 0.5], ['9 months', 0.75], ['1 year', 1]];
-const GROUPS = [['trend', 'Trend'], ['mom', 'Momentum (12-1)'], ['rev', 'Short-term reversal'], ['risk', 'Low volatility'], ['value', 'Value'], ['quality', 'Quality'], ['liq', 'Liquidity'], ['cost', 'Cost and tax'], ['fx', 'Currency'], ['edge', 'Expected edge']];
+const GROUPS = [['trend', 'Trend and 52-week high'], ['mom', 'Momentum'], ['rev', 'Short-term'], ['risk', 'Low volatility and calm'], ['value', 'Value'], ['quality', 'Quality'], ['liq', 'Liquidity'], ['cost', 'Cost and tax'], ['fx', 'Currency'], ['edge', 'Expected edge']];
 const PRESETS = {
   balanced: { label: 'Balanced (evidence weights)', w: { trend: 12, mom: 25, rev: 3, risk: 15, value: 15, quality: 10, liq: 5, cost: 5, fx: 0, edge: 10 } },
   taxcore: { label: 'Tax-efficient TRY core', w: { trend: 8, mom: 12, rev: 0, risk: 20, value: 12, quality: 8, liq: 8, cost: 22, fx: 0, edge: 10 } },
@@ -67,7 +67,7 @@ function seriesStats(c, bars) {
     const am = []; for (let i = Math.max(1, n - 21); i < n; i++) { const t = (bars.v[i] || 0) * c[i]; if (t > 0) am.push(Math.abs(c[i] / c[i - 1] - 1) / t); } if (am.length >= 10) o.amihud = mean(am) * 1e9; }
   if (o.atr === undefined) { const tr = []; for (let i = Math.max(1, n - 22); i < n; i++) tr.push(Math.abs(c[i] - c[i - 1])); if (tr.length >= 10) o.atr = mean(tr) * 1.4; o.atrApprox = true; }
   const last = c[n - 1], ret = k => n > k ? (last / c[n - 1 - k] - 1) * 100 : null;
-  o.r1w = ret(5); o.r2w = ret(10); o.r1m = ret(21); o.r3m = ret(63); o.r6m = ret(126); o.r1y = ret(250);
+  o.r1d = ret(1); o.r1w = ret(5); o.r2w = ret(10); o.r1m = ret(21); o.r3m = ret(63); o.r6m = ret(126); o.r1y = ret(250);
   const lr = []; let jump = false;
   for (let i = 1; i < n; i++) { const r = Math.log(c[i] / c[i - 1]); if (Math.abs(r) > 0.3) jump = true; lr.push(r); }
   o.jump = jump;
@@ -80,6 +80,10 @@ function seriesStats(c, bars) {
   if (n >= 50) o.ma50 = mean(c.slice(-50));
   if (n >= 15) { let g = 0, l = 0; for (let i = n - 14; i < n; i++) { const d = c[i] - c[i - 1]; if (d > 0) g += d; else l -= d; } o.rsi = l === 0 ? 100 : 100 - 100 / (1 + g / l); }
   o.hiS = Math.max(...c); o.loS = Math.min(...c);
+  // scoring v3 signals (see scoreAll): nearness to the 52-week high (George-Hwang), largest one-day jump in the last week (lottery / MAX effect, Bali-Cakici-Whitelaw), abnormal volume
+  if (n >= 120) { let mx = 0; for (let i = Math.max(0, n - 252); i < n; i++) mx = Math.max(mx, c[i]); o.hi252p = c[n - 1] / mx; }
+  if (n >= 6) { let m = -1; for (let i = n - 5; i < n; i++) m = Math.max(m, Math.log(c[i] / c[i - 1])); o.maxDay5 = m * 100; }
+  if (bars && bars.v && bars.v.length === n && n >= 70) { const v5 = bars.v.slice(-5).filter(v => v > 0), v60 = bars.v.slice(-65, -5).filter(v => v > 0).sort((p, q) => p - q); if (v5.length >= 3 && v60.length >= 30) o.abvol = Math.log(mean(v5) / v60[Math.floor(v60.length / 2)]); }
   return o;
 }
 function liqTier(x) {
@@ -126,7 +130,7 @@ function enrich(inst, S, M) {
     e.r3mEst = false;
     if ((e.r3m === null || e.r3m === undefined) && e.r1m !== null && e.r1m !== undefined && e.r6m !== null && e.r6m !== undefined) { const a1 = 1 + e.r1m / 100, a6 = 1 + e.r6m / 100; if (a1 > 0 && a6 > 0) { e.r3m = (a1 * Math.pow(a6 / a1, 2 / 5) - 1) * 100; e.r3mEst = true; } }
     e.vol = st.vol ?? num(x.vol); e.dvol = st.dvol; e.mdd = st.mdd; e.rsi = st.rsi ?? num(x.rsi); e.ma20 = st.ma20; e.ma50 = num(x.ma50) ?? st.ma50; e.ma200 = st.ma200 ?? num(x.ma200);
-    e.mom121 = st.mom121 ?? null; e.mom61 = st.mom61 ?? null; e.atr = st.atr ?? null; e.atrApprox = !!st.atrApprox; e.turnover = st.turnover ?? (num(x.avgVolume) && num(x.price) ? x.avgVolume * x.price : null); e.amihud = st.amihud ?? null;
+    e.mom121 = st.mom121 ?? null; e.mom61 = st.mom61 ?? null; e.atr = st.atr ?? null; e.atrApprox = !!st.atrApprox; e.turnover = st.turnover ?? (num(x.avgVolume) && num(x.price) ? x.avgVolume * x.price : null); e.amihud = st.amihud ?? null; e.hi252p = st.hi252p ?? null; e.r1d = st.r1d ?? null; e.maxDay5 = st.maxDay5 ?? null; e.abvol = st.abvol ?? null;
     e.pb = num(x.pb) > 0 && num(x.pb) < 100 ? x.pb : null; e.roe = num(x.roe); e.margin = num(x.margin);
     const F = x.fund || null; if (F) { if (e.roe === null && num(F.roe) !== null) e.roe = F.roe; if (e.margin === null && num(F.margin) !== null) e.margin = F.margin; if (!(num(x.pb) > 0) && num(F.bvps) > 0 && num(x.price) > 0) e.pb = x.price / F.bvps; e.fundSrc = F.src; e.revGrowth = num(F.revGrowth); } e.above200 = e.ma200 && e.price ? e.price > e.ma200 : null;
     e.hi52 = num(x.hi52) ?? st.hiS ?? null; e.lo52 = num(x.lo52) ?? null; e.n = st.n || 0;
@@ -164,6 +168,14 @@ function enrich(inst, S, M) {
     out[x.symbol] = { ...x, e };
   }
   for (const ccy of ['TRY', 'USD']) { const g = Object.values(out).filter(y => y.ccy === ccy && (y.cls === 'TR_EQ' || y.cls === 'US_EQ') && y.e.amihud !== null && y.e.amihud !== undefined); if (g.length >= 20) { const v = g.map(y => y.e.amihud).sort((a, b) => a - b), cut = v[Math.floor(v.length * 0.8)]; for (const y of g) if (y.e.amihud > cut) { y.e.amihudWorst = true; y.e.gate = gate(y, y.e, S, M); } } }
+  // residual (index-adjusted) statistics for equities: beta, idiosyncratic volatility and residual 12-1 momentum (Blitz-Huij-Martens) over the last year, plus the 1-month return over the index
+  for (const [ccy, ix] of [['TRY', 'XU100'], ['USD', 'SPX']]) { const I = inst[ix]; if (!I) continue; const ib = barsOf(I), im = new Map(ib.d.map((d, i) => [d, ib.c[i]]));
+    for (const y of Object.values(out)) { if (y.ccy !== ccy || (y.cls !== 'TR_EQ' && y.cls !== 'US_EQ')) continue; const b = barsOf(y), n = b.c.length; if (n < 200) continue;
+      const lr = [], xr = []; for (let i = Math.max(1, n - 252); i < n; i++) { const a = im.get(b.d[i - 1]), z = im.get(b.d[i]); if (!(a > 0 && z > 0)) continue; const r = Math.log(b.c[i] / b.c[i - 1]); if (Math.abs(r) > 0.45) continue; lr.push(r); xr.push(Math.log(z / a)); }
+      if (lr.length < 150) continue; const mx = mean(xr), my = mean(lr); let cv = 0, vx = 0; for (let t = 0; t < lr.length; t++) { cv += (xr[t] - mx) * (lr[t] - my); vx += (xr[t] - mx) ** 2; } const bt = vx ? cv / vx : 1;
+      const res = lr.map((r, t) => r - bt * xr[t]), rs = res.slice(0, Math.max(10, res.length - 21)), sdr = sd(res);
+      y.e.idio = sdr ? sdr * Math.sqrt(252) * 100 : null; y.e.resmom = rs.length > 20 && sd(rs) ? rs.reduce((a, v) => a + v, 0) / (sd(rs) * Math.sqrt(rs.length)) : null; y.e.betaH = bt;
+      const i0 = im.get(b.d[n - 1]), i21 = n > 21 ? im.get(b.d[n - 22]) : null; y.e.r21x = i0 && i21 && b.c[n - 22] > 0 ? (Math.log(b.c[n - 1] / b.c[n - 22]) - Math.log(i0 / i21)) * 100 : null; } }
   return out;
 }
 /* ---------- Faber trend filter: index against its 10-month (200-day) average ---------- */
@@ -302,6 +314,52 @@ function zScores(items, key, out) {
   const vals = items.map(o => o.raw[key]).filter(v => v !== null && v !== undefined && isFinite(v)); const m = mean(vals), s = sd(vals) || 1;
   for (const o of items) { const v = o.raw[key]; out(o, v === null || v === undefined || !isFinite(v) ? 0 : (v - m) / s); }
 }
+/* ---------- scoring v3: evidence-weighted composite ----------
+   Each signal is rank-gaussianised inside its peer group (BIST shares, US shares, funds); fundamentals are compared within their
+   industry (shrunk toward the whole group when the industry is small); the weighted sum is neutralised for company size and turned
+   into a 0-100 percentile. Price-signal weights come from the walk-forward calibration (rank IC, shrunk toward research priors,
+   negative weights dropped); value and quality, which cannot be tested without point-in-time fundamentals, keep a fixed share.
+   Backtest 2017-2026, BIST: rank IC 0.112 (t 8.7) against 0.064 for the earlier score. */
+const V3_SIGNALS = ['lowvol', 'idio', 'hi52', 'maxDay', 'above200', 'mom121ra', 'resmom', 'rsiRev', 'abvol', 'r21x', 'lowbeta'];
+const V3_DEFAULT_W = { TRY: { lowvol: 0.187, idio: 0.142, hi52: 0.181, maxDay: 0.205, above200: 0.11, mom121ra: 0.079, resmom: 0.032, r21x: 0.064 },
+  USD: { lowvol: 0.024, hi52: 0.063, maxDay: 0.14, above200: 0.106, mom121ra: 0.204, resmom: 0.218, abvol: 0.194, r21x: 0.051 } };
+const V3_SHARE = { TRY: { price: 0.70, value: 0.15, quality: 0.10, cost: 0.05 }, USD: { price: 0.45, value: 0.25, quality: 0.25, cost: 0.05 } };
+const V3_GROUP = { trend: ['hi52', 'above200'], mom: ['mom121ra', 'resmom', 'r21x'], rev: ['rsiRev', 'abvol'], risk: ['lowvol', 'idio', 'maxDay', 'lowbeta'] };
+function invNorm(p) { p = Math.min(0.999, Math.max(0.001, p)); const a = [-39.69683028665376, 220.9460984245205, -275.9285104469687, 138.357751867269, -30.66479806614716, 2.506628277459239], b = [-54.47609879822406, 161.5858368580409, -155.6989798598866, 66.80131188771011, -13.28068155288572], c = [-0.007784894002430293, -0.3223964580411365, -2.400758277161838, -2.549732539343734, 4.374664141464968, 2.938163982698783], d = [0.007784695709041462, 0.3224671290700398, 2.445134137142996, 3.754408661907416];
+  if (p < 0.02425 || p > 0.97575) { const q = Math.sqrt(-2 * Math.log(Math.min(p, 1 - p))), x = (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1); return p < 0.5 ? x : -x; }
+  const r = p - 0.5, r2 = r * r; return (((((a[0] * r2 + a[1]) * r2 + a[2]) * r2 + a[3]) * r2 + a[4]) * r2 + a[5]) * r / (((((b[0] * r2 + b[1]) * r2 + b[2]) * r2 + b[3]) * r2 + b[4]) * r2 + 1); }
+function gaussRank(vals) { // rank → normal score; null stays null (bounded, so one extreme ratio cannot dominate)
+  const idx = []; vals.forEach((v, i) => { if (v !== null && v !== undefined && isFinite(v)) idx.push(i); }); const out = vals.map(() => null); if (idx.length < 3) return out;
+  idx.sort((i, j) => vals[i] - vals[j]); let k = 0; while (k < idx.length) { let j = k; while (j + 1 < idx.length && vals[idx[j + 1]] === vals[idx[k]]) j++; const z = invNorm(((k + j) / 2 + 0.5) / idx.length); for (let t = k; t <= j; t++) out[idx[t]] = z; k = j + 1; } return out; }
+function v3Weights(ccy) { const c = CAL && CAL.w && CAL.w[ccy], d = V3_DEFAULT_W[ccy] || V3_DEFAULT_W.TRY; // a signal the calibration could not estimate (no index or volume history) keeps the backtested default
+  const w = c && Object.keys(c).length ? (() => { const m = {}, sc = Object.keys(c).reduce((a, k) => a + (d[k] || 0), 0); for (const k of V3_SIGNALS) m[k] = k in c ? c[k] * sc : (d[k] || 0); return m; })() : d; const t = Object.values(w).reduce((a, v) => a + Math.max(0, v), 0) || 1; return Object.fromEntries(Object.entries(w).map(([k, v]) => [k, Math.max(0, v) / t])); }
+function v3Score(items, S) {
+  const peerOf = o => (o.x.cls === 'TR_EQ' || o.x.cls === 'US_EQ') ? 'eq|' + o.x.ccy : 'fund';
+  const groups = {}; for (const o of items) (groups[peerOf(o)] = groups[peerOf(o)] || []).push(o);
+  for (const [key, g] of Object.entries(groups)) {
+    const eq = key.startsWith('eq'), ccy = key === 'eq|USD' ? 'USD' : 'TRY', W = v3Weights(ccy), SH = eq ? V3_SHARE[ccy] : { price: 0.95, value: 0, quality: 0, cost: 0.05 };
+    for (const o of g) { const e = o.x.e, v = e.vol ?? e.volUsed; o.sig = { lowvol: v ? -v : null, idio: e.idio != null ? -e.idio : null, hi52: e.hi252p ?? (e.hi52 && e.price ? e.price / e.hi52 : null), maxDay: e.maxDay5 != null ? -e.maxDay5 : null,
+      above200: e.above200 === null || e.above200 === undefined ? null : e.above200 ? 1 : 0, mom121ra: e.mom121 != null && v ? e.mom121 / v : null, resmom: e.resmom ?? null, rsiRev: e.rsi != null ? 50 - e.rsi : null, abvol: e.abvol ?? null, r21x: e.r21x ?? null, lowbeta: -(e.betaH ?? e.beta ?? 1) }; }
+    const Z = {}; for (const k of V3_SIGNALS) { const z = gaussRank(g.map(o => o.sig[k])); g.forEach((o, i) => { (o.zs = o.zs || {})[k] = z[i]; }); }
+    // fundamentals: within industry (or sector), shrunk toward the whole group: z = n/(n+10)·z_ind + 10/(n+10)·z_all
+    const neutral = getter => { const all = gaussRank(g.map(getter)), by = {}; g.forEach((o, i) => { const k = o.x.industry || o.x.e.sector || '?'; (by[k] = by[k] || []).push(i); }); const out = all.slice();
+      for (const ids of Object.values(by)) { const zi = gaussRank(ids.map(i => getter(g[i]))), n = ids.filter((i, j) => zi[j] !== null).length; if (n < 3) continue; ids.forEach((i, j) => { if (zi[j] !== null && all[i] !== null) out[i] = n / (n + 10) * zi[j] + 10 / (n + 10) * all[i]; }); } return out; };
+    const avg = parts => { let a = 0, t = 0; for (const [z, w] of parts) if (z !== null && z !== undefined) { a += z * w; t += w; } return t ? a / t : null; };
+    let val = g.map(() => null), qual = g.map(() => null);
+    if (eq) { const ep = neutral(o => o.x.e.ey), bp = neutral(o => o.x.e.pb ? 100 / o.x.e.pb : null), dy = neutral(o => o.x.e.div), roe = neutral(o => o.x.e.roe), mg = neutral(o => o.x.e.margin);
+      // book values are restated under IAS 29 in Turkey since 2023, so book/price counts half there
+      val = g.map((o, i) => avg([[ep[i], 1], [bp[i], ccy === 'TRY' ? 0.5 : 1], [dy[i], 0.5]])); qual = g.map((o, i) => avg([[roe[i], 1], [mg[i], 0.5]])); }
+    const cost = gaussRank(g.map(o => o.raw.cost)), liq = gaussRank(g.map(o => o.raw.liq));
+    let comp = g.map((o, i) => { let p = 0; for (const k of V3_SIGNALS) if (W[k] && o.zs[k] !== null) p += W[k] * o.zs[k]; return SH.price * p + SH.value * (val[i] ?? 0) + SH.quality * (qual[i] ?? 0) + SH.cost * (cost[i] ?? 0); });
+    // size neutral: remove the part of the score explained by company size (log market value or turnover), so large caps do not win by default
+    if (eq) { const sz = gaussRank(g.map(o => o.x.e.mcap ? Math.log(o.x.e.mcap) : o.x.e.turnover ? Math.log(o.x.e.turnover) : null)), ok = g.map((o, i) => sz[i] !== null);
+      const xs = sz.filter((v, i) => ok[i]), ys = comp.filter((v, i) => ok[i]); if (xs.length > 20) { const mx = mean(xs), my = mean(ys); let c = 0, vv = 0; for (let i = 0; i < xs.length; i++) { c += (xs[i] - mx) * (ys[i] - my); vv += (xs[i] - mx) ** 2; } const b = vv ? c / vv : 0; comp = comp.map((v, i) => ok[i] ? v - b * (sz[i] - mx) : v); } }
+    const pr = gaussRank(comp), n = comp.length; const ord = comp.map((v, i) => [v, i]).sort((a, b) => a[0] - b[0]); const pct = new Array(n); ord.forEach(([, i], k) => { pct[i] = n > 1 ? k / (n - 1) * 100 : 50; });
+    const gp = zs => { const r = gaussRank(zs); return r.map(z => z === null ? null : Math.round(phi(z) * 100)); };
+    const grp = {}; for (const [k, ks] of Object.entries(V3_GROUP)) grp[k] = gp(g.map(o => avg(ks.map(s => [o.zs[s], W[s] || 0.05])))); grp.value = gp(val); grp.quality = gp(qual); grp.liq = gp(liq); grp.cost = gp(cost);
+    g.forEach((o, i) => { for (const k of Object.keys(grp)) o.pct[k] = grp[k][i]; if (val[i] !== null) o.z.value = val[i]; const pen = o.x.e.flags.reduce((a, f) => a + (f === 'proxy' ? 3 : f === 'stale history' ? 2 : 6), 0); o.v3 = Math.max(0, Math.round(pct[i] - pen)); o.v3w = { W, SH }; });
+  }
+}
 function scoreAll(inst, S, M, weightsOverride) {
   const E = enrich(inst, S, M), real = macroView(M, S).real;
   const list = Object.values(E).filter(x => x.cls !== 'MACRO');
@@ -340,12 +398,13 @@ function scoreAll(inst, S, M, weightsOverride) {
   pctRanks(items, 'fx');
   for (const o of items) { o.hz = horizons(o.x, S, M, null, o.z); o.raw.edge = o.hz.bestAny.sharpe; }
   for (const g of Object.values(groups)) pctRanks(g, 'edge');
-  const w = weightsOverride || (PRESETS[S.preset] || PRESETS.balanced).w;
+  v3Score(items, S);
+  const w = weightsOverride || (PRESETS[S.preset] || PRESETS.balanced).w, evidence = !weightsOverride && (!S.preset || S.preset === 'balanced') && S.scoringV3 !== false;
   const scoreWith = (o, wts) => { let tw = 0, acc = 0; for (const [k] of GROUPS) { const p = o.pct[k], wk = wts[k] || 0; if (p === null || p === undefined || !wk) continue; tw += wk; acc += wk * p; }
     let sc = tw ? acc / tw : null; const pen = o.x.e.flags.reduce((a, f) => a + (f === 'proxy' ? 3 : f === 'stale history' ? 2 : 6), 0); return sc === null ? null : Math.max(0, Math.round(sc - pen)); };
   const HW = { '1m': horizonWeights('1m', w), '3m': horizonWeights('3m', w), '6m': horizonWeights('6m', w), '12m': horizonWeights('12m', w) };
   return items.map(o => {
-    const score = scoreWith(o, w), scoreH = {}; for (const k of Object.keys(HW)) scoreH[k] = scoreWith(o, HW[k]);
+    const score = evidence && o.v3 !== undefined ? o.v3 : scoreWith(o, w), scoreH = {}; for (const k of Object.keys(HW)) scoreH[k] = scoreWith(o, HW[k]);
     if (S.horizonWeights !== false) { // best span: Sharpe of the span, tilted by the factor score that fits that horizon (momentum/reversal short, value/quality/low-vol long)
       const ok = o.hz.rows.filter(r => !r.locked && r.excess > 0); if (ok.length) { const adj = r => r.sharpe * (0.85 + 0.3 * (scoreH[hBucket(r.k)] ?? 50) / 100); const b = ok.reduce((a, r) => adj(r) > adj(a) ? r : a, ok[0]); o.hz.best = b; o.hz.signal = spanSignal(b.k); } }
     const best = o.hz.best;
@@ -1060,7 +1119,7 @@ function calibrate(list, opts = {}) {
     const dates = [...new Set(L.flatMap(s => s.closes.map(r => r[0])))].sort(), first = dates.length - Math.round(years * 252);
     const pos = L.map(s => { const m = new Map(); s.closes.forEach((r, i) => m.set(r[0], i)); return m; });
     const slopes = {}, ics = {}, spreads = {}, zs = { 21: [], 63: [], 126: [] }, hits = {}; for (const h of H) { slopes[h] = { rev: [], mom: [], trend: [] }; ics[h] = []; spreads[h] = []; hits[h] = [0, 0]; }
-    let nObs = 0, nDates = 0, from = null, to = null;
+    let nObs = 0, nDates = 0, from = null, to = null; const v3ic = [];
     for (let di = Math.max(260, first); di < dates.length - 21; di += step) {
       const d = dates[di], snap = [];
       L.forEach((s, k) => { const i = pos[k].get(d); if (i === undefined || i < 252) return; const c = s.closes, at = j => +c[j][1], px = at(i); if (!(px > 0)) return;
@@ -1071,8 +1130,14 @@ function calibrate(list, opts = {}) {
         let g = 0, l = 0; for (let j = i - 13; j <= i; j++) { const dd = at(j) - at(j - 1); if (dd > 0) g += dd; else l -= dd; } const rsi = l === 0 ? 100 : 100 - 100 / (1 + g / l);
         let s20 = 0; for (let j = i - 19; j <= i; j++) s20 += at(j); let s200 = 0; for (let j = i - 199; j <= i; j++) s200 += at(j);
         const fwd = {}; for (const h of H) if (i + h < c.length && at(i + h) > 0) fwd[h] = Math.log(at(i + h) / px);
-        snap.push({ mom, rsi, ma20D: px / (s20 / 20) - 1, trend: px > s200 / 200 ? 2 : -2, volUsed, fwd }); });
+        const sg = { lowvol: -vol, hi52: px / Math.max(...c.slice(i - 251, i + 1).map(r => +r[1])), maxDay: -Math.max(...lr.slice(-5)), above200: px > s200 / 200 ? 1 : 0, mom121ra: (at(i - 21) / at(i - 252) - 1) * 100 / vol, rsiRev: 50 - rsi, lowbeta: null, idio: null, resmom: null, r21x: null, abvol: null };
+        const ixm = opts.index && opts.index[ccy]; if (ixm) { const xr = [], yr = []; for (let j = i - 251; j <= i; j++) { const a = ixm.get(c[j - 1][0]), b = ixm.get(c[j][0]); if (a > 0 && b > 0) { xr.push(Math.log(b / a)); yr.push(Math.log(at(j) / at(j - 1))); } }
+          if (xr.length > 150) { const mx = mean(xr), my = mean(yr); let cv = 0, vx = 0; for (let t = 0; t < xr.length; t++) { cv += (xr[t] - mx) * (yr[t] - my); vx += (xr[t] - mx) ** 2; } const bt = vx ? cv / vx : 1, res = yr.map((r, t) => r - bt * xr[t]), rs = res.slice(0, -21);
+            sg.lowbeta = -bt; sg.idio = -sd(res); sg.resmom = rs.reduce((a, v) => a + v, 0) / ((sd(rs) || 1) * Math.sqrt(rs.length)); const i0 = ixm.get(c[i][0]), i21 = ixm.get(c[i - 21][0]); if (i0 && i21) sg.r21x = Math.log(px / at(i - 21)) - Math.log(i0 / i21); } }
+        if (c[i].length > 2) { const v5 = c.slice(i - 4, i + 1).map(r => +r[2] || 0), v60 = c.slice(i - 64, i - 4).map(r => +r[2] || 0).filter(v => v > 0).sort((p, q) => p - q); if (v60.length > 30 && mean(v5) > 0) sg.abvol = Math.log(mean(v5) / v60[Math.floor(v60.length / 2)]); }
+        snap.push({ mom, rsi, ma20D: px / (s20 / 20) - 1, trend: px > s200 / 200 ? 2 : -2, volUsed, fwd, sg }); });
       if (snap.length < 20) continue; nDates++; from = from || d; to = d;
+      { const g = snap.filter(o => o.fwd[21] !== undefined); if (g.length >= 30) { const fr = rank(g.map(o => o.fwd[21])), row = {}; for (const k of V3_SIGNALS) { const ok = g.map((o, j) => [o.sg[k], fr[j]]).filter(r => r[0] !== null && isFinite(r[0])); if (ok.length >= 30) row[k] = pear(rank(ok.map(r => r[0])), ok.map(r => r[1])); } v3ic.push(row); } }
       const mm = mean(snap.map(o => o.mom)), sm = sd(snap.map(o => o.mom)) || 1, mr = median(snap.map(o => o.rsi)), m20 = median(snap.map(o => o.ma20D));
       for (const o of snap) { const z = clamp((o.mom - mm) / sm, -3, 3); o.a = { rev: 25 * (clamp(-(o.rsi - mr) / 12, -1, 1.5) + 0.5 * clamp(-(o.ma20D - m20) / 0.06, -1, 1)), mom: 10 * clamp(z, -2, 2), trend: o.trend }; }
       for (const h of H) { const g = snap.filter(o => o.fwd[h] !== undefined); if (g.length < 20) continue; const t = h / 252, w = W[HK[h]], rm = mean(g.map(o => o.fwd[h])), real = g.map(o => o.fwd[h] - rm);
@@ -1097,6 +1162,11 @@ function calibrate(list, opts = {}) {
       const icm = fm(ics[h], h), spr = mean(spreads[h]);
       st.horizons[h] = { coverage90: +(inside * 100).toFixed(1), sigMult: +(q90 / 1.645).toFixed(3), kurt: +k4.toFixed(2), ic: +(mean(ics[h]) || 0).toFixed(3), icT: +icm.t.toFixed(2), spreadAnn: +((Math.exp(spr * 252 / h) - 1) * 100).toFixed(1), hit: hits[h][1] ? +(hits[h][0] / hits[h][1] * 100).toFixed(1) : null }; }
     const k21 = st.horizons[21] ? st.horizons[21].kurt : 3; st.df = +clamp(k21 > 0.2 ? 4 + 6 / k21 : 30, 3, 30).toFixed(1);
+    // scoring v3 weights: mean rank IC per signal, shrunk toward the research prior (tau 0.02), divided by its spread; negatives dropped
+    const PRI = ccy === 'TRY' ? { lowvol: 0.02, idio: 0.01, hi52: 0.01, maxDay: 0.01, above200: 0.02 } : { lowvol: 0.01, hi52: 0.01, maxDay: 0.01, above200: 0.02, mom121ra: 0.02, resmom: 0.02 };
+    const wv = {}, icS = {}; for (const k of V3_SIGNALS) { const a = v3ic.map(r => r[k]).filter(v => v !== undefined && isFinite(v)); if (a.length < 12) continue; const m = mean(a), s0 = sd(a) || 0.05, T = a.length, tau = 0.02, post = (T * m / (s0 * s0) + (PRI[k] || 0) / (tau * tau)) / (T / (s0 * s0) + 1 / (tau * tau));
+      icS[k] = { ic: +m.toFixed(4), t: +(m / s0 * Math.sqrt(T)).toFixed(2), post: +post.toFixed(4) }; wv[k] = Math.max(0, post / s0); }
+    const wt = Object.values(wv).reduce((a, v) => a + v, 0); if (wt > 0) { out.w = out.w || {}; out.w[ccy] = Object.fromEntries(Object.entries(wv).map(([k, v]) => [k, +(v / wt).toFixed(3)])); st.v3 = icS; }
     out.scale[ccy] = sc; out.sig[ccy] = sig; out.stats[ccy] = st; out.ok = true;
   }
   return out;
@@ -1330,7 +1400,7 @@ return { setCalib, getCalib, calibrate, calScale, calSig, num, clamp, CLASSES, G
   horizons, scoreAll, explain, scenario, packageAnalytics, portfolioRisk, roman, longDate, addMonths, picks, holdingsView, alerts, sellList, brief, statementModel, packageModel, tearsheetModel, fundId,
   renderPDF, renderDOCX, fmtTRY, fmtPct, fmtN, DISCLAIMER, riskBucket, closesOf, seriesStats, normRating, brokerLatest, consensus, brokerSignals, brokerDigestModel,
   benchNet, benchLabel, depTax, addDays, daysBetween, makeFx, setDisplay, money, realPct, breakeven, exitPlan, earlyExit, alternatives, perfSeries, backtest, DISPLAY,
-  barsOf, gate, faber, stopDist, trailLevel, realisedVol, capsCheck, diversificationLabel, suggestWeights,
+  V3_DEFAULT_W, V3_SIGNALS, v3Weights, barsOf, gate, faber, stopDist, trailLevel, realisedVol, capsCheck, diversificationLabel, suggestWeights,
   fxRate, depositPath, rfTry, ewmaVol, horizonWeights, hKeyForDays, bootstrapFan, ledgerEntry, scoreLedger, fundModel, fundMetrics, beatDeposit, rankProposals, riskBudget, swapSuggestions, earningsFlags, hedgeSleeve, faberMonthly, bizDays, dailyReturns };
 })();
 if (typeof module !== 'undefined') module.exports = ENGINE;

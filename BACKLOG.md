@@ -137,5 +137,8 @@ Sırada (2026-11-15): 56, 58, 59, 60, 63, 64, 65, 66, 67, 70. Yeni sekme planı 
 
 97. **[yapıldı v2.2]** Açılıştaki “Set up GNC Terminal” penceresi kaldırılır (kullanıcı onayı 2026-11-15). Puanlama profili Ayarlar’da kalır; çekirdek pay ve USD payı hedefleri (eski Sepet / Pozisyonlar ekranı, ana sayfa öneri cümlesi, USD sapma uyarısı) fon bazlı hedef dağılımla değiştirilerek emekliye ayrılır; aylık katkı ileride 62 seçilirse orada kullanılır; kullanılmayan “ufuk” ayarı kaldırılır. İlk açılışta yerine 79’daki kısa tanıtım.
 
+98. **[yapıldı v2.3]** Puanlama v3: 10 yıllık BIST ve ABD verisiyle geriye dönük test (2017–2026). Sinyaller grup içinde sıralanıp normal puana çevrilir; değer ve kalite sektör içinde karşılaştırılır (UMS 29 nedeniyle BIST’te PD/DD yarım ağırlık); toplam puan şirket büyüklüğünden arındırılır; fiyat sinyali ağırlıkları her hafta kalibrasyonda sıralama IC’sinden öğrenilir (araştırma önceliklerine büzülerek). BIST IC 0,064 → 0,112.
+99. **[yapıldı v2.3]** Yükselenler paneli (Piyasalar): bugün / 1 hafta / 1 ay en çok yükselenler; hacim artışı, 52 hafta zirvesine uzaklık ve geçmiş teste dayalı yükseliş türü etiketi (yeşil: devam eğilimli, turuncu: geri verme eğilimli).
+
 ## Kullanıcının ekledikleri
 (boş)

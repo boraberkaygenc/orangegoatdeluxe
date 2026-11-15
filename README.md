@@ -5,6 +5,10 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.3: puanlama v3
+
+Hisse puanı artık 2017–2026 BIST ve ABD verisiyle yapılan geriye dönük testte en iyi sonucu veren yöntemle hesaplanır: sinyaller grup içinde sıralanıp sınırlı normal puana çevrilir, değer ve kalite sektör içinde karşılaştırılır, toplam puan şirket büyüklüğünden arındırılır, fiyat sinyallerinin ağırlıkları her hafta kalibrasyonda yeniden öğrenilir. Ayrıntı: Analiz › Model › “Puan nasıl hesaplanıyor”. Piyasalar sekmesindeki “Yükselenler” paneli kısa vadeli yükselişleri, geçmişte nasıl sonuçlandıklarını gösteren etiketlerle listeler.
+
 ## v2.1 yenilikleri
 - **Emtialar:** altın, gümüş, platin, paladyum, bakır, Brent ve WTI petrol, doğalgaz; gram gümüş; borsadaki altın ve gümüş fonları (GLDTR, ZGOLD, ISGLK, GMSTR). Tarama ekranında **Emtia** sekmesi.
 - **Her enstrüman için getiri öngörüsü:** 1, 3, 6, 12 ay ve tutma süresi sonu; maliyet ve vergi sonrası beklenen getiri, olası aralık, mevduatı geçme olasılığı.
