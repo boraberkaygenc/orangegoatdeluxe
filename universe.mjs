@@ -66,8 +66,6 @@ export const CMDTY = [
   { symbol: 'NATGAS', yahoo: 'NG=F', name: 'Natural gas (USD per MMBtu)', sub: 'energy', unit: 'MMBtu' },
 ];
 // BIST-listed commodity funds (BYF); their own history is thin on Yahoo, so returns and risk come from the gram gold / silver series
-// crypto: BTC and ETH in USD (Yahoo), traded around the clock
-export const CRYPTO = [{ symbol: 'BTCUSD', yahoo: 'BTC-USD', name: 'Bitcoin (USD)', sub: 'crypto' }, { symbol: 'ETHUSD', yahoo: 'ETH-USD', name: 'Ethereum (USD)', sub: 'crypto' }];
 export const CMDTY_BYF = [
   { symbol: 'GLDTR', name: 'QNB Portföy Altın BYF', sub: 'gold', proxy: 'GAUTRY' },
   { symbol: 'ZGOLD', name: 'Ziraat Portföy Altın BYF', sub: 'gold', proxy: 'GAUTRY' },
@@ -137,7 +135,6 @@ export function createUniverse({ dir, db, put, log, inbox, tefasList, tefasHisto
       want.set('GAGTRY', { symbol: 'GAGTRY', cls: 'TR_ETF', ccy: 'TRY', sector: 'Commodities', sub: 'silver', name: 'Silver – gram (TRY, from XAG and USD/TRY)', derived: 'silver' });
       for (const f of CMDTY_BYF) want.set(f.symbol, { ...f, cls: 'TR_ETF', ccy: 'TRY', sector: 'Commodities', cmdtyFund: true });
     }
-    if (on('uniCrypto')) for (const c of CRYPTO) want.set(c.symbol, { ...c, cls: 'CRYPTO', ccy: 'USD', sector: 'Crypto' });
     if (on('uniTefas')) for (const r of U.tefas) want.set(r.code, { symbol: r.code, cls: 'TEFAS', ccy: 'TRY', sector: r.hy ? 'BIST equity index' : r.cmdtyFund ? 'Commodities' : (r.sub === 'mm' ? 'Money market' : 'Mixed / other'), cmdtyFund: !!r.cmdtyFund, name: r.name, hy: !!r.hy, b51: !!r.b51, sub: r.sub || (r.hy ? 'equity' : 'other'), fee: r.fee ?? (r.hy ? 1.5 : 1.0) });
     let added = 0, removed = 0; const dead = [], now = Date.now(), today = stamp.slice(0, 10);
     for (const [k, x] of Object.entries(db.docs)) {

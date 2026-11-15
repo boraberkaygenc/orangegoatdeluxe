@@ -91,7 +91,7 @@ Sırada (2026-11-15): 56, 58, 59, 60, 63, 64, 65, 66, 67, 70. Yeni sekme planı 
 57. Vergi / beyanname yardımcısı: yıl içi gerçekleşen kazançlar (ABD hisseleri için ÜFE endekslemesi, FIFO, TCMB kuru), temettü gelirleri, kesilen stopaj; PDF / Excel çıktısı
 58. **[yapıldı v2.2]** Dönemsel performans tablosu: her fon için ay / çeyrek / yıl bazında zaman ağırlıklı (TWR) ve para ağırlıklı (XIRR) getiri; getirinin fiyat, temettü ve kur etkisine ayrılması
 59. **[yapıldı v2.2]** Reel (enflasyondan arındırılmış) görünüm: her getirinin TÜFE’ye göre reel karşılığı ve “enflasyonu yendim mi” göstergesi
-60. **[yapıldı v2.2]** Yeni varlık türleri: kripto (BTC, ETH), Eurobond / DİBS / özel sektör tahvili, BES fonları, fiziki altın (çeyrek, cumhuriyet), gayrimenkul ve araç (elle değerleme), borçlar (kredi, kart) → gerçek net varlık
+60. **[yapıldı v2.2]** Yeni varlık türleri: kripto (BTC, ETH), Eurobond / DİBS / özel sektör tahvili, BES fonları, fiziki altın (çeyrek, cumhuriyet), gayrimenkul ve araç (elle değerleme), borçlar (kredi, kart) → gerçek net varlık *(Kripto, kullanıcı kararıyla kapsamdan çıkarıldı.)*
 61. Telefona bildirim: fiyat, hedef / zarar-kes, vade ve KAP uyarıları (kişisel Telegram botu veya web push; yalnızca sembol listesi paylaşılır)
 62. Hedef ve emeklilik planlayıcı: aylık düzenli yatırım (DCA), hedef tutar / tarih, Monte Carlo ile ulaşma olasılığı, düzenli yatırım hatırlatıcısı
 63. **[yapıldı v2.2]** Masraf analizi: yıl bazında ödenen komisyon, BSMV, fon yönetim ücreti; 10 yıllık birikimli etkisi ve daha ucuz alternatif önerisi
