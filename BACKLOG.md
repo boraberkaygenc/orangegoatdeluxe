@@ -84,5 +84,22 @@
     - Yanıtlar uygulamadaki rakamlara dayanır ve kaynağını gösterir; “yatırım tavsiyesi değildir” notu.
     - Maliyet: soru başına yaklaşık birkaç cent (Opus 5.5: girdi $4, çıktı $20 / milyon token); Ayarlar'da aylık harcama sayacı ve üst sınır.
 
+## Benzer uygulamalarla karşılaştırma — eksikler (2026-11-15, seçim bekliyor)
+55. Cihazlar arası şifreli eşitleme (telefon + bilgisayar aynı veri; uçtan uca şifreli, kendi Google Drive / GitHub alanınızda)
+56. Temettü ve sermaye artırımları fonlara otomatik: temettü kaydı (brüt, stopaj, net), bedelsiz / bedelli / bölünme uyarlaması, temettü takvimi ve yıllık temettü geliri tahmini
+57. Vergi / beyanname yardımcısı: yıl içi gerçekleşen kazançlar (ABD hisseleri için ÜFE endekslemesi, FIFO, TCMB kuru), temettü gelirleri, kesilen stopaj; PDF / Excel çıktısı
+58. Dönemsel performans tablosu: her fon için ay / çeyrek / yıl bazında zaman ağırlıklı (TWR) ve para ağırlıklı (XIRR) getiri; getirinin fiyat, temettü ve kur etkisine ayrılması
+59. Reel (enflasyondan arındırılmış) görünüm: her getirinin TÜFE’ye göre reel karşılığı ve “enflasyonu yendim mi” göstergesi
+60. Yeni varlık türleri: kripto (BTC, ETH), Eurobond / DİBS / özel sektör tahvili, BES fonları, fiziki altın (çeyrek, cumhuriyet), gayrimenkul ve araç (elle değerleme), borçlar (kredi, kart) → gerçek net varlık
+61. Telefona bildirim: fiyat, hedef / zarar-kes, vade ve KAP uyarıları (kişisel Telegram botu veya web push; yalnızca sembol listesi paylaşılır)
+62. Hedef ve emeklilik planlayıcı: aylık düzenli yatırım (DCA), hedef tutar / tarih, Monte Carlo ile ulaşma olasılığı, düzenli yatırım hatırlatıcısı
+63. Masraf analizi: yıl bazında ödenen komisyon, BSMV, fon yönetim ücreti; 10 yıllık birikimli etkisi ve daha ucuz alternatif önerisi
+64. Ekonomik takvim ve haber akışı: TCMB faiz kararı, enflasyon, ABD verileri; elde tutulan hisselerin KAP bildirimleri kısa özetlerle; olayın fona olası etkisi
+65. Fon içi “X-ray”: TEFAS fonlarının portföy dağılımı (KAP raporlarından) ile tüm fonlardaki gerçek hisse ve sektör maruziyeti
+66. Temel analiz kartı: değerleme (F/K, PD/DD sektöre göre), büyüme, borçluluk, temettü güvenliği — tek bakışta görsel özet
+67. “Ya bunun yerine şunu alsaydım?”: her alımın aynı tarihte BIST 100, altın, dolar veya mevduat ile karşılaştırması
+68. Aracı kurum ekstrelerinin düzenli içe aktarımı: banka / aracı kurum şablonları, mükerrer kayıt tespiti, toplu içe aktarma
+69. Uygulama kilidi (PIN / Windows Hello / parmak izi) ve güvenilir kişiye acil durum dosyası (varlık listesi, hesaplar)
+
 ## Kullanıcının ekledikleri
 (boş)
