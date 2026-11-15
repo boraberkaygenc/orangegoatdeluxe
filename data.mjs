@@ -66,7 +66,8 @@ export async function yahooChart(sym, range) {
       const bars = []; for (let i = 0; i < ts.length; i++) if (cl[i] > 0) bars.push([dateIn(ts[i], tz), +(+cl[i]).toFixed(6), hi[i] > 0 ? +(+hi[i]).toFixed(6) : null, lo[i] > 0 ? +(+lo[i]).toFixed(6) : null, vo[i] >= 0 ? Math.round(vo[i]) : null]);
       const m = res.meta; if (m.regularMarketPrice > 0 && m.regularMarketTime) { const d = dateIn(m.regularMarketTime, tz); const last = bars[bars.length - 1]; if (last && last[0] === d) last[1] = +m.regularMarketPrice; else bars.push([d, +m.regularMarketPrice, null, null, num(m.regularMarketVolume)]); }
       const splits = res.events && res.events.splits ? Object.values(res.events.splits).map(s => ({ date: dateIn(s.date, tz), ratio: s.splitRatio })) : [];
-      return { bars, price: m.regularMarketPrice > 0 ? +m.regularMarketPrice : (bars.length ? bars[bars.length - 1][1] : null), at: m.regularMarketTime ? new Date(m.regularMarketTime * 1000).toISOString() : null, splits, name: m.longName || m.shortName || null };
+      const divs = res.events && res.events.dividends ? Object.values(res.events.dividends).filter(d => d && d.amount > 0 && d.date).map(d => [dateIn(d.date, tz), +(+d.amount).toFixed(6)]).sort((a, b) => a[0] < b[0] ? -1 : 1) : [];
+      return { bars, price: m.regularMarketPrice > 0 ? +m.regularMarketPrice : (bars.length ? bars[bars.length - 1][1] : null), at: m.regularMarketTime ? new Date(m.regularMarketTime * 1000).toISOString() : null, splits, divs, name: m.longName || m.shortName || null };
     } catch (e) { lastErr = e; }
   }
   throw lastErr;
@@ -172,7 +173,7 @@ export function createData({ db, put, log, inbox, coll, ist, config, issuePicks,
           const [k, x] = queue[idx++];
           const want1y = full || barsOf(db.docs[k] || x).length < 60;
           try { const got = await yahooChart(yahooSymbol(x), want1y ? '1y' : '5d'); const y = { ...(db.docs[k] || x) }; if (!full && want1y) y.histTriedAt = day0;
-            y.bars = full ? mergeBars([], got.bars) : mergeBars(barsOf(y), got.bars); if (got.splits && got.splits.length) y.splits = got.splits.slice(-5);
+            y.bars = full ? mergeBars([], got.bars) : mergeBars(barsOf(y), got.bars); if (got.splits && got.splits.length) y.splits = got.splits.slice(-5); if (got.divs && got.divs.length) { const m = new Map((y.divs || []).map(d => [d[0], d])); for (const d of got.divs) m.set(d[0], d); y.divs = [...m.values()].sort((a, b) => a[0] < b[0] ? -1 : 1).slice(-24); }
             if (got.price) y.price = got.price; if (got.name && (!y.name || y.name === y.symbol)) y.name = got.name; if (full || want1y) keepSeries(x, got.bars, got.splits, srcLabel(x)); derive(y); if (full) integrity(y);
             db.docs[k] = stamp(y, srcLabel(x), okSet.has(x.symbol) ? (db.docs[k].priceSrc || 'chart') : 'chart', got.at); okSet.add(x.symbol); }
           catch (e) { const why = errMsg(e); if (!okSet.has(x.symbol)) { fails.push(x.symbol); if (!firstErr) firstErr = `${x.symbol}: ${why}`; } db.docs[k] = { ...(db.docs[k] || x), fetchError: why.slice(0, 80), fetchErrorAt: new Date().toISOString() }; }

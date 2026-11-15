@@ -33,6 +33,7 @@ const DELUXE = (() => {
     for (const t of L) {
       const c = CCYS.includes(t.ccy) ? t.ccy : 'TRY', amt = +t.amount || 0, cost = (+t.fee || 0) + (+t.bsmv || 0);
       if (t.type === 'in') { cash[c] += amt - cost; flows.push({ date: t.date, amount: r2(c === 'USD' ? amt * fxOf(t) : amt) }); }
+      else if (t.type === 'div') { cash[c] += amt; } // dividend received: net amount into the fund's cash, income (not new money)
       else if (t.type === 'out') { cash[c] -= amt + cost; flows.push({ date: t.date, amount: -r2(c === 'USD' ? amt * fxOf(t) : amt) }); }
       else if (t.type === 'fx') { const to = CCYS.includes(t.toCcy) ? t.toCcy : (c === 'TRY' ? 'USD' : 'TRY'); cash[c] -= amt + cost; cash[to] += +t.toAmount || 0; }
       else if (t.type === 'dep-open') { cash[c] -= amt + cost; deps.set(t.depId, { id: t.depId, ccy: c, principal: amt, rate: +t.rate || 0, start: t.date, maturity: t.maturity || null, stopaj: +t.stopaj || 0, open: true, note: t.note || '' }); }
@@ -150,6 +151,7 @@ const DELUXE = (() => {
   }
   function txText(t, L) {
     const n = (v, d = 2) => (+v || 0).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+    if (t.type === 'div') return `${L('Dividend')} ${t.symbol || ''} · ${n(t.qty, 0)} × ${n(t.perShare, 4)} = ${L('gross')} ${n(t.gross)} · ${L('withholding')} ${n(t.tax)} · ${L('net')} ${n(t.amount)} ${t.ccy}`;
     if (t.type === 'in') return `${L('Money in')} ${n(t.amount)} ${t.ccy}`;
     if (t.type === 'out') return `${L('Money out')} ${n(t.amount)} ${t.ccy}`;
     if (t.type === 'fx') return `${L('Convert')} ${n(t.amount)} ${t.ccy} → ${n(t.toAmount)} ${t.toCcy} @ ${n(t.fx, 4)}`;

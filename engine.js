@@ -10,7 +10,7 @@ const sd = a => { if (a.length < 2) return null; const m = mean(a); return Math.
 const phi = z => 0.5 * (1 + erf(z / Math.SQRT2));
 function erf(x) { const s = Math.sign(x); x = Math.abs(x); const t = 1 / (1 + 0.3275911 * x); const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x); return s * y; }
 
-const CLASSES = { US_EQ: 'US equity', US_ETF: 'US ETF', TR_EQ: 'BIST equity', TR_ETF: 'BIST BYF', TEFAS: 'TEFAS fund', CMDTY: 'Commodity', MACRO: 'Macro' };
+const CLASSES = { US_EQ: 'US equity', US_ETF: 'US ETF', TR_EQ: 'BIST equity', TR_ETF: 'BIST BYF', TEFAS: 'TEFAS fund', CMDTY: 'Commodity', CRYPTO: 'Crypto', MACRO: 'Macro' };
 const GOLD = [], BOND = []; // US ETFs and gold are no longer in the universe (kept for data-file compatibility)
 const ETF_BETA = { SPY: 1, VTI: 1, QQQ: 1.15, IWM: 1.2, SCHD: 0.8, VXUS: 0.85, GLD: 0.1, IAU: 0.1, TLT: -0.1, BND: 0.05 };
 const ETF_SECTOR = { SPY: 'US equity index', VTI: 'US equity index', QQQ: 'US equity index', IWM: 'US equity index', SCHD: 'US equity index', VXUS: 'International equity index', GLD: 'Gold', IAU: 'Gold', TLT: 'Bonds', BND: 'Bonds' };
@@ -28,7 +28,8 @@ const PRESETS = {
 };
 const DEFAULT_SETTINGS = {
   preset: 'balanced', tlRate: 34, mmTax: 17.5, taxTrEq: 0, taxTefas: 17.5, divTaxTr: 15, usMarginal: 27, ufe: 24, usdView: 18,
-  rfUsd: 4, expGold: 3, expCmdty: 2.5, cmdtyExp: {}, // commodities: long-run USD expectation a year (≈ US inflation; front-month futures, roll yield not modelled)
+  rfUsd: 4, expGold: 3, expCmdty: 2.5, expCrypto: 0, // crypto: no fundamental expectation in USD — the trend signal and the volatility carry the forecast
+   cmdtyExp: {}, // commodities: long-run USD expectation a year (≈ US inflation; front-month futures, roll yield not modelled)
   erpTr: 9, erpAsOf: 'Damodaran Jan 2026: mature-market premium 4.6 + half of the Turkiye country risk premium', erpUs: 4.6, expBond: 4, expVol: 35, fxVol: 8,
   volTarget: 20, volTargetUsd: 15, stopAtr: 2.5, trailAtr: 3, capStock: 10, capFund: 40, capSector: 25, capBig: 40,
   gateTurnoverTRY: 0, liqWarnTRY: 50e6, gateTurnoverUSD: 20e6, gateStaleDays: 2, gateMinHist: 120, lang: 'en',
@@ -146,7 +147,7 @@ function enrich(inst, S, M) {
     }
     if (x.cls !== 'MACRO') {
       if (e.n > 0 && e.n < 40 && !e.isProxy) flags.push('short history');
-      const noSplit = x.cls === 'CMDTY' || x.derived; // commodities have no splits: big days are real moves or contract rolls
+      const noSplit = x.cls === 'CMDTY' || x.cls === 'CRYPTO' || x.derived; // commodities have no splits: big days are real moves or contract rolls
       if ((st.jump && !noSplit) || x.splitSuspect) flags.push('split?');
       if (x.asOf && M && M.today) { const d = (new Date(M.today) - new Date(x.asOf)) / 864e5; if (d > 7) flags.push('stale'); }
       if (e.price === null) flags.push('no price');
@@ -155,7 +156,7 @@ function enrich(inst, S, M) {
     e.flags = flags; e.spread = liqTier(x);
     e.gate = gate(x, e, S, M);
     e.dd = e.ddProxy ?? ((e.hi52 && e.price) ? (1 - e.price / e.hi52) * 100 : null);
-    const floor = BOND.includes(x.symbol) ? 6 : GOLD.includes(x.symbol) ? 12 : (x.cls === 'TEFAS' && !x.hy) ? 2 : (x.cls === 'TR_EQ' ? 20 : x.cls === 'US_EQ' ? 15 : x.cls === 'CMDTY' ? 15 : 12);
+    const floor = BOND.includes(x.symbol) ? 6 : GOLD.includes(x.symbol) ? 12 : (x.cls === 'TEFAS' && !x.hy) ? 2 : (x.cls === 'TR_EQ' ? 20 : x.cls === 'US_EQ' ? 15 : x.cls === 'CMDTY' ? 15 : x.cls === 'CRYPTO' ? 40 : 12);
     e.volLR = e.vol ?? null; e.volEwma = null;
     if (S.ewmaVol !== false && !e.isProxy && c.length >= 60 && e.vol) { e.volEwma = ewmaVol(c.slice(-260)); }
     e.volUsed = Math.max(floor, e.volEwma ? 0.5 * e.volEwma + 0.5 * e.vol : (e.vol ?? S.expVol));
@@ -193,6 +194,7 @@ function expected(x, S, M) {
     const divDrag = (e.div || 0) * S.divTaxTr / 100;
     return { E: rf + b * S.erpTr + tilt - divDrag, parts: { rf: rf, beta: b, erp: S.erpTr, tilt, divDrag } };
   }
+  if (x.cls === 'CRYPTO') { const usd = (S.cmdtyExp || {})[x.symbol] ?? (S.expCrypto ?? 0); return { E: toTRY(usd), usd, parts: { usd, fx: fxv } }; }
   // commodities and commodity funds (gold, silver, metals, energy): a USD expectation converted to TRY
   if (x.cls === 'CMDTY' || x.cmdtyFund || ['gold', 'silver', 'cmdty'].includes(x.sub)) {
     const ce = S.cmdtyExp || {}, usd = ce[x.symbol] ?? ((x.sub === 'gold' || x.symbol === 'XAUUSD') ? (S.expGold ?? 3) : (S.expCmdty ?? 2.5));
