@@ -118,22 +118,24 @@ Sırada (2026-11-15): 56, 58, 59, 60, 63, 64, 65, 66, 67, 70. Yeni sekme planı 
 80. **[sırada]** Dil, para birimi ve tarih (kullanıcı kararı 2026-11-15): arayüz seçime göre tamamen İngilizce veya tamamen Türkçe (karışık metin kalmaz); USD karşılığı her tutarın yanında her zaman görünür (gizleme yok); tarih biçimi ay-gün-yıl (ör. Nov 15, 2026 / 15 Kas yerine Kas 15, 2026; kısa biçim 11/15/2026).
 
 ## Görünüm incelemesi (2026-11-15, seçim bekliyor)
-81. Açılış ekranı: keçi logolu kısa açılış, “piyasa verisi yükleniyor %…” ilerleme çubuğu, ardından verinin saati; ilk boyamada iskelet görünüm. Kurulum penceresi ve karşılama mesajı seçilen dilde; telefonda alt menünün üstüne binmez.
-82. Borsa durumu ışıkları: her borsa için renkli ışık — yeşil (açık, hafif nabız), sarı (açılış / kapanış seansı), gri (kapalı), mavi (tatil); “açılışa 20 sa 52 dk” geri sayımı; BIST, VİOP, ABD, TEFAS fiyat saati, kripto (7/24); tek satırda kompakt.
-83. Veri sağlığı ışığı: “Sources 7 failing” kırmızı yazısı yerine tek ışık (yeşil taze < 1 sa, sarı eski, kırmızı sorunlu) ve tıklayınca hangi kaynağın neden çalışmadığı.
-84. Fon sağlığı ışığı: her fon kartında trafik ışığı — mevduatın önünde / yakın / gerisinde; uyarı varsa turuncu nokta.
-85. Üst çubuk sadeleşmesi: sürüm yazısı ve F tuşları kaldırılır (sürüm Ayarlar’da); arama kutusu “Sembol ara…” (kesilmeyen metin) ve ⌘K / Ctrl K ile açılan komut paleti; Raporlar ve ? düğmeleri tek “⋯” menüsünde.
-86. Yazı: rakamlar mono yerine aynı yazı ailesinde eşit genişlikli (tabular) rakamlarla — daha kurumsal görünüm; mono yalnızca Terminal temasında. Panel başlıklarında BÜYÜK HARF yerine normal yazım; Türkçe büyük harf hatası (“SİLVER”) giderilir.
-87. Tek tarih ve saat biçimi: her yerde ay-gün-yıl (Nov 15, 2026 / Kas 15, 2026; kısa 11/15/2026), saat 13:18, “24 sa önce” gibi göreli zaman ve üzerine gelince tam tarih.
-88. USD her yerde: tarayıcı, fon kartı, kırılımlar, raporlar dahil her TL tutarın yanında küçük USD karşılığı (gizleme yok).
-89. Renk uyumu: logo turuncusu ile vurgu rengi (teal) çakışıyor — marka paleti: lacivert + turuncu vurgu (Paper / Slate / Private Banking temalarında uyumlu tonlar); yeşil / kırmızı yalnızca yön için, yanında ▲▼ işareti.
-90. Tablolar: sabit başlık satırı, satır üzerine gelince vurgu, tekrar eden etiketler (her satırda “BIST equity”, “12 months”) yerine sütun başlığında bir kez; 1 aylık mini grafik (sparkline); “Zaman” sütunu varsayılanda gizli; satır başındaki renkli çizginin anlamı açıklanır.
-91. Fiyat değişince yumuşak yanıp sönme (yeşil / kırmızı), sayıların kayarak değişmesi; panel açılış-kapanış geçişleri; odak halkası ve klavye ile gezinme.
-92. Boş ve ilk kullanım durumları: “0 TRY” büyük rakamı yerine “İlk fonunuzu ekleyin” çağrısı; boş paneller gizlenir.
+81. **[sırada]** Açılış ekranı: keçi logolu kısa açılış, “piyasa verisi yükleniyor %…” ilerleme çubuğu, ardından verinin saati; ilk boyamada iskelet görünüm. Kurulum penceresi ve karşılama mesajı seçilen dilde; telefonda alt menünün üstüne binmez.
+82. **[sırada]** Borsa durumu ışıkları: her borsa için renkli ışık — yeşil (açık, hafif nabız), sarı (açılış / kapanış seansı), gri (kapalı), mavi (tatil); “açılışa 20 sa 52 dk” geri sayımı; BIST, VİOP, ABD, TEFAS fiyat saati, kripto (7/24); tek satırda kompakt.
+83. **[sırada]** Veri sağlığı ışığı: “Sources 7 failing” kırmızı yazısı yerine tek ışık (yeşil taze < 1 sa, sarı eski, kırmızı sorunlu) ve tıklayınca hangi kaynağın neden çalışmadığı.
+84. **[sırada]** Fon sağlığı ışığı: her fon kartında trafik ışığı — mevduatın önünde / yakın / gerisinde; uyarı varsa turuncu nokta.
+85. **[sırada]** Üst çubuk sadeleşmesi: sürüm yazısı ve F tuşları kaldırılır (sürüm Ayarlar’da); arama kutusu “Sembol ara…” (kesilmeyen metin) ve ⌘K / Ctrl K ile açılan komut paleti; Raporlar ve ? düğmeleri tek “⋯” menüsünde.
+86. **[sırada]** Yazı: rakamlar mono yerine aynı yazı ailesinde eşit genişlikli (tabular) rakamlarla — daha kurumsal görünüm; mono yalnızca Terminal temasında. Panel başlıklarında BÜYÜK HARF yerine normal yazım; Türkçe büyük harf hatası (“SİLVER”) giderilir. Kullanıcı: yazı tipi Ayarlar’dan seçilebilsin, birkaç seçenek olsun (ör. IBM Plex Sans, Inter, Source Serif, IBM Plex Mono / Terminal).
+87. **[sırada]** Tek tarih ve saat biçimi: her yerde ay-gün-yıl (Nov 15, 2026 / Kas 15, 2026; kısa 11/15/2026), saat 13:18, “24 sa önce” gibi göreli zaman ve üzerine gelince tam tarih.
+88. **[sırada]** USD her yerde: tarayıcı, fon kartı, kırılımlar, raporlar dahil her TL tutarın yanında küçük USD karşılığı (gizleme yok).
+89. **[sırada]** Renk uyumu: logo turuncusu ile vurgu rengi (teal) çakışıyor — marka paleti: lacivert + turuncu vurgu (Paper / Slate / Private Banking temalarında uyumlu tonlar); yeşil / kırmızı yalnızca yön için, yanında ▲▼ işareti.
+90. **[sırada]** Tablolar: sabit başlık satırı, satır üzerine gelince vurgu, tekrar eden etiketler (her satırda “BIST equity”, “12 months”) yerine sütun başlığında bir kez; 1 aylık mini grafik (sparkline); “Zaman” sütunu varsayılanda gizli; satır başındaki renkli çizginin anlamı açıklanır.
+91. **[sırada]** Fiyat değişince yumuşak yanıp sönme (yeşil / kırmızı), sayıların kayarak değişmesi; panel açılış-kapanış geçişleri; odak halkası ve klavye ile gezinme.
+92. **[sırada]** Boş ve ilk kullanım durumları: “0 TRY” büyük rakamı yerine “İlk fonunuzu ekleyin” çağrısı; boş paneller gizlenir.
 93. Bugün sayfasının sadeleşmesi: eski “Bir bakışta / Gelen kutusu / Dünkü kapanıştan beri / Karar kontrolü / Son bakışınızdan beri / …” panelleri birleştirilir veya kaldırılır (72 ile birlikte); en üstte yalnızca 4–5 kart.
-94. Telefon: üst çubuk tek satır (logo + arama + bildirim), kart görünümü, büyük dokunma alanları, alt menüde simgeler; bildirim balonu alt menünün üstünde.
-95. Grafikler: tek renk paleti, ince ızgara, sağda son değer etiketi, üzerine gelince artı imleç ve değer; açık ve koyu temada aynı okunurluk.
-96. Erişilebilirlik ve okunurluk: en küçük yazı 12 px, gri metinlerde yeterli kontrast, ışıkların yanında metin etiketi (renk tek başına anlam taşımaz).
+94. **[sırada]** Telefon: üst çubuk tek satır (logo + arama + bildirim), kart görünümü, büyük dokunma alanları, alt menüde simgeler; bildirim balonu alt menünün üstünde.
+95. **[sırada]** Grafikler: tek renk paleti, ince ızgara, sağda son değer etiketi, üzerine gelince artı imleç ve değer; açık ve koyu temada aynı okunurluk.
+96. **[sırada]** Erişilebilirlik ve okunurluk: en küçük yazı 12 px, gri metinlerde yeterli kontrast, ışıkların yanında metin etiketi (renk tek başına anlam taşımaz). Kullanıcı: yazı büyüklüğü Ayarlar’dan seçilebilsin (Küçük / Normal / Büyük / Çok büyük).
+
+97. Açılıştaki “Set up GNC Terminal” penceresi (aylık katkı, ufuk, çekirdek pay, USD payı, puanlama profili) — yalnızca eski Sepet / öneri ekranlarını etkiliyor; kaldırılması öneriliyor (değerler Ayarlar’da kalır, ilk açılışta yerine 79’daki kısa tanıtım). Kullanıcı onayı bekliyor.
 
 ## Kullanıcının ekledikleri
 (boş)
