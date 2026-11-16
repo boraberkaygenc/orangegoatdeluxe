@@ -26,7 +26,8 @@ const DELUXE = (() => {
   // fxAt(date) → TRY per USD on that date. Returns balances on asOf (inclusive) and the external flows in TRY.
   //  viop-open futures position posId: code, side long|short, qty contracts, price, mult, margin per contract (TRY, blocked from cash)
   //  viop-close closes posId at price: margin back plus the profit or loss.  settleAt(code, date) → settlement price on or before date
-  function replay(tx, asOf, fxAt, settleAt) {
+  // valFxAt(date) (optional): TRY per USD used to value the USD still held on asOf (the bank's buying rate); defaults to fxAt
+  function replay(tx, asOf, fxAt, settleAt, valFxAt) {
     const cash = { TRY: 0, USD: 0 }, deps = new Map(), flows = [], warn = [], vp = new Map();
     const L = (tx || []).filter(t => t && t.date && t.date <= asOf).map((t, i) => [t, i]).sort((a, b) => a[0].date < b[0].date ? -1 : a[0].date > b[0].date ? 1 : a[1] - b[1]).map(a => a[0]);
     const fxOf = t => +t.fx > 0 ? +t.fx : (fxAt ? fxAt(t.date) : 0);
@@ -49,7 +50,7 @@ const DELUXE = (() => {
     }
     const open = [...deps.values()].filter(d => d.open).map(d => ({ ...d, accrued: depositInterest(d, asOf) }));
     const closed = [...deps.values()].filter(d => !d.open);
-    const fx = fxAt ? fxAt(asOf) : 0, toTRY = (v, c) => c === 'USD' ? v * fx : v;
+    const fx = fxAt ? fxAt(asOf) : 0, vfx = valFxAt ? (valFxAt(asOf) || fx) : fx, toTRY = (v, c) => c === 'USD' ? v * vfx : v;
     const viop = [...vp.values()].filter(v => v.open).map(v => { const s = settleAt ? settleAt(v.code, asOf) : null, px = s > 0 && (!v.date || asOf >= v.date) ? s : v.price, k = v.ccy === 'USD' ? (fx || 1) : 1, pnl = (v.side === 'short' ? -1 : 1) * (px - v.price) * v.mult * v.qty * k;
       return { ...v, last: px, pnl: r2(pnl), equity: r2(v.margin * v.qty + pnl), notional: r2(px * v.mult * v.qty * k) }; });
     const viopClosed = [...vp.values()].filter(v => !v.open);
@@ -115,7 +116,7 @@ const DELUXE = (() => {
           const f = (l.fills || []).filter(z => z.date <= d).slice(-1)[0]; px = f && f.price ? +f.price : null; if (!px) { missing++; eq += (l.fills || []).filter(z => z.date <= d).reduce((a, z) => a + (+z.amount || 0), 0); continue; } }
         eq += q * px * fx;
       }
-      const sl = replay(p.tx, d, opts.fxAt, opts.settleAt);
+      const sl = replay(p.tx, d, opts.fxAt, opts.settleAt, opts.valFxAt);
       const invested = investedAt(p, d) + sl.netIn;
       out.push({ date: d, equity: r2(eq), sleeve: sl.value, value: r2(eq + sl.value), invested: r2(invested), missing });
     }

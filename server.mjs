@@ -16,6 +16,7 @@ const require = createRequire(import.meta.url);
 const E = require(path.join(DIR, 'engine.js'));
 import { createResearch } from './research.mjs';
 import { createEvds } from './evds.mjs';
+import { createZiraat } from './ziraat.mjs';
 import { createData, yahooQuotes, tefasList, tefasHistory } from './data.mjs';
 import { createUniverse } from './universe.mjs';
 import { createIpo } from './ipo.mjs';
@@ -112,6 +113,7 @@ const validate = safe('validate', () => createValidate({ db, put, log, coll, sto
 Object.assign(data.hooks, { store2, edgar, isy, validate });
 const universe = safe('universe', () => createUniverse({ dir: DIR, db, put, log, inbox, tefasList, tefasHistory, config: CONFIG }), log);
 const evds = safe('evds', () => createEvds({ key: CONFIG.evdsKey, db, put, log, inbox, mark: health.mark }), log);
+const ziraat = safe('ziraat', () => createZiraat({ db, put, log, ist, mark: health.mark }), log);
 const research = safe('research', () => createResearch({ dir: DIR, db, put, log, ist, inbox, E }), log);
 const ipo = safe('ipo', () => createIpo({ db, put, log, inbox, ist, yahooQuotes }), log);
 const lighthouse = safe('lighthouse', () => createLighthouse({ db, put, log, inbox, ist, config: CONFIG }), log);
@@ -140,7 +142,7 @@ setInterval(() => {
   if (t.hm === CONFIG.backfillAt && lastBackfillKey !== t.date && !backfill.complete()) { lastBackfillKey = t.date; backfill.run('scheduled ' + CONFIG.backfillAt); }
   if (Date.now() - lastHealthAt > 30 * 60000) { lastHealthAt = Date.now(); try { health.update(); } catch (e) { log('health:', e.message); } }
   for (const f of CONFIG.fullAt) if (t.hm === f && lastFullKey !== t.date + f) { lastFullKey = t.date + f; data.refresh('full', 'scheduled ' + f); return; }
-  for (const f of CONFIG.evdsAt) if (t.hm === f && lastEvdsKey !== t.date + f) { lastEvdsKey = t.date + f; evds.update('scheduled ' + f); }
+  for (const f of CONFIG.evdsAt) if (t.hm === f && lastEvdsKey !== t.date + f) { lastEvdsKey = t.date + f; evds.update('scheduled ' + f); ziraat.update('scheduled ' + f); }
   for (const f of CONFIG.researchAt) if (t.hm === f && !(t.wd === 'Sat' || t.wd === 'Sun') && lastResearchKey !== t.date + f) { lastResearchKey = t.date + f; research.collect('scheduled ' + f); }
   for (const f of CONFIG.ipoAt) if (t.hm === f && lastIpoKey !== t.date + f) { lastIpoKey = t.date + f; ipo.update('scheduled ' + f); }
   if (Date.now() - lastLhAt > CONFIG.lighthouseEveryHours * 36e5) { lastLhAt = Date.now(); lighthouse.update('every ' + CONFIG.lighthouseEveryHours + ' h'); }
@@ -189,7 +191,8 @@ const server = http.createServer(async (req, res) => {
     }
     if (p === '/api/fundhist' && req.method === 'GET') { const out = {}; for (const [, x] of coll('instruments')) if (x && x.fh) out[x.symbol] = x.fh; return send(res, 200, { generatedAt: new Date().toISOString(), fh: out }); } // per-company statement history for Pointer
     if (req.method === 'POST') {
-      if (p === '/api/evds') { evds.update('button'); return send(res, 202, { started: true }); }
+      if (p === '/api/evds') { evds.update('button'); ziraat.update('button'); return send(res, 202, { started: true }); }
+      if (p === '/api/ziraat') { await ziraat.update('button'); return send(res, 200, { ok: true, n: (db.docs['macro/ziraat'] || {}).n || 0 }); }
       if (p === '/api/research') { research.collect('button'); return send(res, 202, { started: true }); }
       if (p === '/api/ipo') { ipo.update('button'); return send(res, 202, { started: true }); }
       if (p === '/api/lighthouse') { lighthouse.update('button'); return send(res, 202, { started: true }); }
@@ -218,7 +221,7 @@ server.listen(CONFIG.port, CONFIG.bind || '127.0.0.1', () => {
   setTimeout(async () => {
     if (universe.stale(35)) { try { await universe.refresh('start-up'); } catch (e) { log('universe:', e.message); } }
     if (membership.stale(20)) membership.refresh('start-up').catch(e => log('membership:', e.message));
-    research.importDigests(); if (ipo.stale(10)) ipo.update('start-up'); if (lighthouse.stale(CONFIG.lighthouseEveryHours)) { lastLhAt = Date.now(); lighthouse.update('start-up'); } if (evds.stale(12)) evds.update('start-up');
+    research.importDigests(); if (ipo.stale(10)) ipo.update('start-up'); if (lighthouse.stale(CONFIG.lighthouseEveryHours)) { lastLhAt = Date.now(); lighthouse.update('start-up'); } if (evds.stale(12)) evds.update('start-up'); if (ziraat.stale(1)) ziraat.update('start-up');
     await data.refresh(withHist < n * 0.6 || age > 20 ? 'full' : 'quick', 'start-up');
     if (research.stale(8)) research.collect('start-up');
     if (!backfill.complete() && CONFIG.backfillOnStart !== false) setTimeout(() => backfill.run('start-up (resume)'), 3 * 60000);

@@ -5,6 +5,12 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.8: Ziraat Bankası kurları
+- Fondaki dolar (USD nakit, USD mevduat, döviz çevirme kalemleri, cüzdan) Ziraat Bankası'nın günlük gişe **döviz alış** kuruyla TL'ye çevrilir: doları bugün bankaya satsanız eline geçecek tutar.
+- Döviz çevirme penceresi kuru kendiliğinden doldurur: TL → USD için Ziraat **satış**, USD → TL için **alış** kuru.
+- Çevirme satırı ödenen gerçek kuru gösterir ve sonucu ikiye ayırır: çevirme farkı (banka makası) ve o günden beri kur hareketi.
+- Kurlar günde iki kez ve her açılışta (1 saatten eskiyse) alınır; son iki yılın günlük kurları kademeli olarak doldurulur. Kur yayımlanmayan günlerde son kur, hiç kur yoksa piyasa kuru × Ziraat'in olağan alış/satış oranı kullanılır. ABD hisseleri piyasa kuruyla değerlenmeye devam eder.
+
 ## v2.6: Pointer
 
 Analiz › Pointer (veya hisse sayfasındaki “Pointer ile incele”), bir enstrümanı analist kontrol listesi gibi inceler: gelir ve kâr sürücüleri, kârın nakde dönüşümü, bilanço stres testi, emsallere göre değerleme, rekabet avantajı, fiyatın ima ettiği büyüme (ters İNA), ayı/baz/boğa senaryoları, geri alım ve sulanma, 90 günlük katalizör takvimi ve isteğe bağlı “tezini çürüt”. Her bulgu rakam, dönem ve kaynak bağlantısıyla gelir; veri yoksa açıkça söyler. Tarama bölümü kriterlere uyan BIST veya ABD hisselerini listeler. Veriler: ABD için SEC EDGAR, BIST için İş Yatırım mali tabloları (gece güncellemesi, data/fund.json).
