@@ -76,7 +76,7 @@ Sırada (2026-11-15): 56, 58, 59, 60, 63, 64, 65, 66, 67, 70. Yeni sekme planı 
 53. **[yapıldı v2.1]** Ana sayfada toplam varlık: bütün fonlar + fon dışı vadesiz mevduat birlikte; kırılım hisse / fon / emtia / mevduat / döviz / VİOP / nakit; her satır hem TL hem USD; ana sayfada “Para ekle” ile vadesiz mevduattaki (TL veya döviz) varlığın kaydedilmesi, düzenlenmesi ve silinmesi
 
 ## Yapay zekâ asistanı — sonraki sürüme ertelendi (kullanıcı kararı, 2026-11-14)
-54. **[ertelendi]** Claude'a bağlı sohbet penceresi: uygulamanın kullanımı ve yatırım aksiyonları hakkında soru-cevap, Türkçe, akışlı (yazarken görünen) yanıt.
+54. **[tasarımda — bkz. 112–117]** Claude'a bağlı sohbet penceresi: uygulamanın kullanımı ve yatırım aksiyonları hakkında soru-cevap, Türkçe, akışlı (yazarken görünen) yanıt.
     - Bağlantı: Anthropic Claude API (claude.ai aboneliğinden ayrı, kullandıkça ödenen bir API anahtarı gerekir; anahtar platform.claude.com üzerinden alınır). Varsayılan model Claude Opus 5.5 (`claude-opus-5-5`); Ayarlar'dan Sonnet 5.5 / Haiku 5.5 seçilebilir. Reddedilen isteklerde sunucu tarafı yedek model (fallbacks) açık.
     - Anahtarın saklanması: GitHub sürümünde yalnızca bu tarayıcıda (IndexedDB), depoya ve siteye asla yazılmaz; bilgisayar sürümünde config.json'da, sunucu üzerinden çağrılır.
     - Kod: resmî Anthropic SDK (`@anthropic-ai/sdk`). Kurulum kullanıcı onayı gerektirir (kural: Node.js dışında kurulum için izin).
@@ -146,6 +146,21 @@ Sırada (2026-11-15): 56, 58, 59, 60, 63, 64, 65, 66, 67, 70. Yeni sekme planı 
 103. **[yapıldı v2.4]** VİOP net pozisyon motoru: trend (1/3/12 ay) + taşıma, oynaklığa göre boyutlama, %30 teminat sınırı, döviz için şok koruması ve 1,5× sınır, zarar kes ve devalüasyon stres kaybı; 10 yıllık test sonuçları gösterilir.
 104. **[yapıldı v2.4]** Davranış uyarıları: al/sat penceresinde süre önerisi, piyango hissesi uyarısı, düşük puan uyarısı, “kazananı satıp kaybedeni tutma” uyarısı.
 105. **[yapıldı v2.4]** Akıcı geçişler: sekme ve fon açılışında paneller kayarak gelir, sayılar değerine doğru sayar (hareket azaltma ayarına uyar).
+
+### v2.5 adayları (2026-11-16)
+
+106. **[sırada]** Fon düzenleme: yalnızca hisseler değil, fondaki her kalem düzenlenebilir — vadeli/vadesiz mevduat (anapara, faiz, başlangıç ve vade), TL ve USD nakit, döviz çevirileri, gram altın, ABD hissesi, TEFAS fonu, BYF ve VİOP pozisyonu (yön, adet, giriş fiyatı). Her kalem kendi türüne uygun alanlarla gösterilir.
+107. **[sırada]** Fon düzenleme: fonun kuruluş tarihi ve her kalemin alış tarihi düzenlenebilir; değişiklikten sonra geçmiş değer serisi, getiri ve mevduat karşılaştırması yeniden hesaplanır; fiyat verisinin başladığı tarihten önceki tarihlerde uyarı verilir.
+108. **[sırada]** Tutar girişi her yerde aynı kuralla: binlik ayırıcı virgül, ondalık ayırıcı nokta. Kullanıcı virgülü kendisi yazabilir; yazmazsa uygulama yazarken ekler (100000 → 100,000). Nokta yalnızca ondalıktır (1,250.75). Tutar, adet ve fiyat alanlarının tamamı (104 alan) bu biçime geçer; yapıştırılan değerler de aynı kuralla okunur.
+109. **[öneri]** Fon teşhisi “Sorun → Çözüm → Sonuç”: fonun tek cümlelik ana sorunu (ör. “THYAO’ya %46 bağımlı ve iki hissesi mevduatın altında”), bunu gideren somut işlem bileti (ör. “THYAO’dan 120 adet sat ≈ 38,400 TL → TSKB 3,600 adet al”, “AKSGY’yi sat → 32 günlük vadeli mevduat”) ve işlem sonrası rakamlar (beklenen getiri, risk, risk başına getiri, mevduat farkı, yıllık TL etkisi) öncesi/sonrası olarak.
+110. **[öneri]** Gerçekçi iyileştirme motoru: aday işlemler (azalt/sat/al/mevduata geç/koruma ekle) arasından risk başına getiriyi en çok artıran en fazla 3 işlem seçilir; komisyon, BSMV, alış-satış farkı, vergi, lot yuvarlama dahil; kazanç maliyetin altında kalıyorsa veya iyileşme küçükse (ör. +1 puan / +0,05 risk başına getiri altı) “değişiklik gerekmiyor” denir; tek hisse %20, sektör %40, en az 5 kalem sınırları; “Uygula” düğmesi işlemleri onaylı taslak emir olarak fona ekler.
+111. **[öneri]** Öneri karnesi: verilen her öneri kaydedilir; 1, 3 ve 6 ay sonra “uygulanmış olsaydı / uygulanmasaydı” farkı gösterilir, böylece motorun isabeti zamanla ölçülür.
+112. **[tasarım]** AI asistan — yer: her sayfada açılabilen yan panel; bulunduğu sayfayı bağlam olarak alır (“bu fonun sorunu ne?”, “bu hisseyi kaç ay tutmalıyım?”); Türkçe/İngilizce arayüz diline göre; yanıtlar yazılırken akar.
+113. **[tasarım]** AI asistan — araçlar: rakamları kendisi uydurmaz, uygulamanın motorunu araç olarak çağırır: fonları/kalemleri oku, fon kararı ve teşhisi, hisse kartı ve puan dökümü, süre önerisi, “yanına ne eklemeli”, işlem simülasyonu (öncesi/sonrası), VİOP net pozisyon, makro ve takvim, sözlük; yanıtında rakamın hangi panelden geldiğini belirtir.
+114. **[tasarım]** AI asistan — güvenlik: hiçbir işlemi kendiliğinden yapmaz; önerdiği işlemleri taslak olarak hazırlar, kullanıcı onaylar; yatırım tavsiyesi uyarısı; veriler yalnızca soru sorulduğunda ve gösterilen kapsamda gönderilir.
+115. **[tasarım]** AI asistan — anahtar: GitHub sürümünde sunucu olmadığı için kullanıcının kendi Anthropic API anahtarı Ayarlar’a girilir ve yalnızca bu tarayıcıda saklanır; bilgisayar sürümünde anahtar config.json’da durur ve sunucu üzerinden çağrılır.
+116. **[tasarım]** AI asistan — model ve maliyet: varsayılan Claude Opus 5.5 (girdi $4, çıktı $20 / milyon token; önbelleğe alınmış girdi $0.20); ekonomik seçenek Claude Haiku 5.5 ($0.10 / $0.50). Sistem talimatı ve araç tanımları önbelleğe alınır; aylık harcama sınırı ve soru başına maliyet göstergesi Ayarlar’da.
+117. **[tasarım]** AI asistan — isteğe bağlı: web araması ile güncel haber/KAP özeti (ek maliyet), sohbet geçmişinin tarayıcıda saklanması, “haftalık fon raporu” gibi hazır komutlar.
 
 ## Kullanıcının ekledikleri
 (boş)
