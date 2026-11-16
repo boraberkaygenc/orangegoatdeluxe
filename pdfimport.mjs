@@ -294,7 +294,7 @@ export function trNum(s, hint = 'tr') {
   else v = +t;
   return Number.isFinite(v) ? (neg ? -v : v) : null;
 }
-export const trDate = s => { const m = String(s || '').match(/(\d{1,2})[./-](\d{1,2})[./-](\d{4})/); if (m) return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`; const m2 = String(s || '').match(/(\d{4})-(\d{2})-(\d{2})/); return m2 ? m2[0] : null; };
+export const trDate = s => { const iso = String(s || '').match(/(?<!\d)(\d{4})-(\d{2})-(\d{2})(?!\d)/); if (iso) return iso[0]; const m = String(s || '').match(/(?<!\d)(\d{1,2})[./-](\d{1,2})[./-](\d{4}|\d{2})(?!\d)/); if (m && +m[2] >= 1 && +m[2] <= 12 && +m[1] >= 1 && +m[1] <= 31) { const y = m[3].length === 2 ? '20' + m[3] : m[3]; return `${y}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`; } const m2 = String(s || '').match(/(\d{4})-(\d{2})-(\d{2})/); return m2 ? m2[0] : null; };
 export const maskAccount = a => { const s = String(a || '').replace(/\D/g, ''); if (!s) return null; return s.length <= 4 ? '*'.repeat(s.length) : '*'.repeat(Math.max(3, s.length - 4)) + s.slice(-4); };
 // remove 11-digit TC kimlik / 10-digit VKN and masked versions from any text we pass on
 export const scrubIds = (s, keep = []) => String(s || '').replace(/\b\d{2}\*{3,}\d{2}\b/g, '[id]').replace(/\b[1-9]\d{10}\b/g, m => !keep.includes(m) && tcValid(m) ? '[id]' : m);
@@ -304,10 +304,15 @@ const fold = s => String(s || '').toLocaleUpperCase('tr').replace(/İ/g, 'I').re
 const round = (v, d = 2) => Math.round(v * 10 ** d) / 10 ** d;
 
 // quantity cross-check: the document's quantity may use Turkish 3-decimal formatting ("80,000" = 80 shares)
+// find quantity × price = amount among a row's numbers (in column order), whatever columns sit around them: the latest such
+// triple wins (realised quantity / average price / trade amount come after the order columns); a small number between price and
+// amount is the fee. Returns null when no triple matches.
+export function pickTriple(v) { let best = null; for (let k = v.length - 1; k >= 2 && !best; k--) for (let j = k - 1; j >= 1 && !best; j--) for (let i = j - 1; i >= 0; i--) { const q = v[i], p = v[j], a = v[k]; if (q > 0 && p > 0 && a > 0 && Math.abs(q * p - a) <= Math.max(0.02, a * 0.003)) { best = { qty: q, price: p, amount: a, i, j, k }; break; } }
+  if (!best) return null; const mid = v.slice(best.j + 1, best.k).filter(x => x > 0 && x < best.amount * 0.05); const after = v[best.k + 1]; best.commission = mid.length ? mid[mid.length - 1] : after > 0 && after < best.amount * 0.05 ? after : 0; return best; }
 function reconcile(t, warnings) {
   const { price, amount } = t; let q = t.qty;
   if (price > 0 && amount > 0) { const implied = amount / price;
-    if (!(q > 0) || Math.abs(q * price - amount) > Math.max(0.02, amount * 0.002)) { const alt = [q * 1000, q / 1000, Math.round(implied)].find(v => v > 0 && Math.abs(v * price - amount) <= Math.max(0.02, amount * 0.002));
+    if (!(q > 0) || Math.abs(q * price - amount) > Math.max(0.02, amount * 0.002)) { const frac = t.ccy === 'USD' || t.venue === 'US' || (q > 0 && q < 1); const alt = [q * 1000, q / 1000, ...(frac ? [] : [Math.round(implied)])].find(v => v > 0 && Math.abs(v * price - amount) <= Math.max(0.02, amount * 0.002));
       if (alt) { if (q > 0 && alt !== q) warnings.push(`${t.symbol}: quantity read as ${q}, corrected to ${alt} from amount ÷ price`); q = alt; }
       else if (!(q > 0)) q = round(implied, 4); else warnings.push(`${t.symbol}: quantity ${q} × price ${price} ≠ amount ${amount}`); } }
   t.qty = q; return t;
@@ -366,12 +371,19 @@ export function parseMidasCSV(text) {
   return { broker: 'Midas', kind: 'csv', docNo: null, date: dates[dates.length - 1] || null, account: null, trades, warnings };
 }
 export function isMidas(text) { return /midas/i.test(text); }
-export function parseMidasPDF(input) { // best effort: Midas account statements list "date  symbol  Alış/Satış  qty  price  amount  [fee]"
+export function parseMidasPDF(input) { // Midas statements: "03/11/26 09:47:08  Limit Emri  NVDA  Alış  Gerçekleşti  USD  0,2369  -  0,2369  202,88  1,50  48,07"; older exports "date symbol side qty price amount [fee]"
   const lines = linesOf(input), warnings = [], trades = [];
   for (const l of lines) { const s = l.text.replace(/\s+/g, ' ');
-    const m = s.match(/(\d{2}[./]\d{2}[./]\d{4}|\d{4}-\d{2}-\d{2})(?:\s+\d{2}:\d{2}(?::\d{2})?)?\s+([A-Z][A-Z0-9.]{0,9})\s+.*?\b(Alış|Alis|ALIŞ|ALIS|Alım|Satış|Satis|SATIŞ|SATIS|Satım|Buy|BUY|Sell|SELL)\b\s+([\d.,]+)\s+\$?([\d.,]+)\s+\$?([\d.,]+)(?:\s+\$?([\d.,]+))?/);
-    if (!m) continue; const usd = /\$|USD/.test(s), hint = usd ? 'en' : 'tr';
-    trades.push(reconcile({ date: trDate(m[1]), valueDate: null, symbol: m[2].replace(/\.IS$/, ''), name: '', venue: usd ? 'US' : '', side: SIDE(m[3]), qty: trNum(m[4], hint), price: trNum(m[5], hint), amount: trNum(m[6], hint), commission: trNum(m[7], hint) || 0, ccy: usd ? 'USD' : null }, warnings)); }
+    const m = s.match(/(\d{2}[./]\d{2}[./](?:\d{4}|\d{2}))(?!\d)(?:\s+\d{2}:\d{2}(?::\d{2})?)?\s+(?:.*?\s)?([A-Z][A-Z0-9.]{0,9})\s+(Alış|Alis|ALIŞ|ALIS|Alım|Satış|Satis|SATIŞ|SATIS|Satım|Buy|BUY|Sell|SELL)(?=\s|$)(.*)$/);
+    if (!m || /D[oö]viz/i.test(s.slice(0, m.index + m[0].length - m[4].length))) continue;
+    const rest = m[4], status = (rest.match(/^\s*(Gerçekleşti|Gerceklesti|Kısmi[^\d]*|Kismi[^\d]*|İptal[^\d]*|Iptal[^\d]*|Beklemede|Bekliyor|Reddedildi|Filled|Cancelled|Canceled|Pending|Rejected)/i) || [])[1] || '';
+    if (/[iİI]ptal|[bB]ekle|[rR]edd|cancel|pending|reject/i.test(status)) continue;
+    const usd = /\$|USD/.test(s), turkish = /Gerçekleş|Gerceklest|Alış|Satış|Emri/i.test(s), hint = turkish ? 'tr' : usd ? 'en' : 'tr';
+    const nums = [...rest.matchAll(/(?<![\w.,])(\d[\d.,]*)(?![\w])/g)].map(x => trNum(x[1], hint)).filter(v => v !== null);
+    const tr = pickTriple(nums); let qty, price, amount, commission = 0;
+    if (tr) ({ qty, price, amount, commission } = tr); else { if (nums.some(v => v > 0)) warnings.push(`${m[2]} ${m[1]}: quantity × price does not match any amount on the row — skipped, enter it by hand`); continue; }
+    if (!(qty > 0)) continue;
+    trades.push(reconcile({ date: trDate(m[1]), valueDate: null, symbol: m[2].replace(/\.IS$/, ''), name: '', venue: usd ? 'US' : '', side: SIDE(m[3]), qty, price, amount, commission, ccy: usd ? 'USD' : null }, warnings)); }
   if (!trades.length) warnings.push('no trade rows recognised in the Midas statement — use the CSV export instead');
   const dates = trades.map(t => t.date).filter(Boolean).sort();
   return { broker: 'Midas', kind: 'statement', docNo: null, date: dates[dates.length - 1] || null, account: null, trades, warnings };
@@ -385,8 +397,8 @@ export function parseGeneric(input, known) {
     const syms = [...s.matchAll(/\b([A-Z][A-Z0-9]{2,5})(?=[\s-]|$)/g)].map(x => x[1]).filter(x => !/^(ALIS|ALIM|SATIS|SATIM|BUY|SELL|BORSA|BIST|TRY|USD|EUR|HISSE|SENEDI|TL|ISTANBUL)$/.test(fold(x)));
     const sym = (known ? syms.find(x => known(x)) : null) || syms[0]; if (!sym) continue;
     const after = s.slice(sm.index + sm[0].length), nums = [...after.matchAll(/(?<![\d.])(\d{1,3}(?:\.\d{3})*(?:,\d+)?|\d+(?:[.,]\d+)?)(?![\d.]*\.\d{4})/g)].map(x => x[1]).filter(x => !/^\d{2}\.\d{2}$/.test(x));
-    if (nums.length < 2) continue; const v = nums.map(x => trNum(x, 'tr'));
-    const t = { date: d || lastDate, valueDate: null, symbol: sym, name: '', venue: /BORSA|BIST/i.test(s) ? 'BORSA İSTANBUL' : '', side: SIDE(sm[1]), qty: v[0], price: v[1], amount: v[2] != null ? v[2] : round(v[0] * v[1], 2), commission: v[3] || 0 };
+    if (nums.length < 2) continue; const v = nums.map(x => trNum(x, 'tr')), tr = pickTriple(v);
+    const t = tr ? { date: d || lastDate, valueDate: null, symbol: sym, name: '', venue: /BORSA|BIST/i.test(s) ? 'BORSA İSTANBUL' : /USD|\$/.test(s) ? 'US' : '', side: SIDE(sm[1]), qty: tr.qty, price: tr.price, amount: tr.amount, commission: tr.commission, ccy: /USD|\$/.test(s) ? 'USD' : undefined } : { date: d || lastDate, valueDate: null, symbol: sym, name: '', venue: /BORSA|BIST/i.test(s) ? 'BORSA İSTANBUL' : '', side: SIDE(sm[1]), qty: v[0], price: v[1], amount: v[2] != null ? v[2] : round(v[0] * v[1], 2), commission: v[3] || 0 };
     trades.push(reconcile(t, warnings)); }
   if (!trades.length) warnings.push('no rows with a ticker, a side (ALIŞ/SATIŞ/BUY/SELL) and numbers were found');
   return { broker: 'Unknown broker', kind: 'generic', docNo: null, date: trades.map(t => t.date).filter(Boolean).sort().pop() || null, account: null, trades, warnings };
