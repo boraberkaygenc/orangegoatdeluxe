@@ -9,6 +9,9 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 - Fondaki dolar (USD nakit, USD mevduat, döviz çevirme kalemleri, cüzdan) Ziraat Bankası'nın günlük gişe **döviz satış** kuruyla TL'ye çevrilir; değer ve getiri (ROI) bu kura endekslidir. Yanında parantez içinde **alış** kuruyla değer (doları bugün bankaya satsanız eline geçecek tutar) ve getiri gösterilir; fon başlığında da aynı ayrım vardır.
 - Döviz çevirme penceresi kuru kendiliğinden doldurur: TL → USD için Ziraat **satış**, USD → TL için **alış** kuru.
 - Çevirme satırı ödenen gerçek kuru gösterir ve sonucu ikiye ayırır: o günün Ziraat satış kuruna göre fark ve o günden beri kur hareketi.
+- Döviz çevirmede **KMV** (kambiyo muamele vergisi) ayrı alandır: TL ile döviz alırken %0,2 olarak kendiliğinden hesaplanır, değiştirilebilir; satırın maliyetine ve getirisine, fonun toplamına ve Masraflar raporuna (BSMV / KMV sütunu) girer.
+- Kur ile TL ve döviz tutarları birbirini tutmazsa (%0,2'den fazla) pencere uyarır ve tek tıkla üç düzeltme önerir: alınan tutar, çevrilen tutar ya da kur. Uyarıya rağmen kaydetmek için Kaydet'e ikinci kez basılır.
+- **Dekonttan doldur:** Ziraat Bankası döviz alış/satış dekontu (PDF) yüklendiğinde ya da metni yapıştırıldığında tarih, kur, tutarlar, KMV ve masraf okunup pencere doldurulur. Dekonttan yalnızca tutarlar, kur, tarih ve referans alınır; IBAN, hesap ve vergi numarası saklanmaz. Dekont ana içe aktarma ekranına yüklenirse kullanıcı doğru pencereye yönlendirilir.
 - Kurlar günde iki kez ve her açılışta (1 saatten eskiyse) alınır; son iki yılın günlük kurları kademeli olarak doldurulur. Kur yayımlanmayan günlerde son kur, hiç kur yoksa piyasa kuru × Ziraat'in olağan alış/satış oranı kullanılır. ABD hisseleri piyasa kuruyla değerlenmeye devam eder.
 
 ## v2.6: Pointer

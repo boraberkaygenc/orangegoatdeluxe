@@ -401,6 +401,34 @@ export function parseMidasPDF(input) { // Midas statements: "03/11/26 09:47:08  
   return { broker: 'Midas', kind: 'statement', docNo: null, date: dates[dates.length - 1] || null, account: null, trades, warnings, fx, positions };
 }
 
+/* ============================== bank FX receipts (Ziraat Bankası "DÖVİZ ALIŞ" / "DÖVİZ SATIŞ" dekont) ==============================
+   → { kind: 'fx', fxTx: [{ date, time, ccy, toCcy, amount, toAmount, fx, kmv, fee, total, ref }] }. Only amounts, the rate and the date are kept
+   (no IBAN, account or tax number). "DÖVİZ ALIŞ" = the customer buys foreign currency with TL. */
+export function isBankFx(text) { const f = fold(text); return /DOVIZ\s+(ALIS|SATIS)/.test(f) && /(HESABINIZA|HESABINIZDAN)/.test(f) && /(ZIRAAT|K\.?\s*M\.?\s*V|DOVIZ\s+(ALIS|SATIS)\s+ISLEMI)/.test(f); }
+export function parseBankFx(input) {
+  const text = typeof input === 'string' ? input : linesOf(input).map(l => l.text).join('\n'), f = fold(text).replace(/[ \t]+/g, ' '), warnings = [];
+  const N = '(\\d{1,3}(?:\\.\\d{3})+(?:,\\d+)?|\\d+(?:,\\d+)?)', CC = '(USD|EUR|GBP|CHF|TRY|TL)';
+  const ccyOf = c => c === 'TL' ? 'TRY' : c;
+  const into = [...f.matchAll(new RegExp(`HESABINIZA\\s*${N}\\s*${CC}`, 'g'))].map(m => ({ v: trNum(m[1]), c: ccyOf(m[2]) }));
+  const outOf = [...f.matchAll(new RegExp(`HESABINIZDAN\\s*${N}\\s*${CC}`, 'g'))].map(m => ({ v: trNum(m[1]), c: ccyOf(m[2]) }));
+  const kmvM = f.match(new RegExp(`K\\.?\\s*M\\.?\\s*V\\.?\\s*TUTARI\\s*:?\\s*${N}`)), kmv = kmvM ? trNum(kmvM[1]) : 0;
+  const totM = f.match(new RegExp(`TOPLAM\\s+MASRAF[^:]*:\\s*${N}`)), costs = totM ? trNum(totM[1]) : kmv, fee = Math.max(0, Math.round((costs - kmv) * 100) / 100);
+  const rateM = f.match(new RegExp(`DOVIZ\\s+(?:ALIS|SATIS)(?:\\s+KURU)?\\s*:?\\s*(\\d+,\\d{2,6})`)), rate = rateM ? trNum(rateM[1]) : null;
+  const dM = text.match(/(\d{2})[./](\d{2})[./](\d{4})\s*-\s*(\d{2}:\d{2})/), date = dM ? `${dM[3]}-${dM[2]}-${dM[1]}` : trDate(text);
+  const refM = f.match(/([0-9]{4}[A-Z]{3,6}[0-9]{6,})\s*REFERANSLI/), side = /DOVIZ\s+SATIS/.test(f.slice(0, 400)) && !/DOVIZ\s+ALIS/.test(f.slice(0, 400)) ? 'SELL' : 'BUY';
+  const fxIn = into.find(x => x.c !== 'TRY'), tlOut = outOf.find(x => x.c === 'TRY'), fxOut = outOf.find(x => x.c !== 'TRY'), tlIn = into.find(x => x.c === 'TRY');
+  const r2 = x => Math.round(x * 100) / 100; let t = null;
+  if (fxIn && tlOut) { // bought foreign currency: TL debited = amount × rate + taxes and fees
+    const amount = r2(tlOut.v - costs); t = { date, ccy: 'TRY', toCcy: fxIn.c, amount, toAmount: fxIn.v, fx: rate || r2(amount / fxIn.v * 1e4) / 1e4, kmv, fee, total: tlOut.v }; }
+  else if (fxOut && tlIn) { // sold foreign currency: TL credited
+    const amount = fxOut.v; t = { date, ccy: fxOut.c, toCcy: 'TRY', amount, toAmount: r2(tlIn.v), fx: rate || Math.round(tlIn.v / amount * 1e4) / 1e4, kmv, fee, total: tlIn.v }; }
+  if (!t) return { broker: 'Ziraat Bankası', kind: 'fx', docNo: null, date, account: null, trades: [], fxTx: [], warnings: ['a bank FX receipt was recognised, but the amounts credited and debited could not be read'] };
+  if (dM) t.time = dM[4]; if (refM) t.ref = refM[1];
+  const implied = t.ccy === 'TRY' ? t.amount / t.toAmount : t.toAmount / t.amount;
+  if (rate && Math.abs(implied / rate - 1) > 0.002) warnings.push(`the rate on the receipt (${rate}) and the amounts (${implied.toFixed(4)}) differ`);
+  return { broker: /ZIRAAT/.test(f) ? 'Ziraat Bankası' : 'Bank', kind: 'fx', side, docNo: t.ref || null, date, account: null, trades: [], fxTx: [t], warnings };
+}
+
 /* ============================== generic fallback ============================== */
 export function parseGeneric(input, known) {
   const lines = linesOf(input), warnings = [], trades = []; let lastDate = null;
@@ -419,15 +447,17 @@ export function parseGeneric(input, known) {
 /* ============================== entry point ============================== */
 export function sniff(buf, name = '', mime = '') { const head = buf.subarray(0, 1024).toString('latin1'); if (head.includes('%PDF')) return 'pdf'; if (/csv|text\/plain/i.test(mime) || /\.(csv|txt|tsv)$/i.test(name)) return 'csv'; if (/^[\x09\x0a\x0d\x20-\x7e -￿]*$/.test(buf.subarray(0, 512).toString('utf8'))) return 'csv'; return 'unknown'; }
 export function signature(t) { return [t.date, t.symbol, t.side, round(+t.qty || 0, 4), round(+t.price || 0, 4), round(+t.amount || 0, 2)].join('|'); }
+function finishFx(res, name) { res.file = name ? scrubIds(String(name).replace(/\d{5,}/g, m => maskAccount(m))).slice(0, 120) : null; res.warnings = res.warnings.map(w => scrubIds(w)); res.totals = { buy: 0, sell: 0, commission: 0 }; return res; }
 export function parseStatement(buf, { name = '', mime = '', known } = {}) {
   buf = Buffer.isBuffer(buf) ? buf : Buffer.from(buf); const kind = sniff(buf, name, mime); let res;
   if (kind === 'pdf') { let ex; try { ex = pdfExtract(buf); } catch (e) { return { broker: null, kind: 'pdf', trades: [], warnings: ['could not read the PDF: ' + e.message], docNo: null, date: null, account: null }; }
     if (ex.encrypted) return { broker: null, kind: 'pdf', trades: [], warnings: ['the PDF is encrypted (password-protected); export it again without a password'], docNo: null, date: null, account: null };
     if (!ex.text.trim()) return { broker: null, kind: 'pdf', trades: [], warnings: ['no text in the PDF (scanned image?)', ...ex.warnings], docNo: null, date: null, account: null };
+    if (isBankFx(ex.text)) { res = parseBankFx(ex.text); res.pages = ex.pages.length; return finishFx(res, name); }
     res = isAkYatirim(ex.text) ? parseAkYatirim(ex) : isMidas(ex.text) ? parseMidasPDF(ex) : null;
     if (!res || !res.trades.length) { const g = parseGeneric(ex, known); if (!res || g.trades.length) { if (res) g.warnings.unshift(...res.warnings); g.broker = res ? res.broker : g.broker; g.docNo = res ? res.docNo : null; res = g; } }
     res.warnings.push(...ex.warnings); res.pages = ex.pages.length; }
-  else if (kind === 'csv') { let text = buf.toString('utf8'); if (/�/.test(text)) text = buf.toString('latin1'); res = parseMidasCSV(text); if (!res.trades.length && isMidas(text)) { const st = parseMidasPDF(text); if (st.trades.length) res = st; } if (!res.trades.length) { const g = parseGeneric(text, known); if (g.trades.length) res = g; } }
+  else if (kind === 'csv') { let text = buf.toString('utf8'); if (/�/.test(text)) text = buf.toString('latin1'); if (isBankFx(text)) return finishFx(parseBankFx(text), name); res = parseMidasCSV(text); if (!res.trades.length && isMidas(text)) { const st = parseMidasPDF(text); if (st.trades.length) res = st; } if (!res.trades.length) { const g = parseGeneric(text, known); if (g.trades.length) res = g; } }
   else return { broker: null, kind, trades: [], warnings: ['unsupported file type — use a PDF confirmation or a CSV export'], docNo: null, date: null, account: null };
   const keep = res.docNo ? [String(res.docNo)] : [];
   res.file = name ? scrubIds(String(name).replace(/\d{5,}/g, m => keep.includes(m) ? m : maskAccount(m)), keep).slice(0, 120) : null;

@@ -32,7 +32,7 @@ const DELUXE = (() => {
     const L = (tx || []).filter(t => t && t.date && t.date <= asOf).map((t, i) => [t, i]).sort((a, b) => a[0].date < b[0].date ? -1 : a[0].date > b[0].date ? 1 : a[1] - b[1]).map(a => a[0]);
     const fxOf = t => +t.fx > 0 ? +t.fx : (fxAt ? fxAt(t.date) : 0);
     for (const t of L) {
-      const c = CCYS.includes(t.ccy) ? t.ccy : 'TRY', amt = +t.amount || 0, cost = (+t.fee || 0) + (+t.bsmv || 0);
+      const c = CCYS.includes(t.ccy) ? t.ccy : 'TRY', amt = +t.amount || 0, cost = (+t.fee || 0) + (+t.bsmv || 0) + (+t.kmv || 0); // kmv: kambiyo muamele vergisi (TL), on TL → FX conversions
       if (t.type === 'in') { cash[c] += amt - cost; flows.push({ date: t.date, amount: r2(c === 'USD' ? amt * fxOf(t) : amt) }); }
       else if (t.type === 'div') { cash[c] += amt; } // dividend received: net amount into the fund's cash, income (not new money)
       else if (t.type === 'out') { cash[c] -= amt + cost; flows.push({ date: t.date, amount: -r2(c === 'USD' ? amt * fxOf(t) : amt) }); }
