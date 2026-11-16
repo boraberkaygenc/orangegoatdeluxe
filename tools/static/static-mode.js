@@ -18,24 +18,31 @@
   try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) { }
 
   /* ---- market data from the published file ---- */
-  async function pull(first) {
-    try {
-      const r = await fetch(VIEW + '?t=' + Date.now(), { cache: 'no-store' }); if (!r.ok) throw new Error('HTTP ' + r.status);
-      const j = await r.json(); window.__GNC_OFFLINE = false; if (!first && j.generatedAt === gen) return; gen = j.generatedAt; info = { generatedAt: j.generatedAt, nextRun: j.nextRun || null, mode: j.mode || null, notes: j.notes || [] };
+  // the last copy the service worker kept (same key it uses): the page opens with it at once, the network copy follows
+  const cachedJSON = async path => { try { if (!('caches' in window)) return null; const r = await caches.match(new URL(path, BASE).origin + new URL(path, BASE).pathname, { ignoreSearch: true }); return r ? await r.json() : null; } catch (e) { return null; } };
+  function apply(j, first) {
+      if (!first && j.generatedAt === gen) return; gen = j.generatedAt; info = { generatedAt: j.generatedAt, nextRun: j.nextRun || null, mode: j.mode || null, notes: j.notes || [] };
       const changed = [];
       for (const k of Object.keys(S)) if (!mine.has(k) && !(k in (j.docs || {})) && !isInst(k)) { delete S[k]; changed.push(k); }
       for (const [k, v] of Object.entries(j.docs || {})) { if (mine.has(k)) continue; S[k] = v; changed.push(k); }
       for (const k of Object.keys(S)) if (isInst(k)) delete S[k];
       for (const [sym, x] of Object.entries(j.inst || {})) S['instruments/' + sym.replace('/', '_')] = x; changed.push('instruments/x');
       if (!first) fire(changed);
+  }
+  async function pull(first) {
+    try {
+      const r = await fetch(VIEW + '?t=' + Date.now(), { cache: 'no-store' }); if (!r.ok) throw new Error('HTTP ' + r.status);
+      const j = await r.json(); window.__GNC_OFFLINE = false; window.__GNC_FROM_CACHE = false; apply(j, first);
     } catch (e) { window.__GNC_OFFLINE = true; console.warn('market data:', e.message); }
   }
-  const ready = (async () => { try { const own = await idbAll(); for (const [k, v] of Object.entries(own)) { S[k] = v; mine.add(k); } } catch (e) { console.error('local data:', e); } await pull(true); })();
+  const ready = (async () => { try { const own = await idbAll(); for (const [k, v] of Object.entries(own)) { S[k] = v; mine.add(k); } } catch (e) { console.error('local data:', e); }
+    const c = await cachedJSON('data/view.json'); if (c && c.docs) { apply(c, true); window.__GNC_FROM_CACHE = true; setTimeout(() => pull(false), 50); } else await pull(true); })();
   setInterval(() => { if (document.visibilityState === 'visible') pull(false); }, 5 * 60000);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') pull(false); });
 
   /* ---- the page's calls to the computer server: price series come from data/series.json, everything else answers 404 at once ---- */
-  let seriesP = null; const seriesAll = () => seriesP || (seriesP = fetch(BASE + 'data/series.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : { series: {} }).catch(() => ({ series: {} })));
+  let seriesP = null; const seriesNet = () => fetch(BASE + 'data/series.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : { series: {} }).catch(() => ({ series: {} }));
+  const seriesAll = () => seriesP || (seriesP = cachedJSON('data/series.json').then(c => { if (c && c.series) { seriesNet().then(n => { if (n && n.series && Object.keys(n.series).length) seriesP = Promise.resolve(n); }); return c; } return seriesNet(); }));
   const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'Content-Type': 'application/json' } });
   const nativeFetch = window.fetch.bind(window);
   window.fetch = async (input, init) => { const url = typeof input === 'string' ? input : input && input.url; let u = null; try { u = new URL(url, location.href); } catch (e) { }

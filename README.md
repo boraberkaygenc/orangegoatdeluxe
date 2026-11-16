@@ -5,6 +5,12 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.10: hız, ikinci adım
+- Fon açılırken gizli sekmelerdeki ağır paneller (Konsolide durum ve beklenti, Dönemsel getiri) önce iskelet olarak gelir, tarayıcı boşa çıkınca dolar; sekmesine tıklanırsa hemen dolar.
+- Fare bir sekmenin üzerine geldiğinde (telefonda dokunuşta) o sekmenin bekleyen güncellemesi önceden yapılır.
+- GitHub sürümü son gördüğü piyasa verisiyle anında açılır; yeni veri arkadan gelip yalnızca değişeni günceller.
+- Ayarlar › Hız: son 20 sekme geçişi ve fon açılışının süresi (tıklamadan ilk kareye), hedefe göre (sekme 100 ms, fon 150 ms) ve en yavaş bölümler.
+
 ## v2.9: hız
 - Sekme değiştirmek artık bütün uygulamayı yeniden çizmez: veri değişince yalnızca ekrandaki görünüm çizilir, gizli görünümler açıldıkları anda güncellenir. Sekme geçişinin ilk kareye kadar süresi: Özet 115–160 ms → 20–27 ms, Fonlarım 120–145 ms → 9–15 ms, Analiz 90–135 ms → 12–22 ms, Piyasalar 145–190 ms → 45–115 ms.
 - Sayfanın tamamını dolaşan çeviri taraması yalnızca dil değiştiğinde çalışır; yeni metin göründükçe çevrilir.
