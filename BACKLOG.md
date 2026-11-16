@@ -180,7 +180,7 @@ Pointer, uygulamanın kendi verisiyle (fiyat, puan, SEC/EDGAR ve İş Yatırım 
 129. **[yapıldı v2.6]** Tezini çürüt (12): kullanıcı tek cümlelik tezini yazar (ör. “THYAO marjlarını korur”); Pointer verilerden en güçlü 3 karşı kanıtı bulur, her birinin hangi varsayımı zorladığını ve 2 çeyrekte tezi zayıflatacak ölçülebilir eşiği (varsayım olarak) yazar.
 130. **[yapıldı v2.6]** Gelir ve kâr kaynakları / kazanç sürprizi (2–3): yıllık ve çeyreklik gelir/kâr değişimi, en büyük katkılar; segment verisi ve analist beklentisi bulunamazsa açıkça “veri yok” denir (SEC özet verisinde segment yok; beklenti verisi ücretsiz kaynaklarda sınırlı).
 131. **[yapıldı v2.6]** Hisse dışı enstrümanlar için Pointer: TEFAS/BYF (içerik, ücret, endekse göre sapma), altın/emtia (mevduata göre taşıma, trend, reel faiz), döviz (faiz farkı, ima edilen değer kaybı, şok testi), VİOP (baz, vade geçişi, teminat stresi — mevcut net pozisyon motoruyla), mevduat (reel getiri, PPK yolu), tahvil/Eurobond (getiri, süre, faiz şoku).
-132. **[yapıldı v2.8]** Dolar değerlemesi Ziraat Bankası günlük gişe döviz alış kuruyla; çevirmede satış kuru önerisi; çevirme satırında ödenen kur, çevirme farkı ve kur hareketi ayrımı.
+132. **[yapıldı v2.8]** Dolar değerlemesi ve getirisi Ziraat Bankası günlük gişe döviz satış kuruna endeksli, alış kuruyla değer parantez içinde; çevirmede Ziraat kuru önerisi; çevirme satırında ödenen kur, Ziraat satışına göre fark ve kur hareketi ayrımı.
 
 ## Kullanıcının ekledikleri
 (boş)

@@ -6,9 +6,9 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
 ## v2.8: Ziraat Bankası kurları
-- Fondaki dolar (USD nakit, USD mevduat, döviz çevirme kalemleri, cüzdan) Ziraat Bankası'nın günlük gişe **döviz alış** kuruyla TL'ye çevrilir: doları bugün bankaya satsanız eline geçecek tutar.
+- Fondaki dolar (USD nakit, USD mevduat, döviz çevirme kalemleri, cüzdan) Ziraat Bankası'nın günlük gişe **döviz satış** kuruyla TL'ye çevrilir; değer ve getiri (ROI) bu kura endekslidir. Yanında parantez içinde **alış** kuruyla değer (doları bugün bankaya satsanız eline geçecek tutar) ve getiri gösterilir; fon başlığında da aynı ayrım vardır.
 - Döviz çevirme penceresi kuru kendiliğinden doldurur: TL → USD için Ziraat **satış**, USD → TL için **alış** kuru.
-- Çevirme satırı ödenen gerçek kuru gösterir ve sonucu ikiye ayırır: çevirme farkı (banka makası) ve o günden beri kur hareketi.
+- Çevirme satırı ödenen gerçek kuru gösterir ve sonucu ikiye ayırır: o günün Ziraat satış kuruna göre fark ve o günden beri kur hareketi.
 - Kurlar günde iki kez ve her açılışta (1 saatten eskiyse) alınır; son iki yılın günlük kurları kademeli olarak doldurulur. Kur yayımlanmayan günlerde son kur, hiç kur yoksa piyasa kuru × Ziraat'in olağan alış/satış oranı kullanılır. ABD hisseleri piyasa kuruyla değerlenmeye devam eder.
 
 ## v2.6: Pointer
