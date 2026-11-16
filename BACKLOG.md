@@ -183,5 +183,17 @@ Pointer, uygulamanın kendi verisiyle (fiyat, puan, SEC/EDGAR ve İş Yatırım 
 132. **[yapıldı v2.8]** Dolar değerlemesi ve getirisi Ziraat Bankası günlük gişe döviz satış kuruna endeksli, alış kuruyla değer parantez içinde; çevirmede Ziraat kuru önerisi; çevirme satırında ödenen kur, Ziraat satışına göre fark ve kur hareketi ayrımı.
 133. **[yapıldı v2.8]** Döviz çevirmede KMV alanı (%0,2 otomatik), satır maliyeti ve getirisine dahil; kur–tutar tutarlılık uyarısı ve tek tıkla düzeltme; Ziraat döviz dekontundan (PDF/metin) otomatik doldurma.
 
+## Hız ve akıcılık (ölçüm: 16.11.2026, 1440 px masaüstü, Chromium)
+Sekme geçişi 180–450 ms sürüyor (Piyasalar en yavaşı: 418–451 ms). JS işi geçiş başına yalnızca 100–130 ms; geri kalanı her geçişte tüm görünümün baştan çizilmesi, sayfanın tamamında çeviri/tarih taraması, ~100 stil hesaplaması ve 25 zorunlu yerleşim (layout). Bellek sızıntısı yok (3 tur sonra düğüm ve heap sabit).
+134. Kirli bayrak ile çizim: her görünüm yalnızca verisi değiştiyse yeniden çizilsin; veri değişmeden sekmeye dönülünce son çizim aynen gösterilsin (beklenen: geçiş 180 ms → 30–60 ms).
+135. Çeviri ve tarih düzeltmesini sayfanın tamamında değil yalnızca yeni çizilen kapta yap (dlTr/dlWalk/dlFixDates: geçiş başına 40–60 ms).
+136. Piyasalar tablosunu sanallaştır: ekranda görünen ~60 satır + kaydırdıkça devamı (beklenen: 420 ms → 120 ms; çöp toplama duraklaması 100 ms → ~0).
+137. Panel giriş animasyonundaki zorunlu yerleşimleri kaldır (panel başına offsetWidth okuması → tek requestAnimationFrame içinde sınıf ekleme); okuma ve yazmaları toplu yap.
+138. Rakamların gelişi: tabular rakam (sabit genişlik) ile zıplamasız yerleşim; hazır olmayan değerde rakam boyunda iskelet (hafif parıltılı gri çubuk); sayıların sıfırdan sayması yerine yalnızca değer değiştiğinde eski değerden yeniye 250–300 ms geçiş ve 1 sn hafif yeşil/kırmızı vurgu; aynı değere dönülen sekmede animasyon yok; “hareketi azalt” tercihine uyum.
+139. Ağır hesapları (Monte Carlo, fon değer serisi, puanlama) arka plan iş parçacığına (Web Worker) veya boşta zamana (requestIdleCallback) al; panel kendi iskeletini gösterip sonuç gelince dolsun — sekme hiç donmasın.
+140. Önceden hazırlık: fare sekmenin üzerine geldiğinde (ya da dokunmada) o sekmenin verisini hesaplamaya başla; geçiş anında hazır olsun.
+141. GitHub sürümünde açılış: view.json (8,8 MB) ve series.json (11,9 MB) önce tarayıcı önbelleğinden anında gösterilsin, yenisi arkadan gelip yalnızca değişen rakamları güncellesin; seriler sembol gruplarına bölünüp ihtiyaç oldukça yüklensin.
+142. Hız bütçesi ve gösterge: Ayarlar’da “Hız” paneli (son 20 geçişin süresi, en yavaş bileşen); hedef sekme geçişi < 100 ms, fon açma < 150 ms; testlerde bu sınırın aşılması hata sayılsın.
+
 ## Kullanıcının ekledikleri
 (boş)
