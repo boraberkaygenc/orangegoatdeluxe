@@ -4,7 +4,7 @@
 // Non-instrument documents are sent incrementally: every write to db.docs is tracked by a Proxy (key -> change counter).
 import zlib from 'node:zlib';
 
-const HEAVY = ['closes', 'hlv', 'bars', 'series'];
+const HEAVY = ['closes', 'hlv', 'bars', 'series', 'fh'];
 const SERVER_ONLY = ['snapshots/', 'universe_snapshots/', 'research_raw/'];
 const SLIM_HZ = h => h ? { best: h.best || null, bestAny: h.bestAny || null, signal: h.signal || null, E: h.E } : null;
 

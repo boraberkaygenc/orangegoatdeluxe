@@ -191,6 +191,7 @@ const server = http.createServer(async (req, res) => {
       if (p === '/api/evds') { evds.update('button'); return send(res, 202, { started: true }); }
       if (p === '/api/research') { research.collect('button'); return send(res, 202, { started: true }); }
       if (p === '/api/ipo') { ipo.update('button'); return send(res, 202, { started: true }); }
+      if (p === '/api/fundhist') { const out = {}; for (const [, x] of coll('instruments')) if (x && x.fh) out[x.symbol] = x.fh; return send(res, 200, { generatedAt: new Date().toISOString(), fh: out }); }
       if (p === '/api/lighthouse') { lighthouse.update('button'); return send(res, 202, { started: true }); }
       if (p === '/api/universe') { afterUniverse('button'); return send(res, 202, { started: true }); }
       if (p === '/api/edgar') { edgar.runSlice({ reason: 'button' }).then(() => health.update()).catch(e => log('edgar:', e.message)); return send(res, 202, { started: true }); }

@@ -5,6 +5,10 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.6: Pointer
+
+Analiz › Pointer (veya hisse sayfasındaki “Pointer ile incele”), bir enstrümanı analist kontrol listesi gibi inceler: gelir ve kâr sürücüleri, kârın nakde dönüşümü, bilanço stres testi, emsallere göre değerleme, rekabet avantajı, fiyatın ima ettiği büyüme (ters İNA), ayı/baz/boğa senaryoları, geri alım ve sulanma, 90 günlük katalizör takvimi ve isteğe bağlı “tezini çürüt”. Her bulgu rakam, dönem ve kaynak bağlantısıyla gelir; veri yoksa açıkça söyler. Tarama bölümü kriterlere uyan BIST veya ABD hisselerini listeler. Veriler: ABD için SEC EDGAR, BIST için İş Yatırım mali tabloları (gece güncellemesi, data/fund.json).
+
 ## v2.5: fon düzenleme ve teşhis
 
 Fon “Düzenle” penceresi artık fondaki her kalemi (hisse, fon, altın, mevduat, nakit, döviz çevirisi, VİOP, para giriş/çıkışı) tarihiyle gösterir ve düzenletir; fonun kuruluş tarihi değiştirilebilir. Tüm tutar alanlarında virgül binlik, nokta ondalık ayırıcıdır; virgül yazılmazsa uygulama ekler. Fon genel bakışındaki “Teşhis: sorun → çözüm → sonuç” bölümü fonun ana sorununu, bunu gideren işlemleri (adet ve TL ile) ve işlem öncesi/sonrası rakamları gösterir; “Taslak işlem olarak uygula” işlemleri onaya hazır açar. İyileştir sekmesindeki “Öneri karnesi” her önerinin 1, 3 ve 6 ay sonraki sonucunu izler.

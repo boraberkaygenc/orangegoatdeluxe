@@ -64,6 +64,7 @@ try {
   fs.cpSync(path.join(DIR, 'public'), SITE, { recursive: true });
   fs.writeFileSync(path.join(SITE, 'data', 'view.json'), JSON.stringify(payload));
   fs.writeFileSync(path.join(SITE, 'data', 'series.json'), JSON.stringify({ generatedAt: payload.generatedAt, series }));
+  { const fh = await j('/api/fundhist').catch(() => ({ fh: {} })); fs.writeFileSync(path.join(SITE, 'data', 'fund.json'), JSON.stringify({ generatedAt: payload.generatedAt, fh: fh.fh || {} })); log(`fund.json: ${Object.keys(fh.fh || {}).length} companies`); }
   fs.copyFileSync(path.join(DIR, 'tools', 'static', 'static-mode.js'), path.join(SITE, 'static-mode.js'));
   fs.copyFileSync(path.join(DIR, 'tools', 'static', 'sw.js'), path.join(SITE, 'sw.js'));
   const man = JSON.parse(fs.readFileSync(path.join(DIR, 'public', 'manifest.webmanifest'), 'utf8')); man.name = 'orangegoat Deluxe'; man.short_name = 'orangegoat'; man.id = './'; man.start_url = './'; man.scope = './';

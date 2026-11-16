@@ -41,6 +41,7 @@
   window.fetch = async (input, init) => { const url = typeof input === 'string' ? input : input && input.url; let u = null; try { u = new URL(url, location.href); } catch (e) { }
     if (u && u.origin === location.origin && u.pathname.startsWith('/api/')) {
       if (u.pathname.startsWith('/api/import/')) return importApi(u, init);
+      if (u.pathname === '/api/fundhist') { const r = await nativeFetch(BASE + 'data/fund.json', { cache: 'no-cache' }).catch(() => null); return json(r && r.ok ? await r.json() : { fh: {} }); }
       if (u.pathname === '/api/series') { const all = (await seriesAll()).series || {}, out = {}; for (const s of String(u.searchParams.get('symbols') || '').split(',').filter(Boolean)) out[s] = { closes: (all[s] && all[s].closes) || [] }; return json({ series: out }); }
       return new Response('not available in the GitHub version', { status: 404, headers: { 'Content-Type': 'text/plain' } }); }
     return nativeFetch(input, init); };

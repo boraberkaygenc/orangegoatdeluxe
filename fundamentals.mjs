@@ -5,6 +5,8 @@ export const daysBetween = (a, b) => Math.round((new Date(b + 'T12:00:00Z') - ne
 export const today = () => new Date().toISOString().slice(0, 10);
 const r2 = v => (typeof v === 'number' && isFinite(v)) ? +v.toFixed(2) : null;
 const QF = new Set(['Q1', 'Q2', 'Q3', 'Q4']);
+// flow metrics (summed over a period) across both sources; everything else is a point-in-time balance
+export const FLOW_METRICS = new Set(['rev', 'ni', 'eps', 'opinc', 'cfo', 'dps', 'capex', 'sbc', 'wc', 'buyback', 'divPaid', 'da', 'interest', 'tax', 'pretax', 'gp', 'fcf', 'capInc', 'nii', 'fee', 'salesDom', 'salesExp', 'provisions']);
 
 // latest value per periodEnd for a metric (the newest filing wins), quarterly only when `quarterly`
 function byPeriod(rows, metric, quarterly) {
@@ -46,7 +48,7 @@ export function upsertCalendar(db, put, items, src) {
 }
 // turn a fiscal-year row plus 3 quarterly rows of the same year into a derived Q4 row (flow metrics only)
 export function deriveQ4(rows, srcLabel) {
-  const out = [], flows = new Set(['rev', 'ni', 'eps', 'opinc', 'cfo', 'dps']);
+  const out = [], flows = FLOW_METRICS;
   const byMetric = new Map(); for (const r of rows) { if (!flows.has(r.metric)) continue; let a = byMetric.get(r.metric); if (!a) { a = []; byMetric.set(r.metric, a); } a.push(r); }
   for (const [metric, a] of byMetric) {
     const fys = a.filter(r => r.fp === 'FY'), qs = byPeriod(a, metric, true);
@@ -55,4 +57,12 @@ export function deriveQ4(rows, srcLabel) {
       out.push({ sym: fy.sym, metric, periodEnd: fy.periodEnd, filedAt: fy.filedAt, value: +(fy.value - inYear.reduce((s, q) => s + q.value, 0)).toFixed(metric === 'eps' || metric === 'dps' ? 4 : 0), unit: fy.unit, form: fy.form, src: srcLabel, fp: 'Q4', ...(fy.est ? { est: true } : {}) }); }
   }
   return out;
+}
+
+// compact history for the Pointer analyses: last 4 fiscal years and last 8 quarters of every flow metric, last 8 balance values
+export function history(rows) {
+  if (!rows || !rows.length) return null; const metrics = [...new Set(rows.map(r => r.metric))], fy = {}, q = {}, bal = {};
+  for (const m of metrics) { if (FLOW_METRICS.has(m)) { const f = byPeriod(rows.filter(r => r.fp === 'FY'), m, false).slice(-4); if (f.length) fy[m] = f.map(r => [r.periodEnd, r.value]); const qq = byPeriod(rows, m, true).slice(-8); if (qq.length) q[m] = qq.map(r => [r.periodEnd, r.value]); }
+    else { const b = byPeriod(rows, m, false).slice(-8); if (b.length) bal[m] = b.map(r => [r.periodEnd, r.value]); } }
+  return { fy, q, bal, at: new Date().toISOString().slice(0, 10) };
 }

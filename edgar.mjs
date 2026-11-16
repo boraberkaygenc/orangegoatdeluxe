@@ -3,12 +3,14 @@
 // and the expected next report from the submissions API. Sequential requests, at most 8 per second, descriptive User-Agent
 // (config.edgarUserAgent). Writes facts rows (metrics rev, ni, eq, assets, eps, opinc, cfo, dps, shares, curAssets, curLiab) into
 // data/facts.ndjson, a compact x.fund summary on each instrument doc, and EDGAR items into calendar/reports.
-import { summarize, deriveQ4, addDays, daysBetween, today, upsertCalendar } from './fundamentals.mjs';
+import { summarize, deriveQ4, addDays, daysBetween, today, upsertCalendar, history, FLOW_METRICS } from './fundamentals.mjs';
 const errMsg = e => { const c = e && e.cause; return [e && e.message, c && (c.code || c.message)].filter(Boolean).join(' / ') || String(e); };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const CONCEPTS = { rev: ['Revenues', 'RevenueFromContractWithCustomerExcludingAssessedTax', 'SalesRevenueNet', 'RevenueFromContractWithCustomerIncludingAssessedTax'], ni: ['NetIncomeLoss'], eq: ['StockholdersEquity', 'StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest'], assets: ['Assets'], eps: ['EarningsPerShareDiluted', 'EarningsPerShareBasic'], opinc: ['OperatingIncomeLoss'], cfo: ['NetCashProvidedByUsedInOperatingActivities'], dps: ['CommonStockDividendsPerShareDeclared'], curAssets: ['AssetsCurrent'], curLiab: ['LiabilitiesCurrent'] };
+const CONCEPTS = { rev: ['Revenues', 'RevenueFromContractWithCustomerExcludingAssessedTax', 'SalesRevenueNet', 'RevenueFromContractWithCustomerIncludingAssessedTax'], ni: ['NetIncomeLoss'], eq: ['StockholdersEquity', 'StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest'], assets: ['Assets'], eps: ['EarningsPerShareDiluted', 'EarningsPerShareBasic'], opinc: ['OperatingIncomeLoss'], cfo: ['NetCashProvidedByUsedInOperatingActivities'], dps: ['CommonStockDividendsPerShareDeclared'],
+  capex: ['PaymentsToAcquirePropertyPlantAndEquipment', 'PaymentsToAcquireProductiveAssets'], sbc: ['ShareBasedCompensation', 'AllocatedShareBasedCompensationExpense'], wc: ['IncreaseDecreaseInOperatingCapital'], buyback: ['PaymentsForRepurchaseOfCommonStock'], divPaid: ['PaymentsOfDividends', 'PaymentsOfDividendsCommonStock'], da: ['DepreciationDepletionAndAmortization', 'DepreciationAndAmortization', 'DepreciationAmortizationAndAccretionNet'], interest: ['InterestExpense', 'InterestExpenseNonoperating'], tax: ['IncomeTaxExpenseBenefit'], pretax: ['IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest', 'IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments'], gp: ['GrossProfit'],
+  cash: ['CashAndCashEquivalentsAtCarryingValue', 'CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents'], debtLT: ['LongTermDebtNoncurrent', 'LongTermDebt'], debtST: ['LongTermDebtCurrent', 'DebtCurrent', 'ShortTermBorrowings'], mat1: ['LongTermDebtMaturitiesRepaymentsOfPrincipalInNextTwelveMonths'], mat2: ['LongTermDebtMaturitiesRepaymentsOfPrincipalInYearTwo'], curAssets: ['AssetsCurrent'], curLiab: ['LiabilitiesCurrent'] };
 const DEI = { shares: ['EntityCommonStockSharesOutstanding'] };
-const FLOWS = new Set(['rev', 'ni', 'eps', 'opinc', 'cfo', 'dps']);
+const FLOWS = FLOW_METRICS; export const FVER = 2; // bump to refetch every company once after CONCEPTS change
 const pad = c => String(c).replace(/\D/g, '').padStart(10, '0');
 
 // extract facts rows from a companyfacts document; restatements are kept only when the value changed by > 0.5%
@@ -65,13 +67,13 @@ export function createEdgar({ db, put, log, inbox, coll, config, store2, mark })
     const sub = await get(`https://data.sec.gov/submissions/CIK${cik}.json`); const rc = (sub.filings && sub.filings.recent) || {};
     const filings = (rc.form || []).map((f, i) => ({ form: f, date: rc.filingDate[i], report: rc.reportDate && rc.reportDate[i] })).filter(f => /^10-[KQ]/.test(f.form));
     const nr = nextReport(filings), lastFiled = nr ? nr.last : null;
-    const fresh = !(y.fund && y.fund.src === 'EDGAR' && y.fund.lastFiled === lastFiled && store2.factsOf(sym).length);
+    const fresh = !(y.fund && y.fund.src === 'EDGAR' && y.fund.lastFiled === lastFiled && y.fund.v === FVER && store2.factsOf(sym).length);
     let added = 0;
     if (fresh) {
       const cf = await get(`https://data.sec.gov/api/xbrl/companyfacts/CIK${cik}.json`);
       const rows = extractFacts(sym, cf, addDays(today(), -Math.round(365.25 * 10.5))); added = store2.appendFacts(rows);
       const f = summarize(store2.factsOf(sym), { src: 'EDGAR', shares: y.mcap > 0 && y.price > 0 ? y.mcap / y.price : null });
-      if (f) { f.lastFiled = lastFiled; y.fund = f; } else { y.fundErr = 'no usable us-gaap facts'; delete y.fund; }
+      if (f) { f.lastFiled = lastFiled; f.v = FVER; y.fund = f; y.fh = history(store2.factsOf(sym)); if (y.fh) y.fh.cik = cik; } else { y.fundErr = 'no usable us-gaap facts'; delete y.fund; }
     } else if (y.fund) y.fund.updatedAt = now;
     db.docs[k] = y;
     return { cal: nr ? { symbol: sym, date: nr.date, kind: 'report', est: true, src: 'EDGAR', last: nr.last } : null, added, fresh };

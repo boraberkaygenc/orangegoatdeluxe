@@ -4,7 +4,7 @@
 // filedAt is estimated as period end + 45 days (Q1–Q3) or + 70 days (Q4), the KAP deadlines, and rows carry est: true.
 // Unit assumption: values arrive in full TRY (not thousands); when total assets are implausibly small against the market
 // cap (assets < mcap / 2000) the statement is treated as thousands and multiplied by 1000 (fund.scaled = true).
-import { summarize, addDays, today, upsertCalendar } from './fundamentals.mjs';
+import { summarize, addDays, today, upsertCalendar, history, FLOW_METRICS } from './fundamentals.mjs';
 const UA = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36', 'Accept': 'application/json,text/plain,*/*', 'Accept-Language': 'tr-TR,tr;q=0.9,en;q=0.8', 'Referer': 'https://www.isyatirim.com.tr/tr-tr/analiz/hisse/Sayfalar/sirket-karti.aspx' };
 const BASE = 'https://www.isyatirim.com.tr/_layouts/15/IsYatirim.Website/Common/Data.aspx/';
 const errMsg = e => { const c = e && e.cause; return [e && e.message, c && (c.code || c.message)].filter(Boolean).join(' / ') || String(e); };
@@ -27,12 +27,15 @@ const MAP = {
   opinc: [/^Esas Faaliyet Kar/i, /^Operating Profit/i, /^Operating Income/i],
   cfo: [/^İşletme Faaliyetlerinden (Kaynaklanan )?(Net )?Nakit Ak/i, /^Faaliyetlerden Elde Edilen Nakit Ak/i, /Cash Flows? From Operating Activities/i, /Net Cash (Provided|Generated|Flows?) (by|from) Operating/i, /Operating Activities/i]
 };
-const FLOWS = new Set(['rev', 'ni', 'opinc', 'cfo']);
+const FLOWS = FLOW_METRICS;
+// items picked by İş Yatırım item code (labels repeat, e.g. short- and long-term "Finansal Borçlar"); XI_29 = industrials, UFRS = banks
+const CODES = { XI_29: { rev: '3C', opinc: '3DF', ni: '3Z', cfo: '4C', eq: '2O', assets: '1BL', cash: '1AA', curAssets: '1A', curLiab: '2A', debtST: '2AA', debtLT: '2BA', paidCap: '2OA', gp: '3D', pretax: '3I', tax: '3IA', da: '4B', interest: '4BB', salesDom: '4BC', salesExp: '4BD', fxpos: '4BE', wc: '4CAF', capex: '4CAI', fcf: '4CB', divPaid: '4CBB', capInc: '4CBC' },
+  UFRS: { cash: '1A', loans: '1AF', deposits: '2A', paidCap: '2OA', nii: '3C', fee: '3CA', rev: '3CE', opinc: '3CH', provisions: '3CF', ni: '3ZA', eq: '2O', assets: '1Z', tax: '3CM' } };
 const num = v => { if (v === null || v === undefined || v === '') return null; const n = typeof v === 'number' ? v : parseFloat(String(v).replace(/\./g, '').replace(',', '.')); return isFinite(n) ? n : null; };
 // pick the matching item per metric from the statement items
-export function mapItems(items) {
-  const out = {};
-  for (const [metric, res] of Object.entries(MAP)) { let best = null, bestPri = 99; for (const it of items) { const tr = String(it.itemDescTr || '').trim(), en = String(it.itemDescEng || '').trim(); for (let i = 0; i < res.length && i < bestPri; i++) if (res[i].test(tr) || res[i].test(en)) { best = it; bestPri = i; break; } } if (best) out[metric] = best; }
+export function mapItems(items, group) {
+  const out = {}; const codes = CODES[group] || {}; for (const [metric, code] of Object.entries(codes)) { const it = items.find(i => String(i.itemCode || '').trim() === code); if (it) out[metric] = it; }
+  for (const [metric, res] of Object.entries(MAP)) { if (out[metric]) continue; let best = null, bestPri = 99; for (const it of items) { const tr = String(it.itemDescTr || '').trim(), en = String(it.itemDescEng || '').trim(); for (let i = 0; i < res.length && i < bestPri; i++) if (res[i].test(tr) || res[i].test(en)) { best = it; bestPri = i; break; } } if (best) out[metric] = best; }
   return out;
 }
 export async function maliTablo(code, group, pairs) {
@@ -53,8 +56,9 @@ export function toRows(sym, group, byPeriod, scale = 1) {
   const rows = [], keys = Object.keys(byPeriod).sort(); // 'YYYY-MM'
   for (const key of keys) { const [y, m] = key.split('-').map(Number), v = byPeriod[key], end = qEnd(y, m), filedAt = filedEstimate(y, m), fp = 'Q' + m / 3, base = { sym, periodEnd: end, filedAt, unit: 'TRY', form: 'KAP ' + group, src: 'IsYatirim', est: true };
     for (const metric of Object.keys(v)) { const val = v[metric]; if (val === null || val === undefined) continue;
-      if (FLOWS.has(metric)) { let q = val; if (m > 3) { const prev = byPeriod[`${y}-${String(m - 3).padStart(2, '0')}`]; if (!prev || prev[metric] === null || prev[metric] === undefined) continue; q = val - prev[metric]; }
-        rows.push({ ...base, metric, value: Math.round(q * scale), fp }); if (m === 12) rows.push({ ...base, metric, value: Math.round(val * scale), fp: 'FY' }); }
+      if (FLOWS.has(metric)) { if (m === 12) rows.push({ ...base, metric, value: Math.round(val * scale), fp: 'FY' }); // the full year needs no earlier quarter
+        let q = val; if (m > 3) { const prev = byPeriod[`${y}-${String(m - 3).padStart(2, '0')}`]; if (!prev || prev[metric] === null || prev[metric] === undefined) continue; q = val - prev[metric]; }
+        rows.push({ ...base, metric, value: Math.round(q * scale), fp }); }
       else rows.push({ ...base, metric, value: Math.round(val * scale) }); } }
   return rows;
 }
@@ -64,7 +68,7 @@ export function createIsy({ db, put, log, inbox, coll, config, store2, mark }) {
   async function fetchCompany(code, pairs) {
     for (const group of ['XI_29', 'UFRS']) {
       const byPeriod = {}; let any = false;
-      for (let i = 0; i < pairs.length; i += 4) { const chunk = pairs.slice(i, i + 4), items = await maliTablo(code, group, chunk); if (!items.length) break; const picked = mapItems(items); if (!Object.keys(picked).length) break;
+      for (let i = 0; i < pairs.length; i += 4) { const chunk = pairs.slice(i, i + 4), items = await maliTablo(code, group, chunk); if (!items.length) break; const picked = mapItems(items, group); if (!Object.keys(picked).length) break;
         chunk.forEach(([y, m], j) => { const key = `${y}-${String(m).padStart(2, '0')}`, o = {}; let has = false; for (const [metric, it] of Object.entries(picked)) { const v = num(it['value' + (j + 1)]); o[metric] = v; if (v !== null) has = true; } if (has) { byPeriod[key] = o; any = true; } }); await sleep(250); }
       if (any) return { group, byPeriod };
       await sleep(250);
@@ -77,7 +81,7 @@ export function createIsy({ db, put, log, inbox, coll, config, store2, mark }) {
     const latest = Object.keys(got.byPeriod).sort().pop(), assets = got.byPeriod[latest].assets, scale = assets > 0 && y.mcap > 0 && assets < y.mcap / 2000 ? 1000 : 1;
     const rows = toRows(sym, got.group, got.byPeriod, scale), added = store2.appendFacts(rows);
     const f = summarize(store2.factsOf(sym), { src: 'IsYatirim', shares: y.mcap > 0 && y.price > 0 ? y.mcap / y.price : null });
-    if (f) { f.group = got.group; if (scale !== 1) f.scaled = true; y.fund = f; } else { y.fundErr = 'statement could not be mapped'; delete y.fund; }
+    if (f) { f.group = got.group; if (scale !== 1) f.scaled = true; y.fund = f; y.fh = history(store2.factsOf(sym)); if (y.fh) y.fh.group = got.group; } else { y.fundErr = 'statement could not be mapped'; delete y.fund; }
     db.docs[k] = y;
     const [ly, lm] = latest.split('-').map(Number); let ny = ly, nm = lm + 3; if (nm > 12) { nm = 3; ny++; } let date = filedEstimate(ny, nm); if (date < today()) date = addDays(today(), 7);
     return { added, cal: { symbol: sym, date, kind: 'report', est: true, src: 'KAP deadline', period: qEnd(ny, nm) } };
