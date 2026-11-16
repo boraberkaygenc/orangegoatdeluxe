@@ -1799,7 +1799,7 @@ document.addEventListener('click', e => { const b = e.target.closest('[data-empt
 document.head.insertAdjacentHTML('beforeend', `<style>
 .lt{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px;background:#8b949e;flex:0 0 auto}
 .lt.g{background:#2ea043;box-shadow:0 0 0 3px rgba(46,160,67,.18)}.lt.a{background:#d29922;box-shadow:0 0 0 3px rgba(210,153,34,.18)}.lt.r{background:#d1242f;box-shadow:0 0 0 3px rgba(209,36,47,.18)}.lt.b{background:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.18)}.lt.x{background:#8b949e}
-.mk-l .lt.g{animation:dlxPulse 2s ease-in-out infinite}@keyframes dlxPulse{0%,100%{box-shadow:0 0 0 2px rgba(46,160,67,.25)}50%{box-shadow:0 0 0 5px rgba(46,160,67,.06)}}
+.mk-l .lt.g{position:relative}.mk-l .lt.g::after{content:'';position:absolute;inset:-4px;border-radius:50%;background:rgba(46,160,67,.28);animation:dlxPulse 2s ease-in-out infinite;will-change:transform,opacity;pointer-events:none}@keyframes dlxPulse{0%,100%{transform:scale(.6);opacity:.9}50%{transform:scale(1.15);opacity:.15}}@media (prefers-reduced-motion:reduce){.mk-l .lt.g::after{animation:none}}
 #mkt-badges .mk-l,#mkt-badges .mk-l span{border:0!important;padding:0!important;background:none!important;border-radius:0!important}
 #cmd{width:190px}#cmd::placeholder{text-transform:none;letter-spacing:0}
 #mkt-badges{display:inline-flex;gap:14px;align-items:center;font-size:12px;color:var(--fg2)}#mkt-badges .mk-l{display:inline-flex;align-items:center;white-space:nowrap;border:0;padding:0;background:none}#mkt-badges b{font-weight:600;color:var(--fg)}.mk-s{margin-left:4px}.mk-w{color:var(--muted);margin-left:4px}
@@ -2527,6 +2527,19 @@ dlPlaceMovers = function () { const t = $('scrn-table'); if (!t) return; const h
 { const _rs = renderSheet; let lastKey = null, pending = false; renderSheet = function () { const w = state.sheet, key = w ? JSON.stringify([w.type, w.id, w.symbol, state.dlxFTab, state.S.lang]) : null; if (key && key === lastKey && pending) return; lastKey = key; pending = true; queueMicrotask(() => { pending = false; }); return _rs.apply(this, arguments); }; }
 window.__dlxPerf = []; const dlPerf = (name, f) => function () { const t = performance.now(); try { return f.apply(this, arguments); } finally { const d = performance.now() - t; window.__dlxPerf.push([name, Math.round(d)]); if (window.__dlxPerf.length > 200) window.__dlxPerf.shift(); } };
 renderAll = dlPerf('renderAll', renderAll); renderSheet = dlPerf('renderSheet', renderSheet); E.scoreAll = dlPerf('scoreAll', E.scoreAll); showView = dlPerf('showView', showView);
+
+/* ---- v2.9 speed: hidden views are not redrawn ----
+   A data change still runs renderAll, but the four big view renderers draw only the view on screen; for a hidden view the call is kept
+   (latest arguments) and replayed the moment that view is shown. Switching tabs therefore no longer redraws the whole app: it shows the
+   view and replays only what changed while it was hidden. The full-page language pass runs only when the language changes — new text is
+   translated as it appears by the observer that already watches the page. */
+const DL_PEND = new Map();
+const dlViewOn = id => { const el = document.getElementById('view-' + id); return !!el && !el.hidden; };
+function dlLazy(view, name, orig) { return function () { if (!dlViewOn(view)) { const self = this, args = arguments; let m = DL_PEND.get(view); if (!m) DL_PEND.set(view, m = new Map()); m.set(name, () => orig.apply(self, args)); return; } const m = DL_PEND.get(view); if (m) m.delete(name); return orig.apply(this, arguments); }; }
+renderToday = dlLazy('TODAY', 'today', renderToday); renderScrn = dlLazy('SCRN', 'scrn', renderScrn); renderPackages = dlLazy('PKGS', 'pkgs', renderPackages); renderPort = dlLazy('PORT', 'port', renderPort);
+function dlShowFlush(view) { const m = DL_PEND.get(view); if (!m || !m.size) return; DL_PEND.delete(view); for (const [n, f] of m) { try { f(); } catch (e) { console.error('deferred ' + n, e); } } }
+state.hooks.unshift(v => { if (v) dlShowFlush(state.view); }); // replay before the other hooks, which add to the redrawn view
+{ const _al = applyLang; let last = null; applyLang = function () { const l = dlLang(); if (l === last) return; last = l; return _al.apply(this, arguments); }; }
 
 Object.assign(TR, { 'GitHub version · prices update about every 30–60 minutes on weekdays · your data stays in this browser': 'GitHub sürümü · fiyatlar iş günleri yaklaşık 30–60 dakikada bir güncellenir · verileriniz bu tarayıcıda kalır',
   'Glossary': 'Sözlük', 'Add fund from external investment report': 'Dış yatırım raporundan fon ekle', 'TRY time deposit': 'TL vadeli mevduat', 'Money-market fund': 'Para piyasası fonu', 'BIST 100 index fund': 'BIST 100 endeks fonu', 'USD deposit': 'USD mevduat', 'Inflation (CPI) — value kept': 'Enflasyon (TÜFE) — korunan değer' });

@@ -5,6 +5,11 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.9: hız
+- Sekme değiştirmek artık bütün uygulamayı yeniden çizmez: veri değişince yalnızca ekrandaki görünüm çizilir, gizli görünümler açıldıkları anda güncellenir. Sekme geçişinin ilk kareye kadar süresi: Özet 115–160 ms → 20–27 ms, Fonlarım 120–145 ms → 9–15 ms, Analiz 90–135 ms → 12–22 ms, Piyasalar 145–190 ms → 45–115 ms.
+- Sayfanın tamamını dolaşan çeviri taraması yalnızca dil değiştiğinde çalışır; yeni metin göründükçe çevrilir.
+- Piyasa ışığının nabız animasyonu ekran kartında çalışır: uygulama boştayken işlemciyi meşgul etmez.
+
 ## v2.8: Ziraat Bankası kurları
 - Fondaki dolar (USD nakit, USD mevduat, döviz çevirme kalemleri, cüzdan) Ziraat Bankası'nın günlük gişe **döviz satış** kuruyla TL'ye çevrilir; değer ve getiri (ROI) bu kura endekslidir. Yanında parantez içinde **alış** kuruyla değer (doları bugün bankaya satsanız eline geçecek tutar) ve getiri gösterilir; fon başlığında da aynı ayrım vardır.
 - Döviz çevirme penceresi kuru kendiliğinden doldurur: TL → USD için Ziraat **satış**, USD → TL için **alış** kuru.
