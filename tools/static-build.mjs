@@ -49,6 +49,7 @@ try {
     await j('/api/backfill', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'stop' }) }).catch(() => { }); await sleep(3000); }
   { const cur = await j('/api/view?s=0&c=0').then(v => (v.docs || {})['model/calib']).catch(() => null);
     if (MODE === 'full' || !cur || !cur.w || Date.now() - new Date(cur.at) > 7 * 864e5) { const c = await j('/api/calib', { method: 'POST' }).catch(e => ({ ok: false, error: e.message })); log('calibration:', c.ok ? Object.entries(c.stats || {}).map(([k, s]) => `${k}: ${s.stocks} stocks, ${s.dates} dates, ${s.from}…${s.to}`).join('; ') : (c.error || 'not enough history yet')); } }
+  { const z = await j('/api/ziraat', { method: 'POST' }).catch(e => ({ ok: false, error: e.message })); log('Ziraat rates:', z.ok ? `${z.n} days stored` : z.error); if (!z.ok || !z.n) notes.push('Ziraat rates: ' + (z.error || 'none')); }
   await sleep(4000); // EVDS / IPO / Lighthouse updates started at start-up get a moment to land
   // 3) data for the page: the same documents the local server sends, without anyone's personal data
   const view = await j('/api/view?s=0&c=0'), inst = await j('/api/view/inst');
