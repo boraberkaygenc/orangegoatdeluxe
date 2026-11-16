@@ -5,6 +5,10 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.5: fon düzenleme ve teşhis
+
+Fon “Düzenle” penceresi artık fondaki her kalemi (hisse, fon, altın, mevduat, nakit, döviz çevirisi, VİOP, para giriş/çıkışı) tarihiyle gösterir ve düzenletir; fonun kuruluş tarihi değiştirilebilir. Tüm tutar alanlarında virgül binlik, nokta ondalık ayırıcıdır; virgül yazılmazsa uygulama ekler. Fon genel bakışındaki “Teşhis: sorun → çözüm → sonuç” bölümü fonun ana sorununu, bunu gideren işlemleri (adet ve TL ile) ve işlem öncesi/sonrası rakamları gösterir; “Taslak işlem olarak uygula” işlemleri onaya hazır açar. İyileştir sekmesindeki “Öneri karnesi” her önerinin 1, 3 ve 6 ay sonraki sonucunu izler.
+
 ## v2.4: tavsiye katmanı
 
 Hisse sayfası artık “Ne kadar tutmalı” (maliyet ve vergi sonrası mevduata göre en iyi süre) ve “Yanına ne eklemeli” bölümlerini gösterir. Her fonun genel bakışında “Bu fon değer mi?” kararı ve iyileştirme listesi yer alır. Piyasalar › VİOP’ta “Tutulması gereken net pozisyon” tablosu trend ve taşımaya göre kontrat sayısını, teminatı ve zarar kes seviyesini önerir.
