@@ -162,5 +162,24 @@ Sırada (2026-11-15): 56, 58, 59, 60, 63, 64, 65, 66, 67, 70. Yeni sekme planı 
 116. **[iptal]** AI asistan — model ve maliyet: varsayılan Claude Opus 5.5 (girdi $4, çıktı $20 / milyon token; önbelleğe alınmış girdi $0.20); ekonomik seçenek Claude Haiku 5.5 ($0.10 / $0.50). Sistem talimatı ve araç tanımları önbelleğe alınır; aylık harcama sınırı ve soru başına maliyet göstergesi Ayarlar’da.
 117. **[iptal]** AI asistan — isteğe bağlı: web araması ile güncel haber/KAP özeti (ek maliyet), sohbet geçmişinin tarayıcıda saklanması, “haftalık fon raporu” gibi hazır komutlar.
 
+### Pointer — analiz akıl yürütme katmanı (öneri, 2026-11-16)
+
+Pointer, uygulamanın kendi verisiyle (fiyat, puan, SEC/EDGAR ve İş Yatırım mali tabloları, temettü, VİOP, makro) her enstrüman için analist kontrol listesini kural tabanlı olarak çalıştırır; yapay zekâ/API anahtarı gerektirmez. Her bulgu: tek cümlelik sonuç → rakam, dönem ve kaynak bağlantısı → eksik veri uyarısı → güven etiketi (kanıt / varsayım). Adı “Pointer”, yanında küçük bir av köpeği (pointer) logosu.
+
+118. **[öneri]** Pointer ekranı ve logo: Analiz altında “Pointer” sekmesi + her hisse, fon ve VİOP sayfasında “Pointer ile incele” düğmesi; küçük pointer köpeği SVG logosu (işaret pozunda, tema renkleriyle); rapor PDF/Word olarak dışa aktarılabilir.
+119. **[öneri]** Veri genişletme (ABD, SEC): mevcut EDGAR alanlarına yatırım harcaması (capex), hisse bazlı ödeme, işletme sermayesi değişimi, hisse geri alımı, ödenen temettü, nakit, borç ve borç vadeleri (1/2 yıl), amortisman, faiz gideri, vergi, brüt kâr, çeyreklik (10-Q) değerler ve dosyalama bağlantıları eklenir.
+120. **[öneri]** Veri genişletme (BIST, İş Yatırım): gelir tablosu, bilanço ve nakit akışı çeyreklik ve yıllık; UMS 29 (enflasyon muhasebesi) uyarısı; karşılaştırmalar reel veya USD bazında yapılır.
+121. **[öneri]** Tarama (1): kriterlerle hisse tarama — piyasa değeri, gelir büyümesi, serbest nakit akışı (işletme nakdi − capex), puan, sektör; BIST ve ABD; rakam, dönem ve kaynakla sıralı liste.
+122. **[öneri]** Kâr nakde dönüyor mu (4): 3 yıl net kâr, işletme nakdi, capex, serbest nakit; aradaki farkı işletme sermayesi, hisse bazlı ödeme ve tek seferlik kalemlerle açıklar; geçici artışları işaretler.
+123. **[öneri]** Bilanço stres testi (5): nakit, kullanılabilir kredi, 2 yıl içinde vadesi gelen borç; işletme nakdi %25 düşer, harcama sabit, yeniden finansman yok → yıl sonu nakit ve açık uyarısı. Bankalarda bunun yerine sermaye yeterliliği ve özkaynak kârlılığı.
+124. **[öneri]** Emsal karşılaştırma ve rekabet avantajı (6–7): F/K, FD/FAVÖK, gelir büyümesi, faaliyet marjı; emsal ortancasına göre prim/iskonto ve gerekçesi; 3 yıllık marj istikrarı ve fiyatlama gücü göstergeleri; sıfır/negatif paydalar “yok” olarak işaretlenir.
+125. **[öneri]** Ters indirgenmiş nakit akışı (8): bugünkü firma değerinin ima ettiği 5 yıllık gelir büyümesi (uzun vade %2,5, iskonto %8/9/10; BIST için USD veya reel bazda), marj, vergi ve yeniden yatırım varsayımları gösterilir ve gerçekleşen 3 yıllık büyümeyle karşılaştırılır.
+126. **[öneri]** Ayı / baz / boğa senaryoları (9): sonraki mali yıl için gelir, faaliyet marjı ve hisse başı kâr; her senaryoda izlenecek bir tetikleyici; ana sürücü %5 değişirse hisse başı kâr etkisi.
+127. **[öneri]** Geri alım ve sulanma (10): 3 yıl geri alım harcaması, alınan hisse, dönem başı/sonu hisse sayısı, çalışan hisseleri ile mutabakat, net değişim %; açıklanamayan farklar işaretlenir. BIST’te sermaye artırımları (bedelli/bedelsiz) dahil.
+128. **[öneri]** Katalizör takvimi (11): önümüzdeki 90 günde bilanço tarihi, temettü, genel kurul, endeks değişimi, VİOP vadesi, TCMB/Fed/TÜFE, halka arz kilidi; “kesin/tahmini” etiketi ve izlenecek sonuç.
+129. **[öneri]** Tezini çürüt (12): kullanıcı tek cümlelik tezini yazar (ör. “THYAO marjlarını korur”); Pointer verilerden en güçlü 3 karşı kanıtı bulur, her birinin hangi varsayımı zorladığını ve 2 çeyrekte tezi zayıflatacak ölçülebilir eşiği (varsayım olarak) yazar.
+130. **[öneri]** Gelir ve kâr kaynakları / kazanç sürprizi (2–3): yıllık ve çeyreklik gelir/kâr değişimi, en büyük katkılar; segment verisi ve analist beklentisi bulunamazsa açıkça “veri yok” denir (SEC özet verisinde segment yok; beklenti verisi ücretsiz kaynaklarda sınırlı).
+131. **[öneri]** Hisse dışı enstrümanlar için Pointer: TEFAS/BYF (içerik, ücret, endekse göre sapma), altın/emtia (mevduata göre taşıma, trend, reel faiz), döviz (faiz farkı, ima edilen değer kaybı, şok testi), VİOP (baz, vade geçişi, teminat stresi — mevcut net pozisyon motoruyla), mevduat (reel getiri, PPK yolu), tahvil/Eurobond (getiri, süre, faiz şoku).
+
 ## Kullanıcının ekledikleri
 (boş)
