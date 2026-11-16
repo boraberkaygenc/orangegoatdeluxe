@@ -4362,7 +4362,7 @@ Object.assign(TR, { 'Add fund from external investment report': 'Dış yatırım
 
 const IMP = { busy: false, files: [], results: [], rows: [], mode: 'new', target: '', hold: 182, err: '' };
 const impR2 = v => Math.round((+v || 0) * 100) / 100;
-const impFx = (sym, d) => { const x = state.map[sym]; return x && x.ccy === 'USD' ? (d && state.fx ? state.fx(d) : ctx().M.usdtry) : 1; };
+const impFx = (sym, d) => { const x = state.map[sym]; if (!(x && x.ccy === 'USD')) return 1; const o = d && state.__impFxDay && state.__impFxDay[d]; return o || (d && state.fx ? state.fx(d) : ctx().M.usdtry); }; // a broker statement's own USD/TRY rate for that day wins
 const impCloseAt = (sym, d) => { const x = state.map[sym] || state.inst[sym]; const cl = x && Array.isArray(x.closes) ? x.closes : []; let v = null; for (const [dd, c] of cl) { if (dd > d) break; v = c; } return v || (x && x.e ? x.e.price : null); };
 const impFundName = (n, d) => `GNC Inv. Fund – ${E.roman(n)} (${E.longDate(d)})`;
 const impNextN = () => Math.max(state.packages.length, ...state.packages.map(p => +p.n || 0)) + 1;
@@ -6781,7 +6781,7 @@ function dlTodo() {
   for (const w of state.wallet || []) if (w.ccy === 'TRY' && w.amount > 50000) add(3, 'entry', DL(`${w.name || 'Account'}: ${T(w.amount)} in a demand deposit — at ${dlN(dep, 1)}% a time deposit would earn about ${T(w.amount * dep / 100 * 0.825 / 12)} a month.`, `${w.name || 'Hesap'}: vadesizde ${T(w.amount)} — %${dlN(dep, 1)} vadeli mevduat ayda yaklaşık ${T(w.amount * dep / 100 * 0.825 / 12)} getirir.`), null);
   return out.sort((a, b) => a.pri - b.pri);
 }
-const DL_TODO_L = { exit: ['Exit', 'Çıkış'], entry: ['Entry', 'Giriş'], transfer: ['Transfer', 'Aktarım'] };
+const DL_TODO_L = { exit: ['Exit', 'Çıkış'], entry: ['Entry', 'Giriş'], transfer: ['Transfer', 'Aktarım'], fix: ['Fix', 'Düzelt'] };
 function dlTodoHTML() { const t = dlTodo();
   return `<div class="panel wide" id="dlx-todo"><h2>${DL('What to do today', 'Bugün ne yapmalıyım?')} <span class="sub">${t.length ? DL(`${t.length} item${t.length > 1 ? 's' : ''}, most urgent first`, `${t.length} konu, en acili üstte`) : DL('nothing urgent', 'acil bir şey yok')}</span></h2><div class="body">${t.length ? `<ul class="dlx-todo">${t.map(i => `<li class="${i.pri === 0 ? 'urgent' : ''}"><span class="pill ${i.kind === 'exit' ? 'warn' : i.kind === 'entry' ? 'ok' : 'src'}">${DL(...DL_TODO_L[i.kind])}</span> ${i.text}${i.pid ? ` <button class="quiet" data-open-fund="${esc(i.pid)}">${DL('Open fund', 'Fonu aç')}</button>` : ''}</li>`).join('')}</ul>` : `<p class="hint">${DL('No deposit matures, no target or stop is hit, no idle cash. 👍', 'Vadesi dolan mevduat, hedefe veya zarar-kese ulaşan kalem, atıl nakit yok.')}</p>`}</div></div>`; }
 document.addEventListener('click', e => { const b = e.target.closest('[data-open-fund]'); if (!b) return; e.stopPropagation(); closeModal && !$('modal').hidden && closeModal(); openSheet({ type: 'pkg', id: b.dataset.openFund }); }, true);
@@ -7041,7 +7041,7 @@ const DL_TAB_ICONS = { TODAY: 'M2 9l6-5 6 5v5H10v-3H6v3H2z', PLAN: 'M2 4h12v9H2z
 { const G = GROUPS_NAV;
   G.TODAY.splice(0, G.TODAY.length, ['TODAY', 'Summary']);
   G.PLAN.splice(0, G.PLAN.length, ['PKGS', 'Funds'], ['ALLPOS', 'All holdings'], ['PERF', 'Performance'], ['LEDGER', 'Ledger'], ['TAX', 'Tax']);
-  G.MARKETS.splice(0, G.MARKETS.length, ['SCRN', 'Instruments'], ['VIOP', 'VİOP'], ['WATCH', 'Watchlist'], ['MACRO', 'Macro'], ['IPO', 'IPO tracker']);
+  G.MARKETS.splice(0, G.MARKETS.length, ['SCRN', 'All instruments'], ['VIOP', 'VİOP'], ['WATCH', 'Watchlist'], ['MACRO', 'Macro'], ['IPO', 'IPO tracker']);
   G.LAB.splice(0, G.LAB.length, ['CMP', 'Compare'], ['RSRCH', 'Research'], ['LIGHT', 'Lighthouse'], ['LAB', 'Lab'], ['MODEL', 'Model']);
   G.SET.splice(0, G.SET.length, ['SET', 'Settings'], ['GLOSS', 'Glossary']);
   if (G.PORTF) G.PORTF.splice(0, G.PORTF.length, ['PORT', 'Positions'], ['JOURNAL', 'Journal']);
@@ -7465,7 +7465,7 @@ function dlMoversHTML() { const seg = state.dlxSeg || 'bist', per = state.dlxMov
     <div class="row-inline" style="gap:8px;margin-bottom:8px"><div class="seg">${DL_MOVP.map(([k, l]) => `<button data-dlx-movp="${k}" class="${k === per ? 'active' : ''}">${DL(l[0], l[1])}</button>`).join('')}</div><div class="seg"><button data-dlx-movf="q" class="${all ? '' : 'active'}" title="${DL('Liquid, above the 200-day average, within 20% of the 52-week high', 'Likit, 200 günlük ortalamanın üstünde, 52 hafta zirvesine %20 yakın')}">${DL('Sound rallies', 'Sağlam yükselişler')}</button><button data-dlx-movf="all" class="${all ? 'active' : ''}">${DL('All (incl. speculative)', 'Tümü (spekülatif dahil)')}</button></div><button class="quiet" data-dlx-movall>${state.dlxMovAll ? DL('Fewer', 'Daha az') : DL('Show 40', '40 tane göster')}</button></div>
     <table><tr><th class="l">${DL('Share', 'Hisse')}</th><th>${DL('Change', 'Değişim')}</th><th>${DL('Today', 'Bugün')}</th><th title="${DL('Last 5 days’ volume vs the usual level', 'Son 5 günün hacmi / olağan hacim')}">${DL('Volume', 'Hacim')}</th><th title="${DL('Distance to the 52-week high', '52 haftalık zirveye uzaklık')}">${DL('To 52w high', '52h zirveye')}</th><th>${DL('Score', 'Puan')}</th><th class="l">${DL('Kind of rally', 'Yükseliş türü')}</th></tr>${rows || `<tr><td colspan="7" class="l dim">${DL('No rally passes these filters right now.', 'Şu anda bu filtrelerden geçen yükseliş yok.')}</td></tr>`}</table>
     <p class="note">${DL('Short-term rallies are risky: in the backtest the average top-20 one-month winner did not beat the market over the next month. Green-tagged rallies (near the 52-week high, no single-day spike) did best; amber ones faded most often. Use a stop.', 'Kısa vadeli yükselişler risklidir: testte bir ayın en çok yükselen 20 hissesi, sonraki ay ortalamada piyasayı geçemedi. Yeşil etiketliler (52 hafta zirvesine yakın, tek gün sıçrama yok) en iyi sonucu verdi; turuncu olanlar en sık geri verdi. Zarar kes kullanın.')}</p></div></div>`; }
-function dlPlaceMovers() { const t = $('scrn-table'); if (!t) return; const host = t.closest('.panel') || t.parentElement; const old = $('dlx-movers'), h = dlMoversHTML(); if (old) old.remove(); if (h && host) host.insertAdjacentHTML('beforebegin', h); }
+let dlPlaceMovers = function () { const t = $('scrn-table'); if (!t) return; const host = t.closest('.panel') || t.parentElement; const old = $('dlx-movers'), h = dlMoversHTML(); if (old) old.remove(); if (h && host) host.insertAdjacentHTML('beforebegin', h); };
 { const _rs = renderScrn; renderScrn = function () { if (!state.dlxSegInit) { state.dlxSegInit = 1; const sg = state.dlxSeg || 'bist', m = $('scrn-mkt'); if (sg === 'bist' || sg === 'us') { state.kind = 'stocks'; if (m && !m.value) m.value = sg === 'bist' ? 'TRY' : 'USD'; } } // the highlighted segment filters from the first view on
   _rs.apply(this, arguments); try { dlPlaceMovers(); } catch (e) { console.error(e); } }; }
 document.addEventListener('click', e => { const b = e.target.closest('[data-dlx-movp]'), a = e.target.closest('[data-dlx-movall]'), f = e.target.closest('[data-dlx-movf]'); if (!b && !a && !f) return; e.stopPropagation(); if (f) state.dlxMovF = f.dataset.dlxMovf; if (b) state.dlxMovP = b.dataset.dlxMovp; if (a) state.dlxMovAll = !state.dlxMovAll; dlPlaceMovers(); }, true);
@@ -7686,7 +7686,7 @@ async function dlDiagnose(p) { const pos = dlPositions(p).filter(q => q.valueTRY
     if (P.TDEP > 0.05 * V && cur.sr !== null) for (const c of buys) tryMove('TDEP', c, Math.min(P.TDEP * 0.5, cap(c)), 'idle');
     const ok = tries.filter(t => t.gainTL > 2 * t.cost && (t.st.ce - cur.ce) >= 0.5).sort((a, b) => b.gainTL - a.gainTL); if (!ok.length) break; const m = ok[0];
     if (m.from === 'TDEP' && step === 0) { /* breaking a deposit early costs its interest; only when clearly better */ if (m.st.ce - cur.ce < 1.5) break; }
-    if (A[m.from].x && QL[m.from] > 0) { const g = A[m.from].x.sub === 'gold'; m.sellQ = Math.min(QL[m.from], g ? +(QL[m.from] * m.amt / P[m.from]).toFixed(2) : Math.round(QL[m.from] * m.amt / P[m.from])); QL[m.from] -= m.sellQ; }
+    if (A[m.from].x && QL[m.from] > 0) { const g = A[m.from].x.sub === 'gold', fr = A[m.from].ccy === 'USD' || QL[m.from] < 1, raw = QL[m.from] * m.amt / P[m.from]; m.sellQ = Math.min(QL[m.from], g ? +raw.toFixed(2) : fr ? +raw.toFixed(6) : Math.round(raw)); QL[m.from] -= m.sellQ; } // US shares trade in fractions
     P = { ...P }; P[m.from] -= m.amt; P[m.to] = (P[m.to] || 0) + (m.amt - m.cost); cur = m.st; used.add('-' + m.from); used.add('+' + m.to); moves.push(m); }
   // problems on the fund as it is
   const probs = [], risky0 = Object.keys(port).filter(k => A[k] && A[k].x), wOf = k => port[k] / V;
@@ -7698,11 +7698,11 @@ async function dlDiagnose(p) { const pos = dlPositions(p).filter(q => q.valueTRY
   if (before.sr !== null && before.sr < 0.25 && before.sig > 30) probs.push({ k: 'risk', sev: before.sig / 10, txt: DL(`the fund swings ±${before.sig.toFixed(0)}% a year for only ${fmtPct(before.ex)} over the deposit`, `fon mevduatın yalnızca ${fmtPct(before.ex)} üzerinde getiri için yılda ±${before.sig.toFixed(0)}% dalgalanıyor`) });
   probs.sort((a, b) => b.sev - a.sev);
   return { p, A, V, dep, before, after: cur, moves, probs }; }
-function dlTicket(m, D) { const A = D.A, f = A[m.from], t = A[m.to], q = (a, amt) => a && a.price ? (a.x && a.x.sub === 'gold' ? +(amt / a.price).toFixed(2) : Math.floor(amt / (a.price * (a.ccy === 'USD' ? dlFx(today()) : 1)))) : null;
+function dlTicket(m, D) { const A = D.A, f = A[m.from], t = A[m.to], q = (a, amt) => a && a.price ? (a.x && a.x.sub === 'gold' ? +(amt / a.price).toFixed(2) : a.ccy === 'USD' ? +(amt / (a.price * dlFx(today()))).toFixed(4) : Math.floor(amt / a.price)) : null;
   const nameOf = k => k === 'DEP' ? DL('a time deposit (32 days, renewed)', 'vadeli mevduat (32 gün, yenilenerek)') : k === 'CASH' ? DL('TRY cash', 'TL nakit') : k === 'DDEP' ? DL('the demand deposit', 'vadesiz mevduat') : k === 'TDEP' ? DL('the time deposit', 'vadeli mevduat') : k;
   // (Turkish locative suffix is added in the sentence)
   const gold = a => a && a.x && a.x.sub === 'gold', sellQ = f && f.x ? (m.sellQ ?? q(f, m.amt)) : null, buyQ = t && t.x ? q(t, m.amt - m.cost) : null;
-  const qs = v => fmtN(v, v % 1 ? 2 : 0), to = t && t.x ? DL(`buy ${qs(buyQ)} ${m.to}`, `${m.to} ${qs(buyQ)} adet al`) : DL(`put it in ${nameOf(m.to)}`, `${nameOf(m.to)}’ya koy`);
+  const qs = v => fmtN(v, v % 1 ? (Math.abs(v) < 1 ? 4 : 2) : 0), to = t && t.x ? DL(`buy ${qs(buyQ)} ${m.to}`, `${m.to} ${qs(buyQ)} adet al`) : DL(`put it in ${nameOf(m.to)}`, `${nameOf(m.to)}’ya koy`);
   const text = f && f.x ? DL(`Sell ${qs(sellQ)} ${m.from} (≈ ${T(m.amt)}) → ${to}`, `${m.from} ${qs(sellQ)} adet sat (≈ ${T(m.amt)}) → ${to}`) : DL(`With the ${T(m.amt)} in ${nameOf(m.from)} → ${to}`, `${({ CASH: 'TL nakitteki', DDEP: 'Vadesiz mevduattaki', TDEP: 'Vadeli mevduattaki', USD: 'Dolardaki' })[m.from] || m.from} ${T(m.amt)} ile → ${to}`);
   return { text, sellQ, buyQ }; }
 function dlDiagHTML(D) { if (!D) return ''; const b = D.before, a = D.after, n = D.moves.length, top = D.probs.slice(0, 2);
@@ -7739,7 +7739,9 @@ function dlRecsHTML(p) { const R = (p.recs || []).slice().reverse(); if (!R.leng
 { const _rs = renderSheet; renderSheet = function () { _rs.apply(this, arguments); const w = state.sheet; if (!w || w.type !== 'pkg') return; const p = state.packages.find(q => q.id === w.id); if (!p) return; if (!$('dlx-recs')) { const h = dlRecsHTML(p); if (h) { const g = $('sheet').querySelector('.grid'); if (g) { g.insertAdjacentHTML('beforeend', h); DL_FTAB_OF['dlx-recs'] = 'imp'; try { dlApplyFtabs(); } catch (e) { } } } } }; }
 
 // broker files state US-share fees in USD (Midas: 1.50 USD); the funds keep every commission in TRY, so convert at that day's rate
-{ const _iu = impUse; impUse = function (results) { try { for (const r of results || []) for (const t of r.trades || []) if (!t.__feeTRY && (t.ccy === 'USD' || t.venue === 'US') && +t.commission > 0 && t.date) { t.commissionUsd = +t.commission; t.commission = Math.round(t.commission * dlFx(t.date) * 100) / 100; t.__feeTRY = true; } } catch (e) { console.error(e); } return _iu.apply(this, arguments); }; }
+{ const _iu = impUse; impUse = function (results) { try { const day = {}; for (const r of results || []) for (const f of r.fx || []) if (f.side === 'BUY' && f.rate > 0 && f.date) day[f.date] = f.rate; state.__impFxDay = day; // the statement's own USD/TRY for that day (impFx reads it)
+    for (const r of results || []) for (const t of r.trades || []) if (!t.__feeTRY && (t.ccy === 'USD' || t.venue === 'US') && +t.commission > 0 && t.date) { t.commissionUsd = +t.commission; t.commission = Math.round(t.commission * (day[t.date] || dlFx(t.date)) * 100) / 100; t.__feeTRY = true; } } catch (e) { console.error(e); } return _iu.apply(this, arguments); }; }
+{ const _ic = impCommit; impCommit = async function () { try { return await _ic.apply(this, arguments); } finally { setTimeout(() => { state.__impFxDay = null; }, 0); } }; }
 
 /* ================= v2.6 N: Pointer — a rule-based analyst that works through an instrument the way a research checklist does =================
    Every finding: one-sentence result → figures with period and source → missing data flagged → evidence or assumption.
@@ -7946,6 +7948,31 @@ document.head.insertAdjacentHTML('beforeend', `<style>
 @media print{body.ptr-printing header,body.ptr-printing nav,body.ptr-printing #subtabs,body.ptr-printing footer,body.ptr-printing .view:not(#view-PTR),body.ptr-printing #ptr-scr,body.ptr-printing #view-PTR .row-inline{display:none!important}body.ptr-printing .ptr-card{break-inside:avoid}}
 </style>`);
 Object.assign(TR, { 'Pointer': 'Pointer' });
+
+// ---- repair: purchases imported with swapped columns (quantity read as price, price as amount — the earlier Midas parser) ----
+function dlSwapFills(p) { const out = [];
+  for (const l of (p.lines || []).filter(z => !z.closed)) { const x = state.map[l.symbol] || state.inst[l.symbol]; if (!x) continue; const cl = dlCl(l.symbol);
+    for (const f of l.fills || []) { if (f.repaired || !(f.qty > 1) || !(f.price > 0) || !(f.price < 1)) continue; const mk = (cl.length && DX.priceOn(cl, f.date)) || (x.e && x.e.price) || x.price; if (!(mk > 1)) continue;
+      const nq = f.price, np = f.qty * f.price; if (Math.abs(np / mk - 1) < 0.3 && f.price / mk < 0.05) out.push({ l, f, nq, np, mk, ccy: x.ccy || 'TRY' }); } }
+  return out; }
+function dlSwapHTML(p) { const c = dlSwapFills(p); if (!c.length) return '';
+  return `<div class="panel wide dlx-verdict bad" id="dlx-swap"><h2>${DL('Import error found', 'İçe aktarma hatası bulundu')} <span class="sub">${DL('quantity and price were read from the wrong columns of the broker file', 'adet ve fiyat aracı kurum dosyasının yanlış sütunlarından okunmuş')}</span></h2><div class="body">
+    <table><tr><th class="l">${DL('Share', 'Hisse')}</th><th class="l">${DL('Date', 'Tarih')}</th><th>${DL('Recorded', 'Kayıtlı')}</th><th>${DL('Correct', 'Doğrusu')}</th><th>${DL('Market price that day', 'O günkü piyasa fiyatı')}</th></tr>${c.map(r => `<tr><td class="l acc">${esc(r.l.symbol)}</td><td class="l">${esc(dlDate(r.f.date))}</td><td class="down">${fmtN(r.f.qty, 0)} × ${fmtN(r.f.price, 4)} ${r.ccy}</td><td class="up">${fmtN(r.nq, r.nq % 1 ? 6 : 0)} × ${fmtN(r.np, 2)} ${r.ccy}</td><td>${fmtN(r.mk, 2)} ${r.ccy}</td></tr>`).join('')}</table>
+    <div class="row-inline" style="gap:8px;margin-top:8px"><button class="primary" data-dlx-swapfix="${esc(p.id)}">${DL('Correct it', 'Düzelt')}</button><span class="hint">${DL('The cost keeps the exchange rate of the original entry; a small USD fee is converted to TRY. Kept in the change history and can be undone.', 'Maliyet ilk kayıttaki kurla hesaplanır; küçük USD komisyonu TL’ye çevrilir. Değişiklik geçmişinde kalır, geri alınabilir.')}</span></div></div></div>`; }
+document.addEventListener('click', e => { const b = e.target.closest('[data-dlx-swapfix]'); if (!b) return; e.stopPropagation(); const p = state.packages.find(q => q.id === b.dataset.dlxSwapfix); if (!p) return; const c = dlSwapFills(p); if (!c.length) return;
+  dlEntryChange(p, () => { for (const r of c) { const f = r.f, com = +f.commission || 0, bs = +f.bsmv || 0, rate = f.qty * f.price > 0 ? (f.amount - com - bs) / (f.qty * f.price) : (r.ccy === 'USD' ? dlFx(f.date) : 1), fxr = r.ccy === 'USD' && rate > 1 ? rate : r.ccy === 'USD' ? dlFx(f.date) : 1;
+      const newCom = r.ccy === 'USD' && com > 0 && com < 10 ? Math.round(com * fxr * 100) / 100 : com; Object.assign(f, { qty: r.nq, price: r.np, commission: newCom, amount: Math.round((r.nq * r.np * fxr + newCom + bs) * 100) / 100, repaired: today() }); lineRecompute(r.l); r.l.amount = r.l.filled; }
+    dlAfterLines(p); }, DL('import error corrected', 'içe aktarma hatası düzeltildi'));
+  toast(DL('Corrected', 'Düzeltildi')); renderAll(); reopenSheet(); }, true);
+{ const _rs = renderSheet; renderSheet = function () { _rs.apply(this, arguments); const w = state.sheet; if (!w || w.type !== 'pkg' || $('dlx-swap')) return; const p = state.packages.find(q => q.id === w.id); if (!p) return; const h = dlSwapHTML(p); if (!h) return; const g = $('sheet').querySelector('.grid'); if (g) { g.insertAdjacentHTML('afterbegin', h); DL_FTAB_OF['dlx-swap'] = 'ov'; } }; }
+// the same check on the summary: a red line per fund with an import error
+{ const _t = dlTodo; dlTodo = function () { const r = _t.apply(this, arguments); try { for (const p of state.packages || []) if (p.status !== 'closed' && dlSwapFills(p).length) r.unshift({ pri: 0, kind: 'fix', text: DL(`${p.name}: an imported purchase has quantity and price swapped — open the fund and press “Correct it”.`, `${p.name}: içe aktarılan bir alışta adet ve fiyat yer değiştirmiş — fonu açıp “Düzelt”e basın.`), pid: p.id }); } catch (e) { } return r; }; }
+
+// the full instrument list is the first thing under Markets: the tab always opens it, it is called “All instruments”, movers sit below it
+Object.assign(TR, { 'All instruments': 'Tüm enstrümanlar', 'Commission': 'Komisyon' });
+{ const _sv = showView; showView = function (v) { if (v === 'MARKETS') v = 'SCRN'; return _sv.call(this, v); }; }
+{ const h = document.querySelector('#view-SCRN .panel > h2'); if (h && /^Screener/.test(h.firstChild && h.firstChild.textContent || '')) h.firstChild.textContent = 'All instruments'; }
+dlPlaceMovers = function () { const t = $('scrn-table'); if (!t) return; const host = t.closest('.panel') || t.parentElement; const old = $('dlx-movers'), h = dlMoversHTML(); if (old) old.remove(); if (h && host) host.insertAdjacentHTML('afterend', h); };
 
 Object.assign(TR, { 'GitHub version · prices update about every 30–60 minutes on weekdays · your data stays in this browser': 'GitHub sürümü · fiyatlar iş günleri yaklaşık 30–60 dakikada bir güncellenir · verileriniz bu tarayıcıda kalır',
   'Glossary': 'Sözlük', 'Add fund from external investment report': 'Dış yatırım raporundan fon ekle', 'TRY time deposit': 'TL vadeli mevduat', 'Money-market fund': 'Para piyasası fonu', 'BIST 100 index fund': 'BIST 100 endeks fonu', 'USD deposit': 'USD mevduat', 'Inflation (CPI) — value kept': 'Enflasyon (TÜFE) — korunan değer' });

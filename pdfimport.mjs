@@ -370,23 +370,35 @@ export function parseMidasCSV(text) {
   const dates = trades.map(t => t.date).filter(Boolean).sort();
   return { broker: 'Midas', kind: 'csv', docNo: null, date: dates[dates.length - 1] || null, account: null, trades, warnings };
 }
-export function isMidas(text) { return /midas/i.test(text); }
+export function isMidas(text) { return /midas/i.test(text) || (/YATIRIM\s+[İI]ŞLEMLER[İI]/i.test(text) && /Gerçekleşen\s+Adet|Ortalama\s+[İI]şlem\s+Fiyat/i.test(text)); }
+const SIDE_RE = '(Alış|Alis|ALIŞ|ALIS|Alım|Satış|Satis|SATIŞ|SATIS|Satım|Buy|BUY|Sell|SELL)';
+function midasRow(s, warnings) { // one statement row → trade, or null (cancelled / pending / not a trade)
+  const m = s.match(new RegExp('(\\d{2}[./]\\d{2}[./](?:\\d{4}|\\d{2}))(?!\\d)(?:\\s+\\d{2}:\\d{2}(?::\\d{2})?)?\\s+(?:.*?\\s)?([A-Z][A-Z0-9.]{0,9})\\s+' + SIDE_RE + '(?=\\s|$)(.*)$'));
+  if (!m || /D[oö]viz/i.test(s.slice(0, m.index + m[0].length - m[4].length))) return null;
+  const rest = m[4].split(/\b(?:HESAP|YATIRIM|PORTF[ÖO]Y|TEMETT[ÜU]|Talep\s+Tarihi|Tarih\s+[İI]şlem)\b/i)[0].replace(/\d{2}[./]\d{2}[./]\d{2,4}|\d{2}:\d{2}(:\d{2})?/g, ' '), status = (rest.match(/^\s*(Gerçekleşti|Gerceklesti|Kısmi[^\d]*|Kismi[^\d]*|İptal[^\d]*|Iptal[^\d]*|Beklemede|Bekliyor|Reddedildi|Filled|Cancelled|Canceled|Pending|Rejected)/i) || [])[1] || '';
+  if (/[iİI]ptal|[bB]ekle|[rR]edd|cancel|pending|reject/i.test(status)) return null;
+  const usd = /\$|USD/.test(s), turkish = /Gerçekleş|Gerceklest|Alış|Satış|Emri/i.test(s), hint = turkish ? 'tr' : usd ? 'en' : 'tr';
+  const nums = [...rest.matchAll(/(?<![\w.,])(\d[\d.,]*)(?![\w])/g)].map(x => trNum(x[1], hint)).filter(v => v !== null);
+  const tr = pickTriple(nums); if (!tr) { if (nums.some(v => v > 0)) warnings.push(`${m[2]} ${m[1]}: quantity × price does not match any amount on the row — skipped, enter it by hand`); return null; }
+  if (!(tr.qty > 0)) return null;
+  return reconcile({ date: trDate(m[1]), valueDate: null, symbol: m[2].replace(/\.IS$/, ''), name: '', venue: usd ? 'US' : '', side: SIDE(m[3]), qty: tr.qty, price: tr.price, amount: tr.amount, commission: tr.commission, ccy: usd ? 'USD' : null }, warnings); }
 export function parseMidasPDF(input) { // Midas statements: "03/11/26 09:47:08  Limit Emri  NVDA  Alış  Gerçekleşti  USD  0,2369  -  0,2369  202,88  1,50  48,07"; older exports "date symbol side qty price amount [fee]"
-  const lines = linesOf(input), warnings = [], trades = [];
-  for (const l of lines) { const s = l.text.replace(/\s+/g, ' ');
-    const m = s.match(/(\d{2}[./]\d{2}[./](?:\d{4}|\d{2}))(?!\d)(?:\s+\d{2}:\d{2}(?::\d{2})?)?\s+(?:.*?\s)?([A-Z][A-Z0-9.]{0,9})\s+(Alış|Alis|ALIŞ|ALIS|Alım|Satış|Satis|SATIŞ|SATIS|Satım|Buy|BUY|Sell|SELL)(?=\s|$)(.*)$/);
-    if (!m || /D[oö]viz/i.test(s.slice(0, m.index + m[0].length - m[4].length))) continue;
-    const rest = m[4], status = (rest.match(/^\s*(Gerçekleşti|Gerceklesti|Kısmi[^\d]*|Kismi[^\d]*|İptal[^\d]*|Iptal[^\d]*|Beklemede|Bekliyor|Reddedildi|Filled|Cancelled|Canceled|Pending|Rejected)/i) || [])[1] || '';
-    if (/[iİI]ptal|[bB]ekle|[rR]edd|cancel|pending|reject/i.test(status)) continue;
-    const usd = /\$|USD/.test(s), turkish = /Gerçekleş|Gerceklest|Alış|Satış|Emri/i.test(s), hint = turkish ? 'tr' : usd ? 'en' : 'tr';
-    const nums = [...rest.matchAll(/(?<![\w.,])(\d[\d.,]*)(?![\w])/g)].map(x => trNum(x[1], hint)).filter(v => v !== null);
-    const tr = pickTriple(nums); let qty, price, amount, commission = 0;
-    if (tr) ({ qty, price, amount, commission } = tr); else { if (nums.some(v => v > 0)) warnings.push(`${m[2]} ${m[1]}: quantity × price does not match any amount on the row — skipped, enter it by hand`); continue; }
-    if (!(qty > 0)) continue;
-    trades.push(reconcile({ date: trDate(m[1]), valueDate: null, symbol: m[2].replace(/\.IS$/, ''), name: '', venue: usd ? 'US' : '', side: SIDE(m[3]), qty, price, amount, commission, ccy: usd ? 'USD' : null }, warnings)); }
+  const lines = linesOf(input), warnings = [], trades = [], fx = [], positions = [];
+  for (const l of lines) { const t = midasRow(l.text.replace(/\s+/g, ' '), warnings); if (t) trades.push(t); }
+  const all = lines.map(l => l.text).join(' ').replace(/\s+/g, ' ');
+  // the PDF can split a table row over several text lines: cut the whole text at every "date time" and read each piece
+  if (!trades.length) { const cuts = [...all.matchAll(/\d{2}[./]\d{2}[./](?:\d{4}|\d{2})\s+\d{2}:\d{2}(?::\d{2})?/g)].map(x => x.index); for (let i = 0; i < cuts.length; i++) { const t = midasRow(all.slice(cuts[i], cuts[i + 1] ?? all.length), warnings); if (t) trades.push(t); } }
+  // account rows: "Döviz Alış · 50,43 USD/TRY kurundan 49,57 dolar alış" → the rate the dollars for the purchases were bought at
+  for (const m of all.matchAll(/D[oö]viz\s+(Alış|Satış|Alis|Satis)\s+([\d.,]+)\s*USD\/TRY\s+kurundan\s+([\d.,]+)\s*dolar/gi)) { const before = all.slice(Math.max(0, m.index - 60), m.index), ds = [...before.matchAll(/(\d{2}[./]\d{2}[./](?:\d{4}|\d{2}))(?!\d)/g)], rate = trNum(m[2], 'tr'), usd = trNum(m[3], 'tr'); // the date written just before the row (its own transaction date)
+    if (ds.length && rate > 0 && usd > 0) fx.push({ date: trDate(ds[ds.length - 1][1]), side: /Sat/i.test(m[1]) ? 'SELL' : 'BUY', rate, usd, try: Math.round(rate * usd * 100) / 100 }); }
+  // portfolio summary: "NVDA - NVIDIA 0,236938091 202,88 USD …" → holdings at the statement date, used as a cross-check
+  const ps = all.match(/PORTF[ÖO]Y\s+[ÖO]ZET[İI]([^]*?)(YATIRIM\s+[İI]ŞLEMLER[İI]|HESAP\s+[İI]ŞLEMLER[İI]|TEMETT[ÜU]|$)/i);
+  if (ps) for (const m of ps[1].matchAll(/\b([A-Z][A-Z0-9.]{0,9})\s+-\s+[^\d]{1,60}?\s(\d[\d.,]*)\s+(\d[\d.,]*)\s*(USD|TL|TRY)/g)) positions.push({ symbol: m[1], qty: trNum(m[2], 'tr'), avgCost: trNum(m[3], 'tr'), ccy: m[4] === 'USD' ? 'USD' : 'TRY' });
+  for (const p of positions) { const net = trades.filter(t => t.symbol === p.symbol).reduce((a, t) => a + (t.side === 'SELL' ? -t.qty : t.qty), 0); if (net && Math.abs(net - p.qty) > Math.max(1e-6, p.qty * 1e-4)) warnings.push(`${p.symbol}: trades in this statement add up to ${round(net, 6)}, the portfolio summary shows ${p.qty} — earlier trades are outside the statement period`); if (!net) warnings.push(`${p.symbol}: held (${p.qty} @ ${p.avgCost} ${p.ccy}) but bought before this statement — add it by hand with its own date`); }
+  if (fx.length) warnings.push(`currency bought: ${fx.map(f => `${f.usd} USD at ${f.rate} on ${f.date}`).join(', ')} — US purchases of those days are costed at that rate`);
   if (!trades.length) warnings.push('no trade rows recognised in the Midas statement — use the CSV export instead');
   const dates = trades.map(t => t.date).filter(Boolean).sort();
-  return { broker: 'Midas', kind: 'statement', docNo: null, date: dates[dates.length - 1] || null, account: null, trades, warnings };
+  return { broker: 'Midas', kind: 'statement', docNo: null, date: dates[dates.length - 1] || null, account: null, trades, warnings, fx, positions };
 }
 
 /* ============================== generic fallback ============================== */
@@ -415,7 +427,7 @@ export function parseStatement(buf, { name = '', mime = '', known } = {}) {
     res = isAkYatirim(ex.text) ? parseAkYatirim(ex) : isMidas(ex.text) ? parseMidasPDF(ex) : null;
     if (!res || !res.trades.length) { const g = parseGeneric(ex, known); if (!res || g.trades.length) { if (res) g.warnings.unshift(...res.warnings); g.broker = res ? res.broker : g.broker; g.docNo = res ? res.docNo : null; res = g; } }
     res.warnings.push(...ex.warnings); res.pages = ex.pages.length; }
-  else if (kind === 'csv') { let text = buf.toString('utf8'); if (/�/.test(text)) text = buf.toString('latin1'); res = parseMidasCSV(text); if (!res.trades.length) { const g = parseGeneric(text, known); if (g.trades.length) res = g; } }
+  else if (kind === 'csv') { let text = buf.toString('utf8'); if (/�/.test(text)) text = buf.toString('latin1'); res = parseMidasCSV(text); if (!res.trades.length && isMidas(text)) { const st = parseMidasPDF(text); if (st.trades.length) res = st; } if (!res.trades.length) { const g = parseGeneric(text, known); if (g.trades.length) res = g; } }
   else return { broker: null, kind, trades: [], warnings: ['unsupported file type — use a PDF confirmation or a CSV export'], docNo: null, date: null, account: null };
   const keep = res.docNo ? [String(res.docNo)] : [];
   res.file = name ? scrubIds(String(name).replace(/\d{5,}/g, m => keep.includes(m) ? m : maskAccount(m)), keep).slice(0, 120) : null;
