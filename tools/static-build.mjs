@@ -23,7 +23,9 @@ if (process.argv.includes('--import-only')) { fs.mkdirSync(SITE, { recursive: tr
 
 // 1) config — keep a local config.json if there is one (running by hand), otherwise defaults; secrets from the environment
 const cfgPath = path.join(DIR, 'config.json'); let cfg = {}; try { cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8')); } catch (e) { }
-cfg.port = PORT; cfg.backfillOnStart = false; cfg.edgarPerRun = 600; cfg.isyPerRun = 230; // fundamentals per full run: SEC ~0.5 s, İş Yatırım ~7 s a company (fits the 50-min budget) cfg.calibDelayMs = 864e5; // calibration is run below, at a known moment cfg.remote = { enabled: false, pin: '' }; if (process.env.EVDS_KEY) cfg.evdsKey = process.env.EVDS_KEY;
+cfg.port = PORT; cfg.backfillOnStart = false; cfg.remote = { enabled: false, pin: '' }; if (process.env.EVDS_KEY) cfg.evdsKey = process.env.EVDS_KEY;
+cfg.calibDelayMs = 864e5; // calibration is run below, at a known moment
+cfg.edgarPerRun = 600; cfg.isyPerRun = 230; // fundamentals per full run: SEC ~0.5 s, İş Yatırım ~7 s a company (fits the 50-min budget)
 const hadCfg = fs.existsSync(cfgPath), oldCfg = hadCfg ? fs.readFileSync(cfgPath) : null; fs.writeFileSync(cfgPath, JSON.stringify(cfg, null, 2));
 log(`mode ${MODE}; EVDS key ${cfg.evdsKey ? 'set' : 'not set'}; store ${fs.existsSync(path.join(DIR, 'data', 'store.json')) ? 'restored from the previous run' : 'new (first run: full history, takes longer)'}`);
 
