@@ -5,6 +5,12 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.11: dolar bazı ve yeni fon düzenleme ekranı
+- Dolar bazında getiri (Ziraat satış kuruyla): her kalem ve fonun tamamı için “harcanan para o gün kaç dolar alıyordu, bugünkü değer bugün kaç dolar alıyor, fark ne”. USD mevduatı tam olarak net faizi kadar dolar kazanır; TL hisse, TL getirisinden doların yükselişi düşülmüş olarak görünür. USD mevduatının maliyeti açılış gününün Ziraat satış kuruyla hesaplanır.
+- Fon düzenleme ekranı büyük, iki sütunlu bir pencere: solda fon ayarları (ad, tutma süresi, gerekçe, kuruluş tarihi, hedef yıllık getiri, renk etiketi, notlar) ve “Kayıt ekle” kartları; sağda tüm kayıtlar türe göre gruplanmış, ara toplamlı, filtre ve aramalı; emir planı altta katlanmış.
+- Geri tarihli VİOP işlemi: listedeki sözleşmeler veya vadesi geçmiş bir sözleşme elle (kod, dayanak, çarpan, vade, para birimi); açılış ve isteğe bağlı kapanış, komisyon ve BSMV ile; sonuç kaydetmeden önce gösterilir.
+- Hedef getiri ve notlar fon başlığında, renk etiketi fon kartında görünür.
+
 ## v2.10: hız, ikinci adım
 - Fon açılırken gizli sekmelerdeki ağır paneller (Konsolide durum ve beklenti, Dönemsel getiri) önce iskelet olarak gelir, tarayıcı boşa çıkınca dolar; sekmesine tıklanırsa hemen dolar.
 - Fare bir sekmenin üzerine geldiğinde (telefonda dokunuşta) o sekmenin bekleyen güncellemesi önceden yapılır.

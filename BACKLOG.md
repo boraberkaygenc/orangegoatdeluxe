@@ -196,5 +196,10 @@ Sekme geçişi 180–450 ms sürüyor (Piyasalar en yavaşı: 418–451 ms). JS 
 142a. **[yapıldı v2.9]** Piyasa ışığının sürekli “nabız” animasyonu ekran kartına taşındı: boştayken saniyede ~60 stil hesabı → 0.
 142. **[yapıldı v2.10]** Hız bütçesi ve gösterge: Ayarlar’da “Hız” paneli (son 20 geçişin süresi, en yavaş bileşen); hedef sekme geçişi < 100 ms, fon açma < 150 ms; testlerde bu sınırın aşılması hata sayılsın.
 
+143. **[yapıldı v2.11]** Dolar bazında getiri, Ziraat satış kuruyla: o gün aynı parayla kaç dolar, bugün kaç dolar, fark (her kalem ve fon); USD mevduat maliyeti açılış günü Ziraat satışı.
+144. **[yapıldı v2.11]** Fon düzenleme ekranı: geniş iki sütunlu pencere, gruplanmış ve filtrelenebilir kayıtlar, kayıt ekleme kartları.
+145. **[yapıldı v2.11]** Geri tarihli VİOP işlemi (açılış + kapanış), vadesi geçmiş sözleşme elle.
+146. **[yapıldı v2.11]** Fon ayarlarında hedef yıllık getiri, renk etiketi ve notlar.
+
 ## Kullanıcının ekledikleri
 (boş)
