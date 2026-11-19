@@ -201,5 +201,14 @@ Sekme geçişi 180–450 ms sürüyor (Piyasalar en yavaşı: 418–451 ms). JS 
 145. **[yapıldı v2.11]** Geri tarihli VİOP işlemi (açılış + kapanış), vadesi geçmiş sözleşme elle.
 146. **[yapıldı v2.11]** Fon ayarlarında hedef yıllık getiri, renk etiketi ve notlar.
 
+## Fon ekranı: işlem, Fon Pointer'ı ve sadeleştirme (19.11.2026)
+Bugünkü fon ekranında 7 sekme ve 19 panel bulunuyor: Genel bakış (6), İçerik (2), Performans (4), Riskler (4), Gelecek (2), İyileştir (2), Defter ve geçmiş (1). Bazı paneller birbirini tekrarlıyor ("Performance since" ile "Başlangıçtan bugüne fon değeri"; "Analitik" ile "Kırılımlar"), ikisi hâlâ İngilizce ("Bu fonu yönet · converted to orders", "Performance since").
+147. **İşlem bileti (düzenleme değil, alım-satım):** Fon açık olduğu sürece İçerik'te her satırda "Sat" ve "Değiştir", üstte "Al" düğmesi. "Değiştir": X'ten şu kadar sat → gelirle Y'den şu kadar al; tek pencerede adet/tutar, fiyat (bugün veya geçmiş tarih), komisyon ve BSMV, satıştan doğan kâr/zarar ve stopaj, artan nakit fonun nakdine. Kayıtlar sat + al olarak deftere işlenir; geri alınabilir.
+148. **Fon Pointer'ı:** Pointer fonun içinde çalışır. Tek ekranda: fonun temel sorunu (bir cümle, örn. "THYAO fonun %62'si, tek hisse riski"), rakamı ve kaynağı; 2–3 ikincil sorun; her biri için kırmızı/sarı/yeşil işaret.
+149. **Düzeltme reçetesi:** "Hangi hisseden ne kadar al/sat" listesi: sembol, adet, yaklaşık tutar, fonun yeni ağırlığı, sorunu nasıl azalttığı. Önce/sonra görseli (ağırlık çubukları, risk ve beklenen getiri oku). Tek tıkla 147'deki işlem biletine aktarılır.
+150. **"Başka bir fikir" (another opinion):** Aynı sorunu farklı yoldan çözen alternatif reçete; sıra (kullanıcı seçimi): 1) hisse çeşitlendirme, 2) mevduata kısmi geçiş, 3) altın/dolar koruması, 4) VİOP ile hedge. Her basışta bir sonraki yaklaşım; artı ve eksileri yan yana.
+151. **Sekme sadeleştirme (kullanıcı seçimi):** 7 sekme → 4 sekme: Özet · İçerik ve İşlem · Pointer · Geçmiş; tekrarlayan ve İngilizce kalan paneller silinmez, sekmenin altındaki kapalı "Ayrıntılar" bölümüne alınır, Riskler/Gelecek/İyileştir içerikleri Pointer'a özet olarak taşınır, ayrıntılar katlanır bölümde kalır.
+152. Düzenleme penceresinin üstündeki İngilizce açıklama satırı Türkçeleştirilir.
+
 ## Kullanıcının ekledikleri
 (boş)
