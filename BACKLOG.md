@@ -210,5 +210,12 @@ Bugünkü fon ekranında 7 sekme ve 19 panel bulunuyor: Genel bakış (6), İçe
 151. **Sekme sadeleştirme (kullanıcı seçimi):** 7 sekme → 4 sekme: Özet · İçerik ve İşlem · Pointer · Geçmiş; tekrarlayan ve İngilizce kalan paneller silinmez, sekmenin altındaki kapalı "Ayrıntılar" bölümüne alınır, Riskler/Gelecek/İyileştir içerikleri Pointer'a özet olarak taşınır, ayrıntılar katlanır bölümde kalır.
 152. Düzenleme penceresinin üstündeki İngilizce açıklama satırı Türkçeleştirilir.
 
+## Uygulama sekmelerini sadeleştirme (19.11.2026)
+Bugün 5 üst sekme ve 18 alt sekme var: Özet; Fonlarım (Fonlar, Tüm varlıklar, Performans, İşlem defteri, Masraflar, Vergi); Piyasalar (Tüm enstrümanlar, İzleme listesi, Makro, Halka arz takibi); Analiz (Pointer, Karşılaştır, Araştırma, Deniz feneri, Laboratuvar, Model karnesi); Ayarlar (Ayarlar, Sözlük).
+153. **Fonlarım 6 → 4 (kullanıcı seçimi):** Fonlar (Tüm varlıklar ve Fon röntgeni bunun içinde) · Performans · Defter · Masraf ve vergi.
+154. **Piyasalar (kullanıcı seçimi):** Enstrümanlar · İzleme · Makro · Duyurular (Araştırma + Deniz feneri + Halka arz tek sekmede, bölümler halinde).
+155. **Analiz → Pointer (kullanıcı seçimi):** Üst sekmenin adı Pointer olur; alt sekmeler: Pointer (Karşılaştır içinde, 2–4 enstrüman yan yana modu) · Model karnesi. Laboratuvar (çıkış kurallarını geçmiş fiyatlarla test) kaldırılır.
+156. Ayarlar ve Sözlük olduğu gibi kalır (kullanıcı seçimi). Sonuç: 5 üst sekme (Özet · Fonlarım · Piyasalar · Pointer · Ayarlar), 18 alt sekme → 12. Eski sekme adlarına giden kısayollar ve komutlar (ör. LAB, IPO, LIGHT, RSRCH, FEES, TAX, ALLPOS) yeni yerlerine yönlendirilir; tekrarlayan veya İngilizce kalan paneller silinmez, kapalı “Ayrıntılar” bölümüne alınır.
+
 ## Kullanıcının ekledikleri
 (boş)
