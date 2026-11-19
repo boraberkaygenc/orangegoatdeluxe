@@ -226,5 +226,12 @@ Bugün: 198 satırlık tek tablo (puan, beklenen getiri, faktörler) + “Yükse
 161. **Dürüstlük kuralı:** “Süper kâr” iddiası yerine model tahmini, olasılık, kötü senaryo ve modelin geçmiş isabeti birlikte gösterilir (Model karnesi bağlantısı); spekülatif (düşük likidite, tek gün sıçrama) olanlar ayrı işaretlenir.
 162. **Enstrüman sayfası özeti:** Hisseye tıklayınca üstte tek satır karar kartı: işaret, önerilen süre, beklenen aralık, en büyük risk; “Pointer ile incele” ve “Fona ekle” düğmeleri.
 
+## Teknik göstergeler (19.11.2026)
+Bugün hesaplananlar: RSI 14, 20/50/200 günlük ortalamalar, ATR, 52 hafta zirvesine uzaklık, hacim patlaması, 12-1 momentum, beta, oynaklık, en büyük düşüş. Hesaplanmayanlar: MACD, Bollinger bantları, Stokastik, ADX, OBV, destek/direnç, altın/ölüm kesişimi. Göstergeler bugün yalnızca puanın içinde kullanılıyor; kullanıcıya ayrı ve görsel olarak gösterilmiyor.
+163. **Eksik göstergelerin eklenmesi:** MACD (12/26/9), Bollinger (20, 2σ) ve bant genişliği, Stokastik (14,3), ADX (14, trend gücü), OBV (hacim teyidi), son 1 yılın destek/direnç seviyeleri, 50/200 kesişimi ve tarihi. Hisse, BYF, emtia, döviz ve VİOP dayanakları için aynı motor.
+164. **Göstergeler gerçekten işe yarıyor mu (geriye dönük test):** Her göstergenin her sinyali (örn. RSI<30, MACD kesişimi, Bollinger alt bant, ADX>25 + yükseliş, altın kesişim) için 2017–2026 BIST ve ABD verisinde sonraki 5/10/21/63 günlük ortalama sonuç (piyasaya göre), isabet oranı ve örnek sayısı. Sonuç tablosu Model karnesinde; işe yaramayan sinyal “geçmişte etkisiz” etiketiyle gösterilir, puana eklenmez.
+165. **Gösterge paneli (enstrüman sayfası):** Göstergeler ibre/çubuk olarak (aşırı satım–nötr–aşırı alım; trend zayıf–güçlü), fiyat grafiğinde ortalamalar, Bollinger bantları, destek/direnç çizgileri ve sinyal noktaları (▲/▼). Her göstergenin yanında tek cümle açıklama ve 164'teki geçmiş isabeti. Altta göstergelerin toplu okuması: “Teknik görünüm: güçlü / nötr / zayıf”, kaç göstergenin hangi yöne baktığı.
+166. **Piyasalar'da gösterge filtreleri ve listeleri:** Hazır listelere (160) ek: “Aşırı satımda ama trendi sağlam”, “Yeni altın kesişim”, “Bant daralması (sert hareket öncesi)”, “Güçlü trend (ADX)”. Kart görünümünde (157) gösterge işaretleri küçük simgelerle. Yalnızca 164'te geçmişte işe yaradığı görülen sinyaller öne çıkarılır.
+
 ## Kullanıcının ekledikleri
 (boş)
