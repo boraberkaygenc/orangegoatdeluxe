@@ -117,6 +117,53 @@ function gate(x, e, S, M) {
   return { ok: !why.length, why, detail, warn, lowLiq: warn.includes('low liquidity') };
 }
 
+/* ---------- technical indicators (v2.12): fixed standard settings, the same rules as research/indicator-backtest.mjs ----------
+   bars: { d, c, h, l, v } aligned. Returns current values and the signals that fired in the last 21 trading days (latest first). */
+function indicators(bars, look = 21) { // look > 21: every signal of the last `look` days (for a chart), not only the latest of each kind
+  const d = bars.d, c = bars.c, n = c.length; if (n < 60) return null;
+  const hasHL = bars.h.filter(x => x).length > n * 0.8, H = c.map((x, i) => hasHL && bars.h[i] ? bars.h[i] : x), L = c.map((x, i) => hasHL && bars.l[i] ? bars.l[i] : x), V = bars.v.map(x => x || 0), hasV = V.filter(x => x > 0).length > n * 0.8;
+  const ema = (a, k) => { const m = 2 / (k + 1), o = []; let e = null; for (const x of a) { e = e === null ? x : x * m + e * (1 - m); o.push(e); } return o; };
+  const wil = (a, k) => { const o = new Array(a.length).fill(null); let s = 0; for (let i = 0; i < a.length; i++) { if (i < k) { s += a[i]; if (i === k - 1) o[i] = s / k; continue; } o[i] = (o[i - 1] * (k - 1) + a[i]) / k; } return o; };
+  const sma = (a, k) => { const o = new Array(a.length).fill(null); let s = 0; for (let i = 0; i < a.length; i++) { s += a[i]; if (i >= k) s -= a[i - k]; if (i >= k - 1) o[i] = s / k; } return o; };
+  const rsiK = k => { const g = [0], l = [0]; for (let i = 1; i < n; i++) { const x = c[i] - c[i - 1]; g.push(Math.max(x, 0)); l.push(Math.max(-x, 0)); } const G = wil(g, k), Ls = wil(l, k); return G.map((x, i) => x === null ? null : Ls[i] === 0 ? 100 : 100 - 100 / (1 + x / Ls[i])); };
+  const from = Math.max(0, n - look - 3), roll = (a, k, f) => a.map((_, i) => i < k - 1 || i < from ? null : f(a.slice(i - k + 1, i + 1))); // only the last days are needed
+  const r14 = rsiK(14), r2 = rsiK(2), e12 = ema(c, 12), e26 = ema(c, 26), mac = e12.map((x, i) => x - e26[i]), sig = ema(mac, 9);
+  const m20 = sma(c, 20), m50 = sma(c, 50), m200 = sma(c, 200), sdv = c.map((_, i) => { if (i < 19) return null; const w = c.slice(i - 19, i + 1), m = w.reduce((a, b) => a + b, 0) / 20; return Math.sqrt(w.reduce((a, b) => a + (b - m) ** 2, 0) / 19); });
+  const ub = m20.map((m, i) => m === null ? null : m + 2 * sdv[i]), lb = m20.map((m, i) => m === null ? null : m - 2 * sdv[i]), bw = m20.map((m, i) => m === null ? null : 4 * sdv[i] / m), bwLo = roll(bw.map(x => x ?? 9), 126, w => Math.min(...w));
+  const hh = H.map((_, i) => i < 13 ? null : Math.max(...H.slice(i - 13, i + 1))), ll = L.map((_, i) => i < 13 ? null : Math.min(...L.slice(i - 13, i + 1))), K = c.map((x, i) => hh[i] === null || hh[i] === ll[i] ? 50 : 100 * (x - ll[i]) / (hh[i] - ll[i])), Ks = sma(K, 3).map(x => x ?? 50), Ds = sma(Ks, 3).map(x => x ?? 50);
+  const tr = [0], pdm = [0], mdm = [0]; for (let i = 1; i < n; i++) { tr.push(Math.max(H[i] - L[i], Math.abs(H[i] - c[i - 1]), Math.abs(L[i] - c[i - 1]))); const up = H[i] - H[i - 1], dn = L[i - 1] - L[i]; pdm.push(up > dn && up > 0 ? up : 0); mdm.push(dn > up && dn > 0 ? dn : 0); }
+  const ATR = wil(tr, 14), PD = wil(pdm, 14), MD = wil(mdm, 14), pdi = PD.map((x, i) => x === null || !ATR[i] ? null : 100 * x / ATR[i]), mdi = MD.map((x, i) => x === null || !ATR[i] ? null : 100 * x / ATR[i]);
+  const dx = pdi.map((p, i) => p === null || p + mdi[i] === 0 ? 0 : 100 * Math.abs(p - mdi[i]) / (p + mdi[i])), ADX = wil(dx.map((x, i) => i < 14 ? 0 : x), 14);
+  const obv = [0]; for (let i = 1; i < n; i++) obv.push(obv[i - 1] + (c[i] > c[i - 1] ? V[i] : c[i] < c[i - 1] ? -V[i] : 0));
+  const k252 = Math.min(252, n), hi252 = roll(c, k252, w => Math.max(...w)), lo252 = roll(c, k252, w => Math.min(...w)), hi60 = roll(c, 60, w => Math.max(...w)), lo20 = roll(c, 20, w => Math.min(...w)), ohi60 = roll(obv, 60, w => Math.max(...w)), v60 = sma(V, 60);
+  const out = []; const seen = new Set(), fire = (k, i) => { if (look > 21 || !seen.has(k)) { seen.add(k); out.push([k, d[i]]); } };
+  for (let i = n - 1; i >= Math.max(look > 21 ? 61 : 201, n - look); i--) { const up = m200[i] !== null && c[i] > m200[i], r1 = Math.log(c[i] / c[i - 1]);
+    if (r14[i] < 30 && r14[i - 1] >= 30) { fire('rsi_lt30', i); if (m200[i] !== null) fire(up ? 'rsi_lt30_up' : 'rsi_lt30_dn', i); }
+    if (r14[i] > 70 && r14[i - 1] <= 70) { fire('rsi_gt70', i); if (m200[i] !== null) fire(up ? 'rsi_gt70_up' : 'rsi_gt70_dn', i); }
+    if (r2[i] < 10 && up) fire('rsi2_lt10_up', i); if (r2[i] > 90 && m200[i] !== null && !up) fire('rsi2_gt90_dn', i);
+    if (mac[i] > sig[i] && mac[i - 1] <= sig[i - 1]) { fire('macd_up', i); fire(mac[i] < 0 ? 'macd_up_neg' : 'macd_up_pos', i); } if (mac[i] < sig[i] && mac[i - 1] >= sig[i - 1]) fire('macd_dn', i);
+    if (lb[i] !== null && c[i] < lb[i] && c[i - 1] >= lb[i - 1]) { fire('bb_lo', i); if (up) fire('bb_lo_up', i); } if (ub[i] !== null && c[i] > ub[i] && c[i - 1] <= ub[i - 1]) fire('bb_hi', i);
+    if (bw[i] !== null && bwLo[i] !== null && bw[i] <= bwLo[i] * 1.05) { if (c[i] > ub[i]) fire('sq_up', i); if (c[i] < lb[i]) fire('sq_dn', i); }
+    if (hasHL) { if (Ks[i] > Ds[i] && Ks[i - 1] <= Ds[i - 1] && Ks[i] < 20) fire('st_buy', i); if (Ks[i] < Ds[i] && Ks[i - 1] >= Ds[i - 1] && Ks[i] > 80) fire('st_sell', i); if (ADX[i] > 25 && ADX[i - 1] <= 25) fire(pdi[i] > mdi[i] ? 'adx_up' : 'adx_dn', i); }
+    if (hi60[i] !== null && c[i] >= hi60[i] && c[i - 1] < hi60[i - 1]) fire(hasV && obv[i] >= ohi60[i] ? 'brk_obv' : 'brk_noobv', i);
+    if (hasV && ohi60[i] !== null && obv[i] >= ohi60[i] && obv[i - 1] < ohi60[i - 1] && c[i] < hi60[i] * 0.95) fire('obv_div', i);
+    if (m200[i - 1] !== null) { if (m50[i] > m200[i] && m50[i - 1] <= m200[i - 1]) fire('golden', i); if (m50[i] < m200[i] && m50[i - 1] >= m200[i - 1]) fire('death', i);
+    if (c[i] > m200[i] && c[i - 1] <= m200[i - 1]) fire('ma200_up', i); if (c[i] < m200[i] && c[i - 1] >= m200[i - 1]) fire('ma200_dn', i); }
+    if (n >= 252 && c[i] >= hi252[i] && c[i - 1] < hi252[i - 1]) fire('hi52', i); if (n >= 252 && c[i] <= lo252[i] && c[i - 1] > lo252[i - 1]) fire('lo52', i);
+    if (lo20[i - 1] !== null && m200[i] !== null && c[i] < lo20[i - 1] && !up && c[i] < lo252[i] * 1.05) fire('knife', i);
+    const vr = hasV && v60[i - 5] ? V[i] / v60[i - 5] : null; if (vr > 3 && r1 > 0.03) fire('vol_up', i); if (vr > 3 && r1 < -0.03) fire('vol_dn', i);
+    if (r1 > 0.09) fire('lim_up', i); if (r1 < -0.09) fire('lim_dn', i); if (r1 < -0.07 && up && c[i] > hi252[i] * 0.85) fire('trend_drop', i);
+    const o = bars.o ? bars.o[i] : null; if (o && o > c[i - 1] * 1.03) fire('gap_up', i);
+    if (i >= 22) { const a = Math.log(c[i] / c[i - 21]), b = Math.log(c[i - 1] / c[i - 22]); if (a < -0.25 && b >= -0.25) fire('m_dn25', i); if (a > 0.35 && b <= 0.35) fire('m_up35', i); } }
+  // support and resistance: swing lows / highs of the last year (5 days either side), nearest below and above the price
+  const px = c[n - 1], piv = [], k0 = Math.max(5, n - 252); for (let i = k0; i < n - 5; i++) { const w = c.slice(i - 5, i + 6); if (c[i] === Math.min(...w)) piv.push(['s', L[i]]); if (c[i] === Math.max(...w)) piv.push(['r', H[i]]); }
+  const sup = piv.filter(p => p[1] < px * 0.995).map(p => p[1]).sort((a, b) => b - a)[0] ?? null, res = piv.filter(p => p[1] > px * 1.005).map(p => p[1]).sort((a, b) => a - b)[0] ?? null;
+  const R = (x, k = 2) => x === null || x === undefined || !isFinite(x) ? null : +x.toFixed(k), z = n - 1, obv20 = hasV ? obv[z] - obv[Math.max(0, z - 20)] : null;
+  return { d: d[z], hl: hasHL, vol: hasV, rsi: R(r14[z], 1), rsi2: R(r2[z], 1), macd: [R(mac[z], 4), R(sig[z], 4), R(mac[z] - sig[z], 4)], bb: [R(m20[z], 4), R(ub[z], 4), R(lb[z], 4), R(ub[z] > lb[z] ? (px - lb[z]) / (ub[z] - lb[z]) : null, 2), R(bw[z], 4), R(bwLo[z] ? bw[z] / bwLo[z] : null, 2)],
+    st: hasHL ? [R(Ks[z], 1), R(Ds[z], 1)] : null, adx: hasHL ? [R(ADX[z], 1), R(pdi[z], 1), R(mdi[z], 1)] : null, obv: hasV ? Math.sign(obv20) : null, ma: [R(m20[z], 4), R(m50[z], 4), R(m200[z], 4)], sr: [R(sup, 4), R(res, 4)], sig: out };
+}
+const IND_CACHE = new Map(); // symbol → indicators for the same last bar (a rescore does not recompute them)
+function indCached(sym, bars) { const n = bars.c.length, k = bars.d[n - 1] + '|' + n + '|' + bars.c[n - 1] + '|' + (bars.h[n - 1] || '') + '|' + (bars.v[n - 1] || ''), o = IND_CACHE.get(sym); if (o && o.k === k) return o.v; let v = null; try { v = indicators(bars); } catch (e) { v = null; } IND_CACHE.set(sym, { k, v }); return v; }
 /* ---------- enrich: one effective view of every instrument ---------- */
 function enrich(inst, S, M) {
   const out = {};
@@ -132,7 +179,7 @@ function enrich(inst, S, M) {
     e.vol = st.vol ?? num(x.vol); e.dvol = st.dvol; e.mdd = st.mdd; e.rsi = st.rsi ?? num(x.rsi); e.ma20 = st.ma20; e.ma50 = num(x.ma50) ?? st.ma50; e.ma200 = st.ma200 ?? num(x.ma200);
     e.mom121 = st.mom121 ?? null; e.mom61 = st.mom61 ?? null; e.atr = st.atr ?? null; e.atrApprox = !!st.atrApprox; e.turnover = st.turnover ?? (num(x.avgVolume) && num(x.price) ? x.avgVolume * x.price : null); e.amihud = st.amihud ?? null; e.hi252p = st.hi252p ?? null; e.r1d = st.r1d ?? null; e.maxDay5 = st.maxDay5 ?? null; e.abvol = st.abvol ?? null;
     e.pb = num(x.pb) > 0 && num(x.pb) < 100 ? x.pb : null; e.roe = num(x.roe); e.margin = num(x.margin);
-    const F = x.fund || null; if (F) { if (e.roe === null && num(F.roe) !== null) e.roe = F.roe; if (e.margin === null && num(F.margin) !== null) e.margin = F.margin; if (!(num(x.pb) > 0) && num(F.bvps) > 0 && num(x.price) > 0) e.pb = x.price / F.bvps; e.fundSrc = F.src; e.revGrowth = num(F.revGrowth); } e.above200 = e.ma200 && e.price ? e.price > e.ma200 : null;
+    const F = x.fund || null; if (F) { if (e.roe === null && num(F.roe) !== null) e.roe = F.roe; if (e.margin === null && num(F.margin) !== null) e.margin = F.margin; if (!(num(x.pb) > 0) && num(F.bvps) > 0 && num(x.price) > 0) e.pb = x.price / F.bvps; e.fundSrc = F.src; e.revGrowth = num(F.revGrowth); } e.above200 = e.ma200 && e.price ? e.price > e.ma200 : null; e.ind = bars.c.length >= 60 ? indCached(x.symbol, bars) : ((x.e && x.e.ind) || null);
     e.hi52 = num(x.hi52) ?? st.hiS ?? null; e.lo52 = num(x.lo52) ?? null; e.n = st.n || 0;
     let beta = num(x.beta); if (beta === null || beta < -0.5 || beta > 3) beta = null;
     if (beta === null) beta = ETF_BETA[x.symbol] ?? (x.cls === 'TEFAS' ? (x.hy ? 1 : 0) : 1);
@@ -1408,7 +1455,7 @@ function faberMonthly(closes, today) {
   return { met: last[1] > sma, month: last[0], close: last[1], date: last[2], sma, gap: (last[1] / sma - 1) * 100, months: me.length };
 }
 
-return { setCalib, getCalib, calibrate, calScale, calSig, num, clamp, CLASSES, GOLD, BOND, HORIZONS, SCEN_HORIZONS, GROUPS, PRESETS, DEFAULT_SETTINGS, AK_TIERS, enrich, macroView, regime, expected, costs, akRate, minOrder, taxPct, taxLabel,
+return { indicators, setCalib, getCalib, calibrate, calScale, calSig, num, clamp, CLASSES, GOLD, BOND, HORIZONS, SCEN_HORIZONS, GROUPS, PRESETS, DEFAULT_SETTINGS, AK_TIERS, enrich, macroView, regime, expected, costs, akRate, minOrder, taxPct, taxLabel,
   horizons, scoreAll, explain, scenario, packageAnalytics, portfolioRisk, roman, longDate, addMonths, picks, holdingsView, alerts, sellList, brief, statementModel, packageModel, tearsheetModel, fundId,
   renderPDF, renderDOCX, fmtTRY, fmtPct, fmtN, DISCLAIMER, riskBucket, closesOf, seriesStats, normRating, brokerLatest, consensus, brokerSignals, brokerDigestModel,
   benchNet, benchLabel, depTax, addDays, daysBetween, makeFx, setDisplay, money, realPct, breakeven, exitPlan, earlyExit, alternatives, perfSeries, backtest, DISPLAY,

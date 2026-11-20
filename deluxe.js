@@ -34,7 +34,9 @@ const DELUXE = (() => {
     for (const t of L) {
       const c = CCYS.includes(t.ccy) ? t.ccy : 'TRY', amt = +t.amount || 0, cost = (+t.fee || 0) + (+t.bsmv || 0) + (+t.kmv || 0); // kmv: kambiyo muamele vergisi (TL), on TL → FX conversions
       if (t.type === 'in') { cash[c] += amt - cost; flows.push({ date: t.date, amount: r2(c === 'USD' ? amt * fxOf(t) : amt) }); }
-      else if (t.type === 'div') { cash[c] += amt; } // dividend received: net amount into the fund's cash, income (not new money)
+      else if (t.type === 'div') { cash[c] += amt; }
+      else if (t.type === 'sale-cash') { cash[c] += amt; } // proceeds of a fund line sold through the trade ticket: stay in the fund as cash (not money out)
+      else if (t.type === 'buy-cash') { cash[c] -= amt; }  // fund cash spent on a share bought through the trade ticket (not new money) // dividend received: net amount into the fund's cash, income (not new money)
       else if (t.type === 'out') { cash[c] -= amt + cost; flows.push({ date: t.date, amount: -r2(c === 'USD' ? amt * fxOf(t) : amt) }); }
       else if (t.type === 'fx') { const to = CCYS.includes(t.toCcy) ? t.toCcy : (c === 'TRY' ? 'USD' : 'TRY'); cash[c] -= amt + cost; cash[to] += +t.toAmount || 0; }
       else if (t.type === 'dep-open') { cash[c] -= amt + cost; deps.set(t.depId, { id: t.depId, ccy: c, principal: amt, rate: +t.rate || 0, start: t.date, maturity: t.maturity || null, stopaj: +t.stopaj || 0, open: true, note: t.note || '' }); }
@@ -92,7 +94,7 @@ const DELUXE = (() => {
     return q;
   }
   function realizedAt(l, d) { // cash already received from this line by date d (sales and the closing sale), TRY
-    let v = 0; for (const s of l.sales || []) if (s.date <= d) v += +s.value || 0; if (l.closed && l.closed.date <= d) v += +l.closed.value || 0; return v;
+    let v = 0; for (const s of l.sales || []) if (s.date <= d && !s.toCash) v += +s.value || 0; if (l.closed && l.closed.date <= d && !l.closed.toCash) v += +l.closed.value || 0; return v; // toCash: the money went to the fund's cash
   }
   // closes: [[date, close]] ascending → price on or before d
   function priceOn(closes, d) {
@@ -127,7 +129,8 @@ const DELUXE = (() => {
     return ds[0] || null;
   }
   function investedAt(p, d) { // money put into equity lines by date d (fills incl. commission)
-    let v = 0; for (const l of p.lines || []) for (const f of l.fills || []) if ((f.date || '') <= d) v += +f.amount || 0;
+    let v = 0; for (const l of p.lines || []) for (const f of l.fills || []) if ((f.date || '') <= d) v += (+f.amount || 0) - (+f.fromCash || 0); // fromCash: paid with money already in the fund
+    for (const l of p.lines || []) for (const s of l.sales || []) if (s.toCash && s.date <= d) v += +s.cost || 0; // sold cost moved to the fund's cash, still invested
     // proportional reductions after partial sales shrink stored fill amounts; add the sold cost back before the sale
     for (const l of p.lines || []) { const q = (l.fills || []).reduce((a, f) => a + (+f.qty || 0), 0), am = (l.fills || []).reduce((a, f) => a + (+f.amount || 0), 0), avg = q > 0 ? am / q : 0;
       for (const s of l.sales || []) if (s.date > d) v += (+s.qty || 0) * avg; }
@@ -147,12 +150,14 @@ const DELUXE = (() => {
       (l.sales || []).forEach((s, i) => rows.push({ date: s.date, kind: 'sell', ref: { t: 'sale', li, i }, text: `${L('Sell')} ${l.symbol}`, qty: +s.qty, price: +s.price, ccy: l.ccy || 'TRY', amountTRY: +s.value, fee: 0, src: '' }));
       if (l.closed) rows.push({ date: l.closed.date, kind: 'sell', ref: { t: 'close', li }, text: `${L('Sell')} ${l.symbol}`, qty: +l.closed.qty || null, price: +l.closed.price || null, ccy: l.ccy || 'TRY', amountTRY: +l.closed.value, fee: 0, src: '' });
     });
-    for (const t of p.tx || []) rows.push({ date: t.date, kind: t.type, id: t.id, text: txText(t, L), ccy: t.ccy, amount: +t.amount, fee: +t.fee || 0, bsmv: +t.bsmv || 0, auto: !!t.auto, note: t.note || '' });
+    for (const t of p.tx || []) if (t.type !== 'sale-cash' && t.type !== 'buy-cash') rows.push({ date: t.date, kind: t.type, id: t.id, text: txText(t, L), ccy: t.ccy, amount: +t.amount, fee: +t.fee || 0, bsmv: +t.bsmv || 0, auto: !!t.auto, note: t.note || '' });
     return rows.sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
   }
   function txText(t, L) {
     const n = (v, d = 2) => (+v || 0).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
     if (t.type === 'div') return `${L('Dividend')} ${t.symbol || ''} · ${n(t.qty, 0)} × ${n(t.perShare, 4)} = ${L('gross')} ${n(t.gross)} · ${L('withholding')} ${n(t.tax)} · ${L('net')} ${n(t.amount)} ${t.ccy}`;
+    if (t.type === 'sale-cash') return `${L('Sale proceeds to fund cash')} ${t.symbol || ''} ${n(t.amount)} ${t.ccy}`;
+    if (t.type === 'buy-cash') return `${L('Fund cash used for a purchase')} ${t.symbol || ''} ${n(t.amount)} ${t.ccy}`;
     if (t.type === 'in') return `${L('Money in')} ${n(t.amount)} ${t.ccy}`;
     if (t.type === 'out') return `${L('Money out')} ${n(t.amount)} ${t.ccy}`;
     if (t.type === 'fx') return `${L('Convert')} ${n(t.amount)} ${t.ccy} → ${n(t.toAmount)} ${t.toCcy} @ ${n(t.fx, 4)}`;
