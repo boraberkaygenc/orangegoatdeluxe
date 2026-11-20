@@ -2703,6 +2703,13 @@ function dlShowExtras(v, scroll) { const xs = DL_MERGE[v]; if (!xs || dlXBusy) r
       const keep = state.view; state.view = x; try { if (typeof dlShowFlush === 'function') dlShowFlush(x); for (const f of state.hooks) { try { f(x); } catch (e) { console.error(e); } } } finally { state.view = keep; } }
     if (scroll) { const t = $('view-' + scroll); if (t) requestAnimationFrame(() => t.scrollIntoView({ block: 'start' })); } } finally { dlXBusy = false; } }
 { const _sv = showView; showView = function (v) { let scroll = null; if (DL_MERGE_OF[v]) { scroll = v; v = DL_MERGE_OF[v]; } if (v === 'LAB') v = 'PTR'; _sv(v); dlShowExtras(state.view, scroll); }; }
+// v2.12.1: a remembered sub-tab from before v2.12 (All holdings, Tax, Lighthouse, IPO, Compare, Lab) pointed at a view that is now merged; the group then opened that old view half-drawn and the fund cards never rendered
+const dlSubOk = (g, v) => !!(GROUPS_NAV[g] && GROUPS_NAV[g].some(x => x[0] === v));
+{ const _pg = pref.get; pref.get = function (k, d) { let v = _pg.call(pref, k, d); if (typeof k === 'string' && k.startsWith('last_') && v) { const g = k.slice(5); if (DL_MERGE_OF[v]) v = DL_MERGE_OF[v]; if (v === 'LAB') v = 'PTR'; if (GROUPS_NAV[g] && !dlSubOk(g, v)) v = GROUPS_NAV[g][0][0]; } return v; }; }
+try { for (const g of Object.keys(GROUPS_NAV)) { const v = pref.get('last_' + g, null); if (v) pref.set('last_' + g, v); } } catch (e) { }
+{ const _sv2 = showView; showView = function (v) { _sv2(v); const m = DL_MERGE_OF[state.view] || (state.view === 'LAB' ? 'PTR' : null); if (m) _sv2(m); }; }
+// safety net: My funds open with funds saved but no cards drawn → draw them now
+state.hooks.push(v => { if (state.view !== 'PKGS' || dlXBusy) return; const c = $('pkg-cards'); if (c && !c.children.length && (state.packages || []).length) { try { renderPackages(); } catch (e) { console.error(e); } } });
 state.hooks.push(v => { if (v === undefined && !dlXBusy) dlShowExtras(state.view); // data refresh: redraw the merged views too
   const st = $('subtabs'); if (st) st.querySelectorAll('button[data-view]').forEach(b => { const l = DL_SUBL[b.dataset.view]; if (l) { const pill = b.querySelector('.pill'); b.textContent = DL(l[0], l[1]); if (pill) b.appendChild(pill); } }); });
 document.head.insertAdjacentHTML('beforeend', `<style>.dlx-xview{margin-top:18px}.dlx-xhead{margin:6px 2px 10px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--fg2,#666);border-top:1px solid var(--rule,#ddd);padding-top:14px}</style>`);

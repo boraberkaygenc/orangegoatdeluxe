@@ -5,6 +5,10 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.12.1: düzeltme
+
+- Fonlarım açıldığında fon kartlarının görünmemesi düzeltildi. Önceki sürümden kalan “son alt sekme” tercihi (Tüm varlıklar, Vergi vb.) artık yeni sekmelere çevrilmektedir.
+
 ## v2.12: fonda işlem, fonun Pointer’ı, sade sekmeler, yeni Piyasalar ve göstergeler
 - **Sekmeler:** Üstte Özet · Fonlarım · Piyasalar · Pointer · Ayarlar. Fonlarım: Fonlar (Tüm varlıklar dahil) · Performans · Defter · Masraf ve vergi. Piyasalar: Enstrümanlar · İzleme · Makro · Duyurular (Araştırma, Deniz feneri, Halka arzlar). Pointer: Pointer (Karşılaştır dahil) · Model karnesi. Laboratuvar kaldırıldı; eski kısayollar yeni yerlerine gider.
 - **Fon ekranı 4 sekme:** Özet · İçerik ve İşlem · Pointer · Geçmiş. Tekrarlayan ve eski paneller silinmedi, sekmenin altındaki kapalı “Ayrıntılar” bölümünde.

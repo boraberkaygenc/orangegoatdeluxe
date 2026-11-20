@@ -241,5 +241,11 @@ Bugün hesaplananlar: RSI 14, 20/50/200 günlük ortalamalar, ATR, 52 hafta zirv
 171. **[yapıldı v2.12]** **Etkisiz göstergeler:** Stokastik, ADX, OBV, altın/ölüm kesişimi, bant daralması, 200G kesişimi — gösterilir ama “geçmişte etkisiz (BIST ve ABD, 2017–2026)” etiketiyle; puana girmez.
 172. **[yapıldı v2.12, kısmen: kanıt tablosu uygulamada; çeyreklik yeniden test elle (research/indicator-backtest.mjs), kotasyondan çıkan hisseler henüz eklenmedi]** **Yaşayan kanıt tablosu:** research/indicator-backtest.json uygulamaya veri olarak eklenir; her gösterge satırında N, 5/21/63 gün sonucu, isabet, iki dönem tutarlılığı ve maliyet sonrası değer. Test her çeyrek yeniden çalışır; kotasyondan çıkan hisseler eklenerek hayatta kalan yanlılığı azaltılır.
 
+### Fonlarım hatası, sekme görünümü, tarih ve yanıp sönen ışıklar (2026-11-20)
+173. **[yapıldı v2.12.1]** **Fonlarım'da fon kartlarının görünmemesi:** v2.11'den kalan “son alt sekme” tercihi (Tüm varlıklar, Vergi, Deniz feneri, Halka arzlar, Karşılaştır, Laboratuvar) artık birleştirilmiş bir görünümü gösterdiği için Fonlarım açıldığında fon kartları çizilmiyordu. Eski tercihler yeni sekmelere çevrilir; fonlar kayıtlı olduğu hâlde kart yoksa kartlar yeniden çizilir.
+174. **Sekme ve alt sekmelerin sade, geçişli görünümü:** Üst sekmelerde kutu ve kalın çerçeve yerine ince alt çizgi; seçili sekmenin altındaki çizgi sekmeler arasında kayarak geçer. Alt sekmeler daha küçük, gri metin, seçili olan tek renkli “hap” zemin; görünüm değişirken içerik kısa bir solma/kayma ile gelir. Simgeler tek renk ve küçük.
+175. **Üst çubukta tarih:** Logonun yanında bugünün tarihi ve saati (örn. “20 Kas 2026 Per · 09:18 İstanbul”), dakikada bir güncellenir; dil ayarına göre Türkçe/İngilizce.
+176. **Önemli enstrümanlar için yanıp sönen ışıklar:** Fonlardaki ve izleme listesindeki enstrümanlarda önemli bir durum olduğunda satırın/kartın yanında yanıp sönen nokta: kırmızı = Kaçın bayrağı, taban benzeri gün veya stop seviyesine yaklaşma; yeşil = hedefe ulaşma veya tavan benzeri gün; sarı = fiyat alarmı veya KAP bildirimi. Üst çubuktaki zil, kaç önemli ışık olduğunu gösterir; ışığın üzerine gelince nedeni yazar. Ayarlar'dan kapatılabilir; hareket azaltma tercihi açıksa yanıp sönme yerine sabit nokta.
+
 ## Kullanıcının ekledikleri
 (boş)
