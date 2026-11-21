@@ -1,0 +1,17 @@
+# One-off: checks whether GitHub's runners can reach the 2026 TEFAS API. Runs only on the tefas-probe branch; publishes nothing.
+name: TEFAS probe
+on:
+  push:
+    branches: [tefas-probe]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node tools/tefas-probe.mjs
