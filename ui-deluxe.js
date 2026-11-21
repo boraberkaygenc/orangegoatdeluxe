@@ -3149,6 +3149,168 @@ document.head.insertAdjacentHTML('beforeend', `<style>.mk-cards{display:grid;gri
 window.__gncMk = { list: k => { try { const d = DL_LISTS.find(l => l[0] === k); return d[3](dlMktUniverse()).slice(0, 8).map(x => x.symbol); } catch (e) { return 'ERR ' + e.message; } }, call: s => dlCall(state.map[s]) };
 
 /* v2.12 end */
+/* v2.13 begin */
+/* ---- 177 TEFAS fund directory (Markets): every investment and pension fund from the 2026 TEFAS list ---- */
+let dlTd = null, dlTdSub = false; const DL_TDS = { q: '', g: 'all', sort: 'r1y', tefas: true, n: 40 };
+const DL_TDG = [['all', 'All', 'Tümü'], ['eq', 'Equity', 'Hisse'], ['mm', 'Money market', 'Para piyasası'], ['debt', 'Bonds', 'Borçlanma'], ['gold', 'Gold / metals', 'Altın / maden'], ['mix', 'Variable / mixed', 'Değişken / karma'], ['fof', 'Fund of funds', 'Fon sepeti'], ['kat', 'Participation', 'Katılım'], ['free', 'Hedge (serbest)', 'Serbest'], ['emk', 'Pension (BES)', 'Emeklilik']];
+function dlTdGroup(r) { const t = (r.type + ' ' + r.name).toLocaleUpperCase('tr-TR'); if (r.kind === 'E') return 'emk';
+  return /ALTIN|GÜMÜŞ|KIYMETLİ|MADEN/.test(t) ? 'gold' : /PARA PİYASAS/.test(t) ? 'mm' : /SERBEST/.test(r.type.toLocaleUpperCase('tr-TR')) ? 'free' : /HİSSE/.test(r.type.toLocaleUpperCase('tr-TR')) || /YOĞUN/.test(t) ? 'eq' : /BORÇLANMA|BONO|TAHVİL/.test(t) ? 'debt' : /KATILIM/.test(t) ? 'kat' : /FON SEPETİ/.test(t) ? 'fof' : 'mix'; }
+function dlTdRows() { const d = dlTd; if (!d || !Array.isArray(d.rows)) return []; if (d._rows) return d._rows; const c = d.cols || []; d._rows = d.rows.map(a => { const o = {}; c.forEach((k, i) => o[k] = a[i]); o.g = dlTdGroup(o); return o; }); return d._rows; }
+function dlTdSubscribe() { if (dlTdSub || !state.db) return; dlTdSub = true; try { state.db.doc('tefas/dir').onSnapshot(s => { dlTd = s.exists ? s.data() : null; if (state.view === 'SCRN') dlTdRender(); }, () => { }); } catch (e) { dlTdSub = false; } }
+function dlTdRender() { dlTdSubscribe(); const grid = document.querySelector('#view-SCRN .grid'); if (!grid) return; let el = $('dlx-tefdir');
+  const rows = dlTdRows(); if (!rows.length) { if (el) el.remove(); return; }
+  if (!el) { const after = $('dlx-mkt'); (after || grid.firstElementChild || grid).insertAdjacentHTML(after ? 'afterend' : 'beforebegin', '<div class="panel wide" id="dlx-tefdir"></div>'); el = $('dlx-tefdir'); if (!el) return; }
+  const S = DL_TDS, q = S.q.trim().toLocaleUpperCase('tr-TR'), cnt = {}; for (const r of rows) if (!S.tefas || r.tefas || r.kind === 'E') cnt[r.g] = (cnt[r.g] || 0) + 1;
+  let L = rows.filter(r => (!S.tefas || r.tefas || r.kind === 'E') && (S.g === 'all' ? r.kind !== 'E' : r.g === S.g) && (!q || r.code.includes(q) || r.name.toLocaleUpperCase('tr-TR').includes(q)));
+  const k = S.sort, num = v => v === null || v === undefined ? -1e9 : +v; L.sort((a, b) => k === 'risk' ? num(a.risk) - num(b.risk) : k === 'code' ? a.code.localeCompare(b.code) : num(b[k]) - num(a[k]));
+  const all = rows.filter(r => r.kind !== 'E').length, traded = rows.filter(r => r.kind !== 'E' && r.tefas).length, emk = rows.filter(r => r.kind === 'E').length;
+  const pc = v => v === null || v === undefined ? '<span class="dim">—</span>' : `<span class="${v >= 0 ? 'up' : 'down'}">${v >= 0 ? '+' : ''}${(+v).toFixed(1)}%</span>`;
+  const rk = v => v ? `<span class="dlx-risk r${v}" title="${DL('TEFAS risk class (1 low – 7 high)', 'TEFAS risk değeri (1 düşük – 7 yüksek)')}">${v}</span>` : '';
+  const head = (key, en, tr) => `<th data-td-sort="${key}" class="${key === 'code' ? 'l' : ''}${S.sort === key ? ' dlx-on' : ''}" style="cursor:pointer">${DL(en, tr)}${S.sort === key ? ' ▾' : ''}</th>`;
+  const fresh = state.focusEl = document.activeElement && document.activeElement.id === 'td-q';
+  el.innerHTML = `<h2>${DL('TEFAS fund directory', 'TEFAS fon rehberi')} <span class="sub">${DL(`${all} investment funds (${traded} traded on TEFAS) and ${emk} pension funds · TEFAS, ${dlTd.at ? E.longDate(String(dlTd.at).slice(0, 10)) : ''}`, `${all} yatırım fonu (TEFAS'ta işlem gören: ${traded}) ve ${emk} emeklilik fonu · TEFAS, ${dlTd.at ? E.longDate(String(dlTd.at).slice(0, 10)) : ''}`)}</span></h2>
+  <div class="body"><div class="row-inline dlx-td-bar"><input id="td-q" type="search" placeholder="${DL('Code or name…', 'Kod veya ad…')}" value="${esc(S.q)}" style="min-width:220px">
+  <label class="dim"><input type="checkbox" id="td-tef" ${S.tefas ? 'checked' : ''}> ${DL('only funds traded on TEFAS', 'yalnızca TEFAS’ta işlem görenler')}</label></div>
+  <div class="dlx-chips">${DL_TDG.map(([g, en, tr]) => `<button class="dlx-chip${S.g === g ? ' on' : ''}" data-td-g="${g}">${DL(en, tr)}${g !== 'all' && cnt[g] ? ` <small>${cnt[g]}</small>` : ''}</button>`).join('')}</div>
+  <table class="dlx-td"><tr>${head('code', 'Fund', 'Fon')}<th class="l">${DL('Type', 'Tür')}</th>${head('risk', 'Risk', 'Risk')}${head('r1m', '1M', '1A')}${head('r3m', '3M', '3A')}${head('ytd', 'YTD', 'YB')}${head('r1y', '1Y', '1Y')}${head('r3y', '3Y', '3Y')}${head('r5y', '5Y', '5Y')}</tr>
+  ${L.slice(0, S.n).map(r => { const x = state.map && state.map[r.code]; return `<tr class="${x ? 'row' : ''}" ${x ? `data-sym="${esc(r.code)}" style="cursor:pointer"` : ''}><td class="l"><b>${esc(r.code)}</b> <span class="dim">${esc(r.name)}</span>${r.tefas || r.kind === 'E' ? '' : ` <span class="tag">${DL('not on TEFAS', 'TEFAS dışı')}</span>`}</td><td class="l dim">${esc(String(r.type || '').replace(/ Şemsiye Fonu$/, ''))}</td><td>${rk(r.risk)}</td><td>${pc(r.r1m)}</td><td>${pc(r.r3m)}</td><td>${pc(r.ytd)}</td><td>${pc(r.r1y)}</td><td>${pc(r.r3y)}</td><td>${pc(r.r5y)}</td></tr>`; }).join('') || `<tr><td colspan="9" class="dim">${DL('No fund matches.', 'Eşleşen fon yok.')}</td></tr>`}</table>
+  ${L.length > S.n ? `<button id="td-more" class="ghost">${DL(`Show more (${L.length - S.n} left)`, `Daha fazla göster (${L.length - S.n} kaldı)`)}</button>` : ''}
+  <p class="note">${DL('Returns are TEFAS’s own period returns (not annualised for 3Y and 5Y). Funds the app tracks open their page on click; the price history of every fund traded on TEFAS is collected daily.', 'Getiriler TEFAS’ın kendi dönem getirileridir (3Y ve 5Y yıllıklandırılmamıştır). Uygulamanın izlediği fonlar tıklanınca sayfasını açar; TEFAS’ta işlem gören her fonun fiyat geçmişi her gün toplanır.')}</p></div>`;
+  if (fresh) { const i = $('td-q'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } } }
+document.addEventListener('click', e => { const t = e.target; if (!t.closest || !t.closest('#dlx-tefdir')) return; const g = t.closest('[data-td-g]'), so = t.closest('[data-td-sort]');
+  if (g) { DL_TDS.g = g.dataset.tdG; DL_TDS.n = 40; dlTdRender(); } else if (so) { DL_TDS.sort = so.dataset.tdSort; dlTdRender(); } else if (t.id === 'td-more') { DL_TDS.n += 60; dlTdRender(); } else if (t.id === 'td-tef') { DL_TDS.tefas = t.checked; dlTdRender(); } });
+{ let tq = null; document.addEventListener('input', e => { if (e.target && e.target.id === 'td-q') { DL_TDS.q = e.target.value; DL_TDS.n = 40; clearTimeout(tq); tq = setTimeout(dlTdRender, 180); } }); }
+state.hooks.push(v => { if ((v || state.view) === 'SCRN' && !dlXBusy) dlIdle(dlTdRender); });
+window.__gncTd = { render: () => dlTdRender(), set: d => { dlTd = d; dlTdRender(); }, rows: () => dlTdRows().length };
+document.head.insertAdjacentHTML('beforeend', `<style id="dlx-td-css">
+#dlx-tefdir .dlx-td-bar{gap:14px;margin-bottom:8px;align-items:center}
+.dlx-chips{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 10px}
+.dlx-chip{font:inherit;font-size:12px;padding:3px 11px;border-radius:999px;border:1px solid var(--line,rgba(127,127,127,.25));background:transparent;color:var(--fg2,#666);cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+.dlx-chip:hover{color:var(--fg,#222);border-color:var(--fg2,#888)}
+.dlx-chip.on{background:var(--acc,#e8792b);border-color:var(--acc,#e8792b);color:#fff}
+.dlx-chip small{opacity:.7;margin-left:2px}
+table.dlx-td th.dlx-on{color:var(--acc,#e8792b)}
+table.dlx-td td.l .dim{font-size:12px}
+.dlx-risk{display:inline-block;min-width:18px;padding:0 5px;border-radius:4px;font-size:11px;font-weight:600;text-align:center;color:#fff;background:#8a8f98}
+.dlx-risk.r1,.dlx-risk.r2{background:#2e9d6a}.dlx-risk.r3,.dlx-risk.r4{background:#c9a227}.dlx-risk.r5{background:#e08a2b}.dlx-risk.r6,.dlx-risk.r7{background:#c0392b}
+</style>`);
+
+/* ---- 174 quieter tabs: a thin underline that slides between the top tabs, pill sub-tabs, a short fade when the view changes ---- */
+document.head.insertAdjacentHTML('beforeend', `<style id="dlx-tabs-css">
+@media (min-width:641px){
+  nav.tabs#tabs{position:relative;gap:4px}
+  nav.tabs#tabs button,:root[data-look] nav.tabs#tabs button{background:transparent!important;box-shadow:none!important;color:var(--fg2);font-weight:400;padding:6px 10px 8px;border-radius:6px;transition:color .2s ease,background-color .2s ease}
+  nav.tabs#tabs button:hover{color:var(--fg);background:color-mix(in srgb,var(--fg) 5%,transparent)!important}
+  nav.tabs#tabs button.active,:root[data-look] nav.tabs#tabs button.active{color:var(--fg)!important;font-weight:500}
+  nav.tabs#tabs button svg,nav.tabs#tabs .tab-ico{opacity:.55;transition:opacity .2s}
+  nav.tabs#tabs button.active svg,nav.tabs#tabs button.active .tab-ico{opacity:1}
+  #dlx-tabind{position:absolute;bottom:0;height:2px;border-radius:2px;background:var(--accent,var(--c2,#c25a00));left:0;width:0;transition:left .32s cubic-bezier(.4,0,.2,1),width .32s cubic-bezier(.4,0,.2,1),opacity .2s;pointer-events:none}
+  .subtabs#subtabs{gap:4px;padding:8px 0 2px}
+  .subtabs#subtabs button,:root[data-look] .subtabs#subtabs button{font-size:12.5px;color:var(--muted,var(--fg2));background:transparent;border-radius:999px;padding:3px 12px;font-weight:400;box-shadow:none;transition:color .18s,background-color .18s}
+  .subtabs#subtabs button:hover{color:var(--fg)}
+  .subtabs#subtabs button.active,:root[data-look] .subtabs#subtabs button.active{color:var(--accent,var(--c2));background:color-mix(in srgb,var(--accent,#c25a00) 13%,transparent)!important;font-weight:500}
+}
+.view.dlx-enter{animation:dlxEnter .2s ease-out both}
+@keyframes dlxEnter{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.view.dlx-enter{animation:none}#dlx-tabind{transition:none}}
+#dlx-clock{margin:0 14px 0 4px;color:var(--fg2);font-size:12.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+#dlx-clock b{color:var(--fg);font-weight:500}
+@media (max-width:900px){#dlx-clock .dlx-ck-d{display:none}}
+</style>`);
+function dlTabInd() { const nav = $('tabs'); if (!nav) return; let ind = $('dlx-tabind'); if (!ind) { nav.insertAdjacentHTML('beforeend', '<i id="dlx-tabind" aria-hidden="true"></i>'); ind = $('dlx-tabind'); }
+  const a = nav.querySelector('button.active'); if (!a || !a.offsetWidth) { ind.style.opacity = '0'; return; } const pad = 10; ind.style.opacity = '1'; ind.style.left = (a.offsetLeft + pad) + 'px'; ind.style.width = Math.max(12, a.offsetWidth - 2 * pad) + 'px'; }
+let dlLastView = null;
+state.hooks.push(v => { if (!v || dlXBusy) return; requestAnimationFrame(dlTabInd); if (state.view !== dlLastView) { dlLastView = state.view; const el = $('view-' + state.view); if (el) { el.classList.remove('dlx-enter'); void el.offsetWidth; el.classList.add('dlx-enter'); } } });
+window.addEventListener('resize', () => requestAnimationFrame(dlTabInd)); setTimeout(dlTabInd, 300); if (document.fonts && document.fonts.ready) document.fonts.ready.then(dlTabInd);
+
+/* ---- 175 date and Istanbul time in the top bar ---- */
+function dlClock() { const host = document.querySelector('header.top .brand'); if (!host) return; let el = $('dlx-clock'); if (!el) { host.insertAdjacentHTML('afterend', '<span id="dlx-clock" aria-label="date and time"></span>'); el = $('dlx-clock'); }
+  const tr = dlLang() === 'tr', P = {}; for (const x of new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Istanbul', weekday: 'short', day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(new Date())) P[x.type] = x.value;
+  const W = { Mon: ['Mon', 'Pzt'], Tue: ['Tue', 'Sal'], Wed: ['Wed', 'Çar'], Thu: ['Thu', 'Per'], Fri: ['Fri', 'Cum'], Sat: ['Sat', 'Cmt'], Sun: ['Sun', 'Paz'] };
+  const d = `${(W[P.weekday] || [P.weekday, P.weekday])[tr ? 1 : 0]}, ${dlDate(`${P.year}-${String(P.month).padStart(2, '0')}-${String(P.day).padStart(2, '0')}`)}`, t = `${P.hour}:${P.minute}`;
+  el.innerHTML = `<span class="dlx-ck-d">${esc(d)} · </span><b>${esc(t)}</b>`; el.title = DL('Today, Istanbul time', 'Bugün, İstanbul saati') + ': ' + d + ' ' + t; }
+dlClock(); setInterval(dlClock, 20000); state.hooks.push(v => { if (v === undefined) dlClock(); });
+{ const _al = applyLang; applyLang = function () { const r = _al.apply(this, arguments); try { dlClock(); requestAnimationFrame(dlTabInd); } catch (e) { } return r; }; }
+
+/* ---- 176 blinking lights for instruments that need attention: in your funds, watchlist and alarms ----
+   red: Avoid flag, a limit-down-like day, within 3% of a stop, a fall of 5% or more today
+   green: at or past a line's target, a limit-up-like day, a rise of 5% or more today
+   amber: a price alarm that has triggered
+   Rows that show the symbol get a dot; the bar next to the bell counts them and lists the reasons. Off switch in that list. */
+const dlLtOn = () => { try { return localStorage.getItem('dlx_lights') !== '0'; } catch (e) { return true; } };
+const DL_LT_RANK = { r: 3, a: 2, g: 1 }, dlLtFn = p => String(p.name || '').replace(/\s*\([^)]*\)\s*$/, '');
+function dlLtFresh(x, code, days) { const s = x && x.e && x.e.ind && x.e.ind.sig; return !!(s && s.some(([k, d]) => k === code && dlDaysAgo(d) <= days)); }
+function dlLights() {
+  const out = new Map(), add = (sym, lv, why) => { const o = out.get(sym) || { sym, lv, why: [] }; if (DL_LT_RANK[lv] > DL_LT_RANK[o.lv]) o.lv = lv; if (!o.why.includes(why)) o.why.push(why); out.set(sym, o); };
+  const watch = new Set(((state.watch && state.watch.items) || []).map(i => i.symbol)), lines = [];
+  for (const p of (state.packages || [])) if (p.status !== 'closed') for (const l of (p.lines || [])) if (!l.closed && l.symbol) lines.push([p, l]);
+  const syms = new Set([...lines.map(([, l]) => l.symbol), ...watch]);
+  for (const sym of syms) { const x = state.map && state.map[sym]; if (!x || !x.e || !(x.e.price > 0)) continue; const px = x.e.price, d1 = x.e.r1d;
+    const av = typeof dlAvoidOf === 'function' ? dlAvoidOf(x) : null; if (av) add(sym, 'r', DL('Avoid flag', 'Kaçın işareti') + (av.k ? ': ' + dlSigName(av.k) : ''));
+    if (dlLtFresh(x, 'lim_dn', 3)) add(sym, 'r', DL('limit-down-like day', 'taban benzeri gün'));
+    if (dlLtFresh(x, 'lim_up', 3)) add(sym, 'g', DL('limit-up-like day — hold a week at most', 'tavan benzeri gün — en fazla 1 hafta'));
+    if (d1 != null && d1 <= -5) add(sym, 'r', DL(`down ${Math.abs(d1).toFixed(1)}% today`, `bugün %${Math.abs(d1).toFixed(1)} düştü`));
+    if (d1 != null && d1 >= 5) add(sym, 'g', DL(`up ${d1.toFixed(1)}% today`, `bugün %${d1.toFixed(1)} yükseldi`)); }
+  for (const [p, l] of lines) { const x = state.map && state.map[l.symbol]; if (!x || !x.e || !(x.e.price > 0)) continue; const px = x.e.price;
+    if (+l.stop > 0) { if (px <= +l.stop) add(l.symbol, 'r', DL(`below the stop ${fmtN(+l.stop)} (${dlLtFn(p)})`, `stop seviyesinin altında: ${fmtN(+l.stop)} (${dlLtFn(p)})`)); else if (px <= +l.stop * 1.03) add(l.symbol, 'r', DL(`within 3% of the stop ${fmtN(+l.stop)} (${dlLtFn(p)})`, `stop seviyesine %3’ten yakın: ${fmtN(+l.stop)} (${dlLtFn(p)})`)); }
+    if (+l.target > 0 && px >= +l.target) add(l.symbol, 'g', DL(`target ${fmtN(+l.target)} reached (${dlLtFn(p)})`, `hedef ${fmtN(+l.target)} geldi (${dlLtFn(p)})`)); }
+  for (const a of ((state.watch && state.watch.alarms) || [])) { if (!a || !a.active) continue; const x = state.map && state.map[a.symbol], px = x && x.e ? x.e.price : null; if (!(px > 0)) continue;
+    if (a.op === '<' ? px <= a.price : px >= a.price) add(a.symbol, 'a', DL(`alarm: ${a.op === '<' ? 'below' : 'above'} ${fmtN(a.price)}`, `alarm: ${fmtN(a.price)} ${a.op === '<' ? 'altında' : 'üstünde'}`)); }
+  return [...out.values()].sort((a, b) => DL_LT_RANK[b.lv] - DL_LT_RANK[a.lv] || a.sym.localeCompare(b.sym));
+}
+let dlLtCache = null, dlLtAt = 0;
+function dlLtList() { if (!dlLtCache || Date.now() - dlLtAt > 1500) { try { dlLtCache = dlLights(); } catch (e) { console.error(e); dlLtCache = []; } dlLtAt = Date.now(); } return dlLtCache; }
+const dlLtDot = o => `<i class="dlx-lt ${o.lv}" title="${esc(o.sym + ': ' + o.why.join('; '))}" aria-label="${esc(o.why.join('; '))}"></i>`;
+function dlLtPaint() {
+  for (const d of document.querySelectorAll('i.dlx-lt[data-lt]')) d.remove();
+  const bar = $('dlx-ltbtn'), on = dlLtOn();
+  const L = on ? dlLtList() : [], by = new Map(L.map(o => [o.sym, o]));
+  // dots on rows that name a symbol: fund content, all holdings, watchlist, fund sheet, market cards
+  for (const el of document.querySelectorAll('#view-PKGS tr[data-sym], #view-ALLPOS tr[data-sym], #view-WATCH tr[data-sym], #view-TODAY tr[data-sym], #sheet tr[data-sym], #view-SCRN #dlx-mkt [data-sym], #sheet td.l.acc, #pkg-cards td.l.acc')) {
+    if (el.offsetParent === null) continue; const sym = el.dataset.sym || ((el.textContent || '').trim().match(/^[A-Z0-9][A-Z0-9./_-]{1,11}/) || [])[0]; const o = sym && by.get(sym); if (!o) continue;
+    const cell = el.tagName === 'TR' ? (el.querySelector('td') || el) : el; if (cell.querySelector(':scope > i.dlx-lt')) continue; cell.insertAdjacentHTML('afterbegin', dlLtDot(o).replace('<i ', '<i data-lt="1" '));
+  }
+  // fund cards: the strongest light among its lines
+  for (const card of document.querySelectorAll('#pkg-cards .card[data-pkg]')) { const p = (state.packages || []).find(q => q.id === card.dataset.pkg); if (!p) continue; let best = null;
+    for (const l of p.lines || []) { const o = !l.closed && by.get(l.symbol); if (o && (!best || DL_LT_RANK[o.lv] > DL_LT_RANK[best.lv])) best = o; }
+    const h = card.querySelector('h3'); if (best && h) { const n = (p.lines || []).filter(l => !l.closed && by.has(l.symbol)).length; h.insertAdjacentHTML('afterbegin', `<i data-lt="1" class="dlx-lt ${best.lv}" title="${esc(DL(`${n} line${n > 1 ? 's' : ''} need${n > 1 ? '' : 's'} attention`, `${n} satır dikkat istiyor`))}"></i>`); } }
+  // the counter next to the bell
+  const tools = document.querySelector('header.top .tools'), inbox = $('btn-inbox'); if (!tools) return;
+  let b = bar; if (!b) { (inbox || tools.lastElementChild).insertAdjacentHTML('beforebegin', '<button id="dlx-ltbtn" class="quiet" hidden></button>'); b = $('dlx-ltbtn'); }
+  if (!on) { b.hidden = false; b.className = 'quiet dlx-ltb'; b.title = DL('Lights are off — click to turn them on', 'Işıklar kapalı — açmak için tıklayın'); b.innerHTML = '<span><i class="dlx-lt still"></i></span>'; return; }
+  if (!L.length) { b.hidden = true; return; } const top = L[0].lv, c = { r: 0, g: 0, a: 0 }; for (const o of L) c[o.lv]++;
+  b.hidden = false; b.className = 'quiet dlx-ltb'; b.title = DL('Instruments that need attention', 'Dikkat isteyen enstrümanlar');
+  b.innerHTML = ['r', 'a', 'g'].filter(k => c[k]).map(k => `<span><i class="dlx-lt ${k}${k === top ? '' : ' still'}"></i>${c[k]}</span>`).join('');
+}
+function dlLtPop() { let pop = $('dlx-ltpop'); if (pop) { pop.remove(); return; } const L = dlLtOn() ? dlLtList() : [], b = $('dlx-ltbtn'); if (!b) return; const r = b.getBoundingClientRect();
+  document.body.insertAdjacentHTML('beforeend', `<div id="dlx-ltpop" role="dialog" style="top:${Math.round(r.bottom + 6 + window.scrollY)}px;right:${Math.max(8, Math.round(window.innerWidth - r.right))}px">
+    <div class="dlx-ltp-h">${DL('Needs attention', 'Dikkat isteyenler')} <span class="dim">${L.length}</span></div>
+    ${L.map(o => `<div class="dlx-ltp-r" data-sym="${esc(o.sym)}"><i class="dlx-lt ${o.lv} still"></i><b>${esc(o.sym)}</b><span>${esc(o.why.join(' · '))}</span></div>`).join('') || `<div class="dim" style="padding:6px 10px">${DL('Nothing right now.', 'Şu an yok.')}</div>`}
+    <div class="dlx-ltp-f"><label><input type="checkbox" id="dlx-ltoff" ${dlLtOn() ? '' : 'checked'}> ${DL('Turn the lights off', 'Işıkları kapat')}</label><span class="dim">${DL('red: act · amber: alarm · green: take profit', 'kırmızı: harekete geç · sarı: alarm · yeşil: kâr al')}</span></div></div>`); }
+document.addEventListener('click', e => { const t = e.target; if (t.closest && t.closest('#dlx-ltbtn')) { e.stopPropagation(); dlLtPop(); return; }
+  if (t.id === 'dlx-ltoff') { try { localStorage.setItem('dlx_lights', t.checked ? '0' : '1'); } catch (er) { } const p = $('dlx-ltpop'); if (p) p.remove(); dlLtPaint(); if (t.checked) toast(DL('Lights off — the grey dot next to the bell turns them back on', 'Işıklar kapandı — zilin yanındaki gri nokta ile tekrar açılır')); return; }
+  const r = t.closest && t.closest('.dlx-ltp-r'); if (r) { const p = $('dlx-ltpop'); if (p) p.remove(); openSheet({ type: 'sym', symbol: r.dataset.sym }); return; }
+  if (!(t.closest && t.closest('#dlx-ltpop'))) { const p = $('dlx-ltpop'); if (p) p.remove(); } }, true);
+state.hooks.push(() => { if (!dlXBusy) dlIdle(dlLtPaint); });
+{ const mo = new MutationObserver(() => { clearTimeout(mo.t); mo.t = setTimeout(() => { if (dlLtOn()) dlLtPaint(); }, 250); }); const go = () => { const s = $('sheet'); if (s) mo.observe(s, { childList: true }); for (const id of ['pkg-cards', 'allpos-grid']) { const el = $(id); if (el) mo.observe(el, { childList: true }); } }; setTimeout(go, 1500); }
+window.__gncLt = { list: () => dlLights(), paint: () => { dlLtCache = null; dlLtPaint(); } };
+document.head.insertAdjacentHTML('beforeend', `<style id="dlx-lt-css">
+i.dlx-lt{display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 6px 1px 0;vertical-align:middle;flex:0 0 auto;--c:#8a8f98;background:var(--c);box-shadow:0 0 0 0 color-mix(in srgb,var(--c) 60%,transparent);animation:dlxBlink 1.6s ease-in-out infinite}
+i.dlx-lt.r{--c:#e0453a}i.dlx-lt.g{--c:#2fb37a}i.dlx-lt.a{--c:#e0a92b}
+i.dlx-lt.still{animation:none}
+@keyframes dlxBlink{0%{opacity:1;box-shadow:0 0 0 0 color-mix(in srgb,var(--c) 55%,transparent)}55%{opacity:.35;box-shadow:0 0 0 5px transparent}100%{opacity:1;box-shadow:0 0 0 0 transparent}}
+@media (prefers-reduced-motion:reduce){i.dlx-lt{animation:none}}
+#dlx-ltbtn.dlx-ltb{display:inline-flex;gap:8px;align-items:center;font-variant-numeric:tabular-nums}
+#dlx-ltbtn span{display:inline-flex;align-items:center}
+#dlx-ltpop{position:absolute;z-index:80;min-width:300px;max-width:440px;max-height:60vh;overflow:auto;background:var(--panel);color:var(--fg);border:1px solid var(--rule);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.18);font-size:13px}
+.dlx-ltp-h{padding:9px 12px;font-weight:600;border-bottom:1px solid var(--rule)}
+.dlx-ltp-r{display:grid;grid-template-columns:14px 64px 1fr;gap:4px;align-items:start;padding:7px 12px;cursor:pointer}
+.dlx-ltp-r:hover{background:color-mix(in srgb,var(--fg) 5%,transparent)}
+.dlx-ltp-r i.dlx-lt{margin-top:5px}.dlx-ltp-r span{color:var(--fg2)}
+.dlx-ltp-f{display:flex;flex-direction:column;gap:3px;padding:8px 12px;border-top:1px solid var(--rule);font-size:12px}
+</style>`);
+
+/* v2.13 end */
 Object.assign(TR, { 'GitHub version · prices update about every 30–60 minutes on weekdays · your data stays in this browser': 'GitHub sürümü · fiyatlar iş günleri yaklaşık 30–60 dakikada bir güncellenir · verileriniz bu tarayıcıda kalır',
   'Glossary': 'Sözlük', 'Add fund from external investment report': 'Dış yatırım raporundan fon ekle', 'TRY time deposit': 'TL vadeli mevduat', 'Money-market fund': 'Para piyasası fonu', 'BIST 100 index fund': 'BIST 100 endeks fonu', 'USD deposit': 'USD mevduat', 'Inflation (CPI) — value kept': 'Enflasyon (TÜFE) — korunan değer' });
 /*</DELUXE-UI>*/

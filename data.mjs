@@ -85,28 +85,38 @@ export async function yahooProfile(sym) {
 }
 
 /* ---------------- TEFAS ---------------- */
-const TEFAS_HEADERS = { ...UA, 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Requested-With': 'XMLHttpRequest', 'Origin': 'https://www.tefas.gov.tr', 'Referer': 'https://www.tefas.gov.tr/TarihselVeriler.aspx' };
-const fmtTr = d => `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
-export async function tefasHistory(code, days) {
-  const end = new Date(), start = new Date(Date.now() - days * 864e5), rows = []; let size = null;
-  for (let s = new Date(start); s < end; s = new Date(s.getTime() + 90 * 864e5)) {
-    const e = new Date(Math.min(end.getTime(), s.getTime() + 89 * 864e5));
-    const body = new URLSearchParams({ fontip: 'YAT', sfontur: '', fonkod: code, fongrup: '', bastarih: fmtTr(s), bittarih: fmtTr(e), fonturkod: '', fonunvantip: '', kurucukod: '' });
-    const r = await fetch('https://www.tefas.gov.tr/api/DB/BindHistoryInfo', { method: 'POST', body, headers: TEFAS_HEADERS, signal: AbortSignal.timeout(20000) });
+// TEFAS moved to a JSON API in April 2026 (/api/funds/*); the old /api/DB form endpoints answer "Method not found or disabled".
+// The app says who it is in every request, keeps to one request at a time with a pause, and waits out a 429 (TEFAS blocks ~45 s).
+const TEFAS_API = 'https://www.tefas.gov.tr/api/funds/';
+const TEFAS_UA = 'GNC-Terminal/2.13 (personal portfolio app; github.com/boraberkaygenc/orangegoatdeluxe)';
+let tefasLast = 0;
+async function tefasPost(pathName, body, tries = 3) {
+  for (let i = 0; i < tries; i++) {
+    const gap = 250 - (Date.now() - tefasLast); if (gap > 0) await sleep(gap); tefasLast = Date.now();
+    const r = await fetch(TEFAS_API + pathName, { method: 'POST', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'Accept-Language': 'tr-TR,tr;q=0.9', 'User-Agent': TEFAS_UA }, signal: AbortSignal.timeout(45000) });
+    if (r.status === 429) { await sleep(50000); continue; }
     if (!r.ok) throw new Error('HTTP ' + r.status);
-    const j = await r.json(); for (const d of (j.data || [])) if (+d.FIYAT > 0) { rows.push([dateIn(Math.floor(+d.TARIH / 1000)), +d.FIYAT]); if (+d.PORTFOYBUYUKLUK > 0) size = +d.PORTFOYBUYUKLUK; }
-    if (days > 90) await sleep(400);
+    const j = await r.json(); if (j && j.errorMessage) throw new Error(String(j.errorMessage).slice(0, 80));
+    return (j && j.resultList) || [];
   }
+  throw new Error('HTTP 429 (rate limited)');
+}
+const tefasPeriod = days => days <= 31 ? 1 : days <= 92 ? 3 : days <= 183 ? 6 : days <= 400 ? 12 : days <= 1096 ? 36 : 60; // the API takes fixed windows only
+export async function tefasHistory(code, days) {
+  const rows = []; let name = null;
+  for (const d of await tefasPost('fonFiyatBilgiGetir', { fonKodu: code, dil: 'TR', periyod: tefasPeriod(days) })) { if (!(+d.fiyat > 0) || !d.tarih) continue; rows.push([String(d.tarih).slice(0, 10), +d.fiyat]); if (d.fonUnvan) name = d.fonUnvan; }
   if (!rows.length) throw new Error('no rows');
   rows.sort((a, b) => a[0] < b[0] ? -1 : 1);
-  return { rows, price: rows[rows.length - 1][1], size, name: null };
+  return { rows, price: rows[rows.length - 1][1], size: null, name };
 }
-export async function tefasList() { // all funds with type and 1-year return, from the comparison screen
-  const end = new Date(), start = new Date(Date.now() - 365 * 864e5);
-  const body = new URLSearchParams({ calismatipi: '2', fontip: 'YAT', sfontur: '', kurucukod: '', fongrup: '', bastarih: fmtTr(start), bittarih: fmtTr(end), fonturkod: '', fonunvantip: '', strperiod: '1,1,1,1,1,1,1', islemdurum: '1' });
-  const r = await fetch('https://www.tefas.gov.tr/api/DB/BindComparisonFundReturns', { method: 'POST', body, headers: { ...TEFAS_HEADERS, Referer: 'https://www.tefas.gov.tr/FonKarsilastirma.aspx' }, signal: AbortSignal.timeout(30000) });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  const j = await r.json(); return (j.data || []).map(d => ({ code: d.FONKODU, name: d.FONUNVAN, type: d.FONTURACIKLAMA || '', r1y: +d.GETIRI1Y || +d.GETIRIYIL || null })).filter(f => f.code);
+export async function tefasInfo(code) { // size, investors, category rank (one fund)
+  const d = (await tefasPost('fonBilgiGetir', { fonKodu: code, dil: 'TR' }))[0]; if (!d) throw new Error('no info');
+  return { price: +d.sonFiyat || null, size: +d.portBuyukluk || null, investors: +d.yatirimciSayi || null, category: d.fonKategori || null, rank: +d.kategoriDerece || null, rankOf: +d.kategoriFonSay || null, share: +d.pazarPayi || null, name: d.fonUnvan || null };
+}
+const tefasNum = v => v === null || v === undefined || v === '' || !isFinite(+v) ? null : Math.round(+v * 100) / 100;
+export async function tefasList(type = 'YAT') { // every fund of the type, with its umbrella type, risk class and period returns
+  const L = await tefasPost('fonGetiriBazliBilgiGetir', { fonTipi: type, dil: 'TR', calismaTipi: 2, donemGetiri1a: '1', donemGetiri3a: '1', donemGetiri6a: '1', donemGetiriyb: '1', donemGetiri1y: '1', donemGetiri3y: '1', donemGetiri5y: '1' });
+  return L.map(d => ({ code: d.fonKodu, name: d.fonUnvan, type: d.fonTurAciklama || '', tefas: d.tefasDurum !== false, risk: +d.riskDegeri || null, r1m: tefasNum(d.getiri1a), r3m: tefasNum(d.getiri3a), r6m: tefasNum(d.getiri6a), ytd: tefasNum(d.getiriyb), r1y: tefasNum(d.getiri1y), r3y: tefasNum(d.getiri3y), r5y: tefasNum(d.getiri5y), kind: type })).filter(f => f.code);
 }
 
 /* ---------------- refresh orchestration ---------------- */
@@ -185,14 +195,24 @@ export function createData({ db, put, log, inbox, coll, ist, config, issuePicks,
       // 2b) Deluxe: gram gold (TRY) = COMEX gold (USD/oz) × USD/TRY ÷ 31.1035, day by day
       try { const g = deriveGold(); if (g) { okSet.add('GAUTRY'); mark('Gold (derived)', true); } } catch (e) { log('gold:', errMsg(e)); }
       try { if (deriveSilver()) okSet.add('GAGTRY'); } catch (e) { log('silver:', errMsg(e)); }
-      // 3) TEFAS
+      // 3) TEFAS — one request a fund (daily NAV); funds people hold first, then the oldest; a time budget per run, the next run continues
       if (tf.length) setP({ phase: 'TEFAS funds' });
-      for (const [k, x] of tf) {
-        try { const g = await tefasHistory(x.symbol, (full || !(db.docs[k] || x).liveHistory) ? 370 : 10); const y = { ...(db.docs[k] || x) };
-          y.bars = mergeBars((full || !y.liveHistory) ? [] : barsOf(y), g.rows.map(r => [r[0], r[1], null, null, null])); y.price = g.price; if (g.size) y.fundSize = g.size; if (full) keepSeries(x, y.bars, [], 'TEFAS (daily NAV)'); derive(y); y.navDate = today;
-          db.docs[k] = stamp(y, 'TEFAS (daily NAV)', 'tefas', null); okSet.add(x.symbol); mark('TEFAS', true); }
-        catch (e) { const why = errMsg(e); fails.push(x.symbol); if (!firstErr) firstErr = `${x.symbol}: ${why}`; db.docs[k] = { ...(db.docs[k] || x), fetchError: why.slice(0, 80) }; mark('TEFAS', false, why); }
-        setP({ done: progress.done + 1 }); await sleep(350);
+      { const heldT = new Set(); for (const [k, v] of Object.entries(db.docs)) if (k.startsWith('data/users/') && k.endsWith('/packages')) for (const p of (v.items || [])) for (const l of (p.lines || [])) heldT.add(l.symbol);
+        tf.sort(([, a], [, b]) => (heldT.has(b.symbol) - heldT.has(a.symbol)) || String(a.navDate || '').localeCompare(String(b.navDate || '')));
+        const tEnd = Date.now() + (full ? (config.tefasFullMin || 25) : (config.tefasQuickMin || 12)) * 60000; let tOk = 0, tFail = 0, tLeft = 0, tErr = null;
+        for (const [k, x] of tf) {
+          if (Date.now() > tEnd && !only) { tLeft++; continue; }
+          const cur = db.docs[k] || x, deep = full || !cur.liveHistory || !(barsOf(cur).length >= 200);
+          try { const g = await tefasHistory(x.symbol, deep ? 370 : 20); const y = { ...cur }; delete y.fetchError;
+            y.bars = mergeBars(deep ? [] : barsOf(y), g.rows.map(r => [r[0], r[1], null, null, null])); y.price = g.price; if (g.name && (!y.name || y.name === y.symbol)) y.name = g.name; if (deep) keepSeries(x, y.bars, [], 'TEFAS (daily NAV)'); derive(y); y.navDate = today; y.liveHistory = true;
+            db.docs[k] = stamp(y, 'TEFAS (daily NAV)', 'tefas', null); okSet.add(x.symbol); tOk++; }
+          catch (e) { const why = errMsg(e); tFail++; if (!tErr) tErr = `${x.symbol}: ${why}`; fails.push(x.symbol); if (!firstErr) firstErr = `${x.symbol}: ${why}`; db.docs[k] = { ...cur, fetchError: why.slice(0, 80), navDate: today }; }
+          setP({ done: progress.done + 1 });
+        }
+        // size, investors and category rank: a slice a run, oldest first (one more request a fund)
+        if (!only && Date.now() < tEnd) { const need = coll('instruments').filter(([, x]) => x.cls === 'TEFAS' && (!x.infoAt || (Date.now() - new Date(x.infoAt)) / 864e5 > 7)).sort(([, a], [, b]) => String(a.infoAt || '').localeCompare(String(b.infoAt || ''))).slice(0, full ? 600 : 150);
+          for (const [k] of need) { if (Date.now() > tEnd) break; try { const inf = await tefasInfo(db.docs[k].symbol); const y = { ...db.docs[k] }; if (inf.size) y.fundSize = inf.size; if (inf.investors) y.investors = inf.investors; if (inf.category) y.tefasCat = inf.category; if (inf.rank) y.catRank = [inf.rank, inf.rankOf]; y.infoAt = new Date().toISOString(); db.docs[k] = y; } catch (e) { db.docs[k] = { ...db.docs[k], infoAt: new Date().toISOString() }; } } }
+        if (tf.length) { log(`TEFAS: ${tOk} funds updated, ${tFail} failed${tLeft ? `, ${tLeft} left for the next run` : ''}`); mark('TEFAS', tOk > 0 || !tf.length, tFail ? tErr : null, { rows: tOk, partial: tFail > 0 || tLeft > 0 }); }
       }
       db.rev++; put('status/refresh', db.docs['status/refresh']);
       // 4) profiles for new or old instruments (sector, ROE, margins) — a slice per full run

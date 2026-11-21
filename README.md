@@ -5,6 +5,13 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.13: tüm TEFAS fonları, sade sekmeler, tarih ve uyarı ışıkları
+
+- TEFAS Nisan 2026'da veri adreslerini değiştirdi; uygulama yeni adreslere taşındı. TEFAS'ta işlem gören tüm yatırım fonları günlük fiyatlarıyla uygulamada; Piyasalar'daki “TEFAS fon rehberi” tüm yatırım ve emeklilik fonlarını tür, risk ve dönem getirisine göre listeler.
+- Üst sekmelerde kayan ince alt çizgi, alt sekmelerde sade hap görünümü, sayfa geçişinde kısa solma.
+- Üst çubukta gün, tarih ve İstanbul saati.
+- Fonlarınızdaki, izleme listenizdeki ve alarmlarınızdaki önemli durumlar için yanıp sönen ışıklar (kırmızı: Kaçın, taban benzeri gün, stop'a yakın, sert düşüş; yeşil: hedef geldi, tavan benzeri gün, sert yükseliş; sarı: alarm). Zilin yanındaki sayaç nedenleri listeler; ışıklar oradan kapatılıp açılır.
+
 ## v2.12.1: düzeltme
 
 - Fonlarım açıldığında fon kartlarının görünmemesi düzeltildi. Önceki sürümden kalan “son alt sekme” tercihi (Tüm varlıklar, Vergi vb.) artık yeni sekmelere çevrilmektedir.

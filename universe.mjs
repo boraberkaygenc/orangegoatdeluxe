@@ -137,7 +137,7 @@ export function createUniverse({ dir, db, put, log, inbox, tefasList, tefasHisto
       want.set('GAGTRY', { symbol: 'GAGTRY', cls: 'TR_ETF', ccy: 'TRY', sector: 'Commodities', sub: 'silver', name: 'Silver – gram (TRY, from XAG and USD/TRY)', derived: 'silver' });
       for (const f of CMDTY_BYF) want.set(f.symbol, { ...f, cls: 'TR_ETF', ccy: 'TRY', sector: 'Commodities', cmdtyFund: true });
     }
-    if (on('uniTefas')) for (const r of U.tefas) want.set(r.code, { symbol: r.code, cls: 'TEFAS', ccy: 'TRY', sector: r.hy ? 'BIST equity index' : r.cmdtyFund ? 'Commodities' : (r.sub === 'mm' ? 'Money market' : 'Mixed / other'), cmdtyFund: !!r.cmdtyFund, name: r.name, hy: !!r.hy, b51: !!r.b51, sub: r.sub || (r.hy ? 'equity' : 'other'), fee: r.fee ?? (r.hy ? 1.5 : 1.0) });
+    if (on('uniTefas')) for (const r of U.tefas) want.set(r.code, { symbol: r.code, cls: 'TEFAS', ccy: 'TRY', sector: r.hy ? 'BIST equity index' : r.cmdtyFund ? 'Commodities' : (r.sub === 'mm' ? 'Money market' : 'Mixed / other'), cmdtyFund: !!r.cmdtyFund, name: r.name, hy: !!r.hy, b51: !!r.b51, sub: r.sub || (r.hy ? 'equity' : 'other'), fee: r.fee ?? (r.hy ? 1.5 : 1.0), ...(r.type ? { tefasType: r.type } : {}), ...(r.risk ? { tefasRisk: r.risk } : {}) });
     let added = 0, removed = 0; const dead = [], now = Date.now(), today = stamp.slice(0, 10);
     for (const [k, x] of Object.entries(db.docs)) {
       if (!k.startsWith('instruments/') || x.cls === 'MACRO') continue;
@@ -150,7 +150,7 @@ export function createUniverse({ dir, db, put, log, inbox, tefasList, tefasHisto
       if ((w.ext || w.extra) && U.dead[sym] && !keep.has(sym)) continue; // removed as dead; retried after the next monthly refresh
       const k = 'instruments/' + sym.replace('/', '_'), x = db.docs[k];
       if (!x) { db.docs[k] = { ...w, name: w.name || sym, price: null, closes: [], addedAt: stamp, needsProfile: w.cls === 'US_EQ' || w.cls === 'TR_EQ', universe: true }; added++; }
-      else { const y = { ...x, ...('idx' in w ? { idx: w.idx } : {}), universe: true }; if (!y.sector || y.sector === 'Unclassified') y.sector = w.sector; if (w.cls === 'TEFAS') { y.hy = w.hy; y.b51 = w.b51; if (!y.name || y.name === sym) y.name = w.name; }
+      else { const y = { ...x, ...('idx' in w ? { idx: w.idx } : {}), universe: true }; if (!y.sector || y.sector === 'Unclassified') y.sector = w.sector; if (w.cls === 'TEFAS') { y.hy = w.hy; y.b51 = w.b51; if (!y.name || y.name === sym) y.name = w.name; if (w.tefasType) y.tefasType = w.tefasType; if (w.tefasRisk) y.tefasRisk = w.tefasRisk; if (w.sub && (!y.sub || y.sub === 'other')) y.sub = w.sub; if (w.cmdtyFund) y.cmdtyFund = true; }
         if (w.ext) y.ext = true; else delete y.ext; if (w.extra) y.extra = true; else delete y.extra; if (!y.addedAt) y.addedAt = stamp; db.docs[k] = y; }
     }
     db.rev++; put(key, U);
@@ -186,14 +186,31 @@ export function createUniverse({ dir, db, put, log, inbox, tefasList, tefasHisto
   async function bistAll() { const t = await fetchText('https://huggingface.co/datasets/kjhq/Turkey-Stock-Symbols-and-Metadata/resolve/main/turkey.csv'); const out = []; for (const line of t.split(/\r?\n/).slice(1)) { const cols = line.match(/("([^"]|"")*"|[^,]*)(,|$)/g); if (!cols || cols.length < 3) continue; const c = cols.map(v => v.replace(/,$/, '').replace(/^"|"$/g, '').replace(/""/g, '"')); const sym = c[1], sector = c[3] || 'Unclassified'; if (/^[A-Z0-9]{3,6}$/.test(sym) && sym !== 'ALTIN') out.push({ symbol: sym, sector }); } if (out.length < 300) throw new Error('only ' + out.length + ' rows'); return out; }
   async function bistIndex(code) { // İş Yatırım index page lists member codes as links
     const t = await fetchText(`https://www.isyatirim.com.tr/tr-tr/analiz/hisse/Sayfalar/default.aspx?endeks=${code}`); const out = new Set(); for (const m of t.matchAll(/hisse=([A-Z0-9]{3,6})/g)) out.add(m[1]); const n = { XU100: 90, XU050: 45, XU030: 28 }[code] || 10; if (out.size < n) throw new Error(`${code}: only ${out.size}`); return [...out]; }
-  async function tefasExpand() { // top hisse-yoğun / money-market / other funds by size, via the TEFAS comparison list and history
-    const list = await tefasList(); if (!list || !list.length) throw new Error('empty TEFAS list');
-    const type = f => String(f.type || ''), hisse = list.filter(f => /hisse/i.test(type(f)) && !/yabancı|yabanci/i.test(f.name || '')), mm = list.filter(f => /para piyasas/i.test(type(f))), other = list.filter(f => !hisse.includes(f) && !mm.includes(f) && /borçlanma|borclanma|serbest|değişken|degisken|karma|fon sepeti/i.test(type(f)));
-    async function sized(arr, n, pre) { const cand = arr.slice().sort((a, b) => (b.r1y || 0) - (a.r1y || 0)).slice(0, pre); const out = []; for (const f of cand) { try { const h = await tefasHistory(f.code, 7); if (h && h.size) out.push({ ...f, size: h.size }); } catch (e) { } await sleep(350); } return out.sort((a, b) => b.size - a.size).slice(0, n); }
-    const cmd = list.filter(f => /altın|altin|gümüş|gumus|kıymetli|kiymetli|emtia|maden/i.test(type(f) + ' ' + (f.name || '')));
-    const H = await sized(hisse, 20, 60), M = await sized(mm, 5, 12), O = await sized(other.filter(f => !cmd.includes(f)), 15, 40), C = await sized(cmd, 12, 30);
-    const mk = (f, sub) => ({ code: f.code, name: f.name, hy: /yoğun|yogun/i.test(f.type + ' ' + f.name) || sub === 'equity', b51: sub === 'equity' && !/yoğun|yogun/i.test(f.type + ' ' + f.name), sub, size: f.size, type: f.type });
-    return [...H.map(f => mk(f, 'equity')), ...M.map(f => mk(f, 'mm')), ...O.map(f => mk(f, 'other')), ...C.map(f => ({ ...mk(f, /gümüş|gumus/i.test(f.name) ? 'silver' : /altın|altin/i.test(f.name) ? 'gold' : 'cmdty'), cmdtyFund: true }))];
+  // TEFAS: every investment fund that trades on TEFAS (the 2026 JSON API gives the whole list, umbrella type and returns in one request)
+  function tefasRow(f) { const t = String(f.type || ''), nm = String(f.name || ''), tn = (t + ' ' + nm).toLocaleUpperCase('tr-TR');
+    const cmd = /ALTIN|GÜMÜŞ|KIYMETLİ MADEN|EMTİA|MADEN/.test(tn), hy = /YOĞUN/.test(tn), mm = /PARA PİYASAS/.test(tn), eq = /HİSSE SENEDİ/.test(t.toLocaleUpperCase('tr-TR')) || hy;
+    const sub = cmd ? (/GÜMÜŞ/.test(tn) ? 'silver' : /ALTIN/.test(tn) ? 'gold' : 'cmdty') : mm ? 'mm' : eq ? 'equity' : 'other';
+    return { code: f.code, name: nm, type: t, hy, b51: eq && !hy && !/YABANCI/.test(tn), sub, ...(cmd ? { cmdtyFund: true } : {}), risk: f.risk || null, r1y: f.r1y ?? null }; }
+  async function tefasExpand() {
+    const list = await tefasList('YAT'); if (!list || list.length < 100) throw new Error(`TEFAS list: only ${list ? list.length : 0} funds`);
+    const max = +config.tefasMax > 0 ? +config.tefasMax : 3000;
+    return list.filter(f => f.tefas).slice(0, max).map(tefasRow);
+  }
+  // the fund directory for the page (every YAT and EMK fund, traded on TEFAS or not): compact rows, refreshed daily
+  async function tefasDirectory() {
+    const yat = await tefasList('YAT'); let emk = []; try { emk = await tefasList('EMK'); } catch (e) { log('TEFAS EMK list:', e.message); }
+    const cols = ['code', 'name', 'type', 'kind', 'tefas', 'risk', 'r1m', 'r3m', 'r6m', 'ytd', 'r1y', 'r3y', 'r5y'];
+    put('tefas/dir', { at: new Date().toISOString(), source: 'TEFAS fonGetiriBazliBilgiGetir (YAT + EMK)', cols, rows: [...yat, ...emk].map(f => cols.map(c => c === 'tefas' ? (f.tefas ? 1 : 0) : c === 'kind' ? (f.kind === 'EMK' ? 'E' : 'Y') : f[c] ?? null)) });
+    return yat;
+  }
+  function tefasStale(days = 1) { const d = db.docs['tefas/dir']; return !d || !d.at || (Date.now() - new Date(d.at)) / 864e5 > days || ((current() || {}).tefas || []).length < 100; }
+  async function refreshTefas(reason = 'daily') {
+    const yat = await tefasDirectory(), max = +config.tefasMax > 0 ? +config.tefasMax : 3000, rows = yat.filter(f => f.tefas).slice(0, max).map(tefasRow);
+    if (rows.length < 100) throw new Error(`TEFAS list: only ${rows.length} traded funds`);
+    const cur = current() || {}, before = new Set((cur.tefas || []).map(r => r.code));
+    const U = build({ tefas: rows, sources: { tefas: `TEFAS fund list (${rows.length} funds traded on TEFAS), ${new Date().toISOString().slice(0, 10)}` } }); U.refreshedAt = cur.refreshedAt; put(key, U); const res = ensure();
+    const added = rows.filter(r => !before.has(r.code)).length; log(`TEFAS list (${reason}): ${yat.length} investment funds, ${rows.length} traded on TEFAS, +${added} new`);
+    return { ...res, funds: rows.length, added };
   }
   let running = null;
   function stale(days) { const u = current(); return !u || !u.refreshedAt || (Date.now() - new Date(u.refreshedAt)) / 864e5 > days; }
@@ -226,5 +243,5 @@ export function createUniverse({ dir, db, put, log, inbox, tefasList, tefasHisto
     })().finally(() => { running = null; });
     return running;
   }
-  return { ensure, refresh, stale, current, build };
+  return { ensure, refresh, stale, current, build, refreshTefas, tefasStale };
 }

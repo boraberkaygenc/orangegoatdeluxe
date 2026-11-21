@@ -220,6 +220,7 @@ server.listen(CONFIG.port, CONFIG.bind || '127.0.0.1', () => {
   const n = coll('instruments').length, withHist = coll('instruments').filter(([, x]) => x.liveHistory && x.closes && x.closes.length >= 200).length;
   setTimeout(async () => {
     if (universe.stale(35)) { try { await universe.refresh('start-up'); } catch (e) { log('universe:', e.message); } }
+    else if (universe.tefasStale(1)) { try { await universe.refreshTefas('start-up'); } catch (e) { log('TEFAS list:', e.message); } }
     if (membership.stale(20)) membership.refresh('start-up').catch(e => log('membership:', e.message));
     research.importDigests(); if (ipo.stale(10)) ipo.update('start-up'); if (lighthouse.stale(CONFIG.lighthouseEveryHours)) { lastLhAt = Date.now(); lighthouse.update('start-up'); } if (evds.stale(12)) evds.update('start-up'); if (ziraat.stale(1)) ziraat.update('start-up');
     await data.refresh(withHist < n * 0.6 || age > 20 ? 'full' : 'quick', 'start-up');
