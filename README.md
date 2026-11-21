@@ -5,6 +5,11 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.16: Kurul piyasayı tarıyor ve size soru soruyor
+
+- “Hangi hisseyi alayım / ekleyeyim?” soruları (Türkçe veya İngilizce) gerçek bir piyasa taramasına gider: tüm enstrümanlar, altı farklı tarama, kısa liste ve kurul oylaması.
+- Kurul cevaptan sonra piyasa, süre, risk, tutar ve fon gibi eksik bilgileri sorar; seçtiğiniz cevapla yeniden tarar ve oylar.
+
 ## v2.15: Yönetim Kurulu sorulara doğrudan cevap veriyor ve konuşulabiliyor
 
 - Her soru kendi cevabını alır (ne kadar süre, giriş ve stop, zarar/kâr durumu, temettü, halka arz, altın vadeli mi gram altın mı, fonun zayıf halkası, fonun mevduatı geçme olasılığı, faiz kararı, bu hafta).

@@ -3336,6 +3336,7 @@ const BD_M = [
   { id: 'ED', n: 'Executive Director', s: 'exec', nv: true, chair: true, r: ['chairs the board, counts the votes', 'oturumu yönetir, oyları sayar'] }];
 const BD_V = BD_M.filter(m => !m.nv), BD_BY = Object.fromEntries(BD_M.map(m => [m.id, m]));
 const bdT = (en, tr) => DL(en, tr), bdN = (v, d = 1) => v == null || !isFinite(v) ? '—' : dlN(v, d), bdP = (v, d = 1) => v == null || !isFinite(v) ? '—' : (v >= 0 ? '+' : '−') + '%' + dlN(Math.abs(v), d);
+const bdSfx = n => { n = Math.abs(Math.round(n)); const u = { 1: "'i", 2: "'si", 3: "'ü", 4: "'ü", 5: "'i", 6: "'sı", 7: "'si", 8: "'i", 9: "'u" }, t = { 0: "'ı", 10: "'u", 20: "'si", 30: "'u", 40: "'ı", 50: "'si", 60: "'ı", 70: "'i", 80: "'i", 90: "'ı" }; return n % 10 ? u[n % 10] : (t[n % 100] || "'ü"); };
 const bdClip = v => Math.max(-1, Math.min(1, v || 0));
 // ---------- facts ----------
 function bdFundsAll() { return (state.packages || []).filter(p => p.status !== 'closed'); }
@@ -3470,7 +3471,7 @@ function bdLaw(o, f) { const n = [bdT('These are not investment advice: investme
   return n; }
 function bdFinish(o, S) { const tl = bdTally(S.votes, S.opts); S.tally = tl; S.rebut = S.rebut || bdRebut(S.votes, tl.win); const win = S.opts.find(x => x.k === tl.win);
   const parts = S.opts.filter(x => tl.n[x.k]).map(x => `${tl.n[x.k]} ${x.l}`).join(' · ');
-  S.close = tl.tie ? bdT(`The vote: ${parts}. A tie between ${tl.tied.map(k => S.opts.find(o => o.k === k).l).join(' and ')}; the Executive Director breaks it on the side of caution: ${win.l}.`, `Oylama: ${parts}. ${tl.tied.map(k => S.opts.find(o => o.k === k).l).join(' ile ')} eşit kaldı; Executive Director eşitliği temkinli taraf lehine bozdu: ${win.l}.`) : bdT(`The vote: ${parts}. By a simple majority of ${tl.count} out of ${S.votes.length} the board resolves: ${win.l}.`, `Oylama: ${parts}. Kurul ${S.votes.length} oyun ${tl.count}'i ile basit çoğunlukla karar verdi: ${win.l}.`);
+  S.close = tl.tie ? bdT(`The vote: ${parts}. A tie between ${tl.tied.map(k => S.opts.find(o => o.k === k).l).join(' and ')}; the Executive Director breaks it on the side of caution: ${win.l}.`, `Oylama: ${parts}. ${tl.tied.map(k => S.opts.find(o => o.k === k).l).join(' ile ')} eşit kaldı; Executive Director eşitliği temkinli taraf lehine bozdu: ${win.l}.`) : bdT(`The vote: ${parts}. By a simple majority of ${tl.count} out of ${S.votes.length} the board resolves: ${win.l}.`, `Oylama: ${parts}. Kurul ${S.votes.length} oyun ${tl.count}${bdSfx(tl.count)} ile basit çoğunlukla karar verdi: ${win.l}.`);
   S.notes = S.notes || {}; S.notes.GC = bdLaw(o, S.f); S.at = new Date().toISOString(); S.q = o.q; S.kind = o.kind; return S; }
 // ---------- single instrument ----------
 function bdInst(o) { const f = bdFacts(o.sym); if (!f) return null; const held = f.held.length > 0;
@@ -3482,7 +3483,7 @@ function bdInst(o) { const f = bdFacts(o.sym); if (!f) return null; const held =
   S.open = bdT(`Agenda: “${o.q}”. ${f.sym} at ${bdN(px, 2)} ${f.x.ccy}; score ${f.score ?? '—'}; 1 month ${bdP(f.r1m)}, 1 year ${bdP(f.r1y)}${held ? `; you hold ${fmtN(f.held.reduce((a, h) => a + h.qty, 0), 0)} in ${f.held.map(h => h.p.name).join(', ')}` : ''}.`, `Gündem: “${o.q}”. ${f.sym} ${bdN(px, 2)} ${f.x.ccy}; puan ${f.score ?? '—'}; 1 ay ${bdP(f.r1m)}, 1 yıl ${bdP(f.r1y)}${held ? `; ${f.held.map(h => h.p.name).join(', ')} içinde ${fmtN(f.held.reduce((a, h) => a + h.qty, 0), 0)} adet tutuyorsunuz` : ''}.`);
   bdFinish(o, S); const win = S.tally.win, p = held ? f.held[0].p : bdTarget(o), fv = p ? bdFundValue(p) : 0, cap = (+state.S.capStock || 20) / 100;
   const etv = BD_LENS.ET(f), kel = f.ex && f.vol ? Math.max(0, Math.min(0.25, (f.ex.excess / 100) / Math.pow(f.vol / 100, 2) / 2)) : 0.05;
-  let amount = null, qty = null; if (win === 'buy' || win === 'add') { amount = o.amt || (fv ? Math.min(fv * cap, fv * Math.max(0.03, kel)) : null); qty = amount && unit > 0 ? (f.fund ? +(amount / unit).toFixed(2) : Math.floor(amount / unit)) : null; }
+  let amount = null, qty = null; if (win === 'buy' || win === 'add') { amount = o.amt || (fv ? Math.min(fv * cap, fv * Math.max(0.03, kel)) : null); qty = amount && unit > 0 ? (f.fund ? +(amount / unit).toFixed(2) : Math.floor(amount / unit)) : null; if (qty) amount = qty * unit; }
   if (win === 'sell' || win === 'trim') { const hq = f.held.reduce((a, h) => a + h.qty, 0); qty = win === 'sell' && o.sub !== 'half' ? hq : Math.floor(hq / 2); amount = qty * unit; }
   const stop = f.atr && px ? px - 2 * f.atr : null, cash = p ? bdCash(p) : 0;
   S.notes.CRO = [bdJudge('CRO', f).t, stop ? bdT(`Stop: ${bdN(stop, 2)} (two average daily ranges below).`, `Stop: ${bdN(stop, 2)} (iki günlük ortalama aralık aşağısı).`) : null].filter(Boolean);
@@ -3698,7 +3699,7 @@ function bdCard(S) { const c = S.card || {}, el = $('bd-card'); if (!el) return;
   let extra = ''; if (c.split) extra = `<table class="bd-split">${c.split.map(r => `<tr><td class="l">${esc(r.l)}</td><td>%${r.pct}</td><td>${r.amt ? esc(bdMoneyTxt(r.amt)) : ''}</td><td class="l dim">${r.picks && r.picks.length ? esc(r.picks.join(', ')) : ''}</td></tr>`).join('')}</table>`;
   if (c.list) extra = `<ol class="bd-agenda">${c.list.map(r => `<li${r.sym ? ` data-sym="${esc(r.sym)}"` : ''}><b>${esc(r.l)}</b> <span class="dim">(${r.n} ${DL('votes', 'oy')})</span><div class="dim">${esc(r.why || '')}</div></li>`).join('')}</ol>`;
   const btn = []; if (c.ticket && c.sym && !c.viop) btn.push(`<button class="primary" data-bd-ticket="1">${DL('Send to the trade ticket', 'Bilete aktar')}</button>`); if (c.sym && state.map[c.sym]) btn.push(`<button class="ghost" data-sym="${esc(c.sym)}">${DL('Instrument page', 'Enstrüman sayfası')}</button>`); if (c.pointer && c.fund) btn.push(`<button class="ghost" data-bd-ptr="${esc(c.fund)}">${DL('Open the fund’s Pointer', 'Fonun Pointer’ını aç')}</button>`);
-  el.innerHTML = `<div class="bd-dec" style="--dc:${col}"><div class="bd-dl">${DL('Board resolution', 'Kurul kararı')}</div><div class="bd-dv">${esc(c.label || o.l || '')}</div><div class="dim">${S.noVote ? DL('no vote needed', 'oylama gerekmedi') : DL(`${S.tally.count} of ${S.votes.length} votes`, `${S.votes.length} oyun ${S.tally.count}'i`)}${S.ai ? ' · ' + DL('debate written by Claude', 'tartışmayı Claude yazdı') : ''}</div></div><dl class="kv">${rows.join('')}</dl>${extra}<div class="row-inline">${btn.join('')}</div>`; }
+  el.innerHTML = `<div class="bd-dec" style="--dc:${col}"><div class="bd-dl">${DL('Board resolution', 'Kurul kararı')}</div><div class="bd-dv">${esc(c.label || o.l || '')}</div><div class="dim">${S.noVote ? DL('no vote needed', 'oylama gerekmedi') : DL(`${S.tally.count} of ${S.votes.length} votes`, `${S.votes.length} oyun ${S.tally.count}${bdSfx(S.tally.count)}`)}${S.ai ? ' · ' + DL('debate written by Claude', 'tartışmayı Claude yazdı') : ''}</div></div><dl class="kv">${rows.join('')}</dl>${extra}<div class="row-inline">${btn.join('')}</div>`; }
 function bdMinutes(S) { const el = $('bd-min'); if (!el) return; const steps = bdSteps(S), sec = (k, h) => { const a = steps.filter(s => k.includes(s.k)); return a.length ? `<h4>${esc(h)}</h4>${a.map(s => bdSay(s, S)).join('')}` : ''; };
   el.innerHTML = sec(['open'], DL('Opening', 'Açılış')) + sec(['vote'], DL('Round 1 — views and votes', '1. tur — görüşler ve oylar')) + sec(['rebut'], DL('Round 2 — objections', '2. tur — itirazlar')) + sec(['note'], DL('Risk, finance and legal notes', 'Risk, finans ve hukuk notları')) + sec(['close'], DL('Resolution', 'Karar')); }
 // ---------- minutes store and the members' scorecard ----------
@@ -4030,6 +4031,79 @@ document.head.insertAdjacentHTML('beforeend', `<style id="bd2-css">
 .bd-memv{margin-bottom:8px}.bd-memf{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12px;margin-bottom:6px}.bd-memq{display:flex;gap:6px;margin-top:8px}.bd-memq input{flex:1}
 #bd-svg .bd-seat{cursor:pointer}#bd-svg .bd-seat:hover>circle:nth-of-type(2){filter:brightness(1.12)}#bd-svg .bd-seat.changed .bd-ring{stroke-width:7;animation:bdPulse .6s ease-in-out 4}
 </style>`);
+
+/* ---- 182 Board, part 3: "which … should I buy/add" in any wording, a real market scan behind it,
+   and the board asking you follow-up questions whose answers make it vote again ---- */
+const BD_PICK_RE = /(which|what|hangi|ne|nereye|öner|recommend|suggest|best|en iyi).{0,40}(share|stock|equit|hisse|pay\b|enstrüman|instrument|fon|fund|etf|byf|altın|gold|yatırım)|(ne|neyi|what).{0,12}(alayım|almalıyım|ekleyeyim|eklemeliyim|buy|add)|(what|which).{0,30}(buy|add|invest)/i;
+{ const _p = bdParse; bdParse = function (q, sel) { const o = _p(q, sel), raw = String(q || ''), t = raw.toLocaleLowerCase('tr-TR') + ' | ' + raw.toLowerCase();
+    if (!o.syms.length && o.kind !== 'legal' && o.kind !== 'viop' && BD_PICK_RE.test(t) && !/sektör|sector/.test(t) && !/para piyasası mı|mevduat mı|bist mi abd|abd mi bist|nereye koy|dağıt|allocate/.test(t)) {
+      const mkt = /tefas|yatırım fonu|investment fund/.test(t) ? 'TEFAS' : /\b(bist|borsa istanbul|türk|turkish)\b|bıst/.test(t) ? 'TR' : /\b(abd|us|usa|amerika|american|nasdaq|s&p|nyse)\b/.test(t) ? 'US' : null;
+      return { ...o, kind: 'pick', sub: mkt === 'TEFAS' ? 'tefas' : 'scan', mkt, toFund: /fon(um|uma|a)|my fund|to the fund|ekle|add/.test(t) }; }
+    return o; }; }
+// ---------- the scan ----------
+function bdScan(mkt) { const funds = bdFundsAll(), held = new Set(), fundSect = new Set(); for (const p of funds) for (const l of p.lines || []) if (!l.closed) { held.add(l.symbol); const x = state.map[l.symbol]; if (x && x.e && x.e.sector) fundSect.add(x.e.sector); }
+  const cls = mkt === 'TR' ? ['TR_EQ'] : mkt === 'US' ? ['US_EQ'] : mkt === 'TEFAS' ? ['TEFAS'] : ['TR_EQ', 'US_EQ', 'TR_ETF'];
+  const all = (state.scored || []).filter(x => cls.includes(x.cls) && x.e), priced = all.filter(x => x.e.price > 0), gated = priced.filter(x => !x.gate || x.gate.ok);
+  let avoided = 0; const pool = gated.filter(x => { if (held.has(x.symbol)) return false; const a = typeof dlAvoidOf === 'function' ? dlAvoidOf(x) : null; if (a) { avoided++; return false; } return true; });
+  const rk = bdRank(), pct = (x, k) => bdPct(rk[x.ccy === 'USD' ? 'USD' : 'TRY'][k], x.e[k]);
+  const risk = BD_P.risk || 0, S = [
+    ['score', bdT('top model score', 'model puanı lideri'), x => x.score ?? -1],
+    ['magic', bdT('cheap and high quality (earnings yield + ROE)', 'ucuz ve kaliteli (kazanç getirisi + ROE)'), x => x.e.ey > 0 && x.e.roe != null ? ((pct(x, 'ey') || 0) + (pct(x, 'roe') || 0)) : -1],
+    ['trend', bdT('strong trend near its 52-week high', '52 hafta zirvesine yakın güçlü trend'), x => x.e.above200 ? (x.e.hi252p || 0) + (x.e.mom121 || 0) / 200 : -1],
+    ['calm', bdT('low risk with a positive expected excess', 'düşük risk ve pozitif beklenen fark'), x => x.E != null && x.e.volUsed ? (x.E - 40) / x.e.volUsed - (x.e.volUsed > 40 ? 1 : 0) : -9],
+    ['div', bdT('dividend payer with a fair P/E', 'makul F/K ile temettü veren'), x => x.e.div > 0 && x.e.pe > 0 && x.e.pe < 20 ? x.e.div : -1],
+    ['div2', bdT('a sector your funds do not have', 'fonlarınızda olmayan bir sektör'), x => x.e.sector && !fundSect.has(x.e.sector) ? (x.score || 0) : -1]];
+  if (risk < 0) S.splice(2, 1); if (risk > 0) S.splice(3, 1);
+  const short = [], seen = new Set(); for (const [k, why, f] of S) { const top = pool.map(x => [x, f(x)]).filter(([, v]) => v > 0 || (k === 'score' && v >= 0)).sort((a, b) => b[1] - a[1]); for (const [x] of top.slice(0, 3)) { if (seen.has(x.symbol)) continue; const c = (() => { try { return dlCall(x); } catch (e) { return null; } })(); if (c && c.c === 'avoid') continue; seen.add(x.symbol); short.push({ k: x.symbol, l: x.symbol, why, screen: k, f: null }); break; } }
+  for (const c of short) c.f = bdFacts(c.k);
+  return { n: all.length, priced: priced.length, gated: gated.length, avoided, pool: pool.length, short: short.filter(c => c.f).slice(0, 6), fundSect }; }
+{ const _pick = bdPick; bdPick = function (o) { if (o.sub !== 'scan' && o.sub !== 'stock' && o.sub !== 'tefas') return _pick(o); const mkt = BD_P.mkt || o.mkt || (o.sub === 'tefas' ? 'TEFAS' : null), sc = bdScan(mkt);
+    if (!sc.short.length) return { err: bdT('The scan found no candidate that passes the gates right now.', 'Tarama şu an kapılardan geçen bir aday bulamadı.') };
+    const cands = sc.short, opts = [...cands.map(c => ({ k: c.k, l: c.l })), { k: 'none', l: bdT('None now', 'Şimdilik hiçbiri') }];
+    const votes = BD_V.map(m => { const js = cands.map(c => [c, bdJudge(m.id, c.f)]).sort((a, b) => b[1].s - a[1].s), [c, j] = js[0], k = j.s < -0.2 ? 'none' : c.k; return { id: m.id, o: k, c: bdConf(j.s, j.weak), t: k === 'none' ? bdT(`None of the shortlist convinces me: ${bdShort(j.t, true)}.`, `Kısa listeden hiçbiri ikna etmiyor: ${bdShort(j.t, true)}.`) : `${c.l} (${c.why}): ${j.t}` }; });
+    const mlab = mkt === 'TR' ? 'BIST' : mkt === 'US' ? DL('US', 'ABD') : mkt === 'TEFAS' ? 'TEFAS' : DL('BIST, US and ETFs', 'BIST, ABD ve BYF');
+    const S = { f: cands[0].f, opts, votes, title: bdT(`Market scan · ${mlab}`, `Piyasa taraması · ${mlab}`), scan: sc,
+      open: bdT(`Agenda: “${o.q}”. The board scanned ${fmtN(sc.n, 0)} instruments (${mlab}): ${fmtN(sc.gated, 0)} pass the price and liquidity gates, ${sc.avoided} dropped for an Avoid signal. Shortlist, one per screen: ${cands.map(c => `${c.l} — ${c.why}`).join('; ')}.`, `Gündem: “${o.q}”. Kurul ${fmtN(sc.n, 0)} enstrümanı taradı (${mlab}): ${fmtN(sc.gated, 0)} tanesi fiyat ve likidite kapısından geçti, ${sc.avoided} tanesi Kaçın sinyali nedeniyle elendi. Her taramadan bir aday: ${cands.map(c => `${c.l}: ${c.why}`).join('; ')}.`) };
+    bdFinish(o, S); const w = cands.find(c => c.k === S.tally.win), fw = w && w.f, p = bdTarget(o), fv = p ? bdFundValue(p) : 0, cap = (+state.S.capStock || 20) / 100, amt = fw ? (o.amt || (fv ? fv * Math.min(cap, 0.1) : null)) : null, unit = fw ? fw.price * (fw.x.ccy === 'USD' ? dlFx(today()) : 1) : 0;
+    const order = opts.filter(x => x.k !== 'none').sort((a, b) => (S.tally.n[b.k] || 0) - (S.tally.n[a.k] || 0));
+    const q0 = fw && unit > 0 && amt ? (fw.fund ? +(amt / unit).toFixed(2) : Math.floor(amt / unit)) : null;
+    S.card = { sym: fw ? fw.sym : null, action: w ? 'buy' : 'none', label: w ? bdT(`Buy ${w.l}`, `${w.l} alınır`) : bdT('None now', 'Şimdilik hiçbiri'), qty: q0, amount: q0 ? q0 * unit : amt, stop: fw && fw.atr ? fw.price - 2 * fw.atr : null, fund: p ? p.id : null, fundName: p ? p.name : null, range: fw && fw.st ? [fw.st.lo, fw.st.hi] : null, horizon: fw && fw.hz && fw.hz.best ? bdHL(fw.hz.best) : null, risk: fw ? bdShort(bdJudge('CRO', fw).t) : null, ticket: !!fw,
+      list: order.map(op => { const c = cands.find(x => x.k === op.k); return { l: `${op.l} — ${c.why}`, n: S.tally.n[op.k] || 0, why: `${DL('score', 'puan')} ${c.f.score ?? '—'} · ${DL('1y', '1y')} ${bdP(c.f.r1y)} · F/K ${bdN(c.f.pe)}`, sym: op.k }; }) };
+    S.notes.CRO = fw ? [bdJudge('CRO', fw).t] : []; S.notes.CFO = fw ? [bdJudge('CFO', fw).t] : [];
+    if (w) { const en = [], tr = []; if (S.card.qty) { en.push(`${fmtN(S.card.qty, 0)} at about ${bdN(fw.price, 2)} ≈ ${bdMoneyTxt(S.card.amount)}`); tr.push(`${bdN(fw.price, 2)} civarından ${fmtN(S.card.qty, 0)} adet ≈ ${bdMoneyTxt(S.card.amount)}`); }
+      if (S.card.stop) { en.push(`stop ${bdN(S.card.stop, 2)}`); tr.push(`stop ${bdN(S.card.stop, 2)}`); } if (S.card.horizon) { en.push(`hold about ${S.card.horizon}`); tr.push(`yaklaşık ${S.card.horizon} tutun`); }
+      const ru = order.slice(1, 3).map(x => `${x.l} (${S.tally.n[x.k] || 0})`).join(', ') || '—', tl = `${S.tally.count}/${S.votes.length}`;
+      S.answer = bdT(`Buy ${w.l} (${tl}${S.tally.tie ? ', tie broken by the chair' : ''}) — ${w.why}. ${en.length ? en.join(', ') + '. ' : ''}Runners-up: ${ru}.`, `${w.l} alın (${tl}${S.tally.tie ? ', eşitliği başkan bozdu' : ''}) — ${w.why}. ${tr.length ? tr.join(', ') + '. ' : ''}Sonraki adaylar: ${ru}.`); }
+    else S.answer = bdT('None of the shortlist now; keep the money in the deposit until the scan finds a better setup.', 'Şimdilik kısa listeden hiçbiri; tarama daha iyi bir fırsat bulana kadar para mevduatta kalsın.');
+    return S; }; }
+// ---------- the board asks you ----------
+function bdQuestions(S) { if (!S || S.err || S.noVote) return []; const k = S.kind, sub = S.parsed && S.parsed.sub, Q = [], P = BD_P, money = [[10000, '10.000'], [50000, '50.000'], [100000, '100.000']];
+  const qMkt = ['mkt', DL('Which market should the board scan?', 'Kurul hangi piyasayı tarasın?'), [['TR', 'BIST'], ['US', DL('US', 'ABD')], ['TEFAS', DL('TEFAS funds', 'TEFAS fonları')], ['ALL', DL('Any', 'Fark etmez')]]];
+  const qH = ['h', DL('How long do you plan to hold?', 'Ne kadar süre tutmayı düşünüyorsunuz?'), [['1', DL('about a month', 'yaklaşık 1 ay')], ['6', DL('about 6 months', 'yaklaşık 6 ay')], ['24', DL('a year or more', '1 yıl ve üstü')]]];
+  const qR = ['risk', DL('How much risk can you carry?', 'Ne kadar risk taşıyabilirsiniz?'), [['-1', DL('cautious', 'temkinli')], ['0', DL('balanced', 'dengeli')], ['1', DL('aggressive', 'atak')]]];
+  const qA = ['amt', DL('How much money is this for?', 'Bu iş için ne kadar para ayırıyorsunuz?'), money.map(([v, l]) => [String(v), l + ' TL'])];
+  const funds = bdFundsAll(), qF = funds.length > 1 ? ['fund', DL('Which fund should it go into?', 'Hangi fona girsin?'), funds.slice(0, 4).map(p => [p.id, String(p.name).replace(/\s*\([^)]*\)\s*$/, '')])] : null;
+  if (k === 'pick') { if (!P.mkt && !(S.parsed && S.parsed.mkt)) Q.push(qMkt); if (P.h == null) Q.push(qH); if (!P.risk) Q.push(qR); if (!P.amt) Q.push(qA); }
+  else if (k === 'inst') { const held = S.f && S.f.held.length; if (held && /sell|half/.test(sub || '')) Q.push(['why', DL('Why do you want to sell?', 'Neden satmak istiyorsunuz?'), [['cash', DL('I need the cash', 'Nakde ihtiyacım var')], ['loss', DL('I am at a loss', 'Zarardayım')], ['profit', DL('To take profit', 'Kâr almak için')], ['other', DL('A better idea elsewhere', 'Başka bir fırsat var')]]]); else { if (P.h == null) Q.push(qH); if (!P.amt && !held) Q.push(qA); if (qF && !held) Q.push(qF); } }
+  else if (k === 'viop') { if (!P.amt) Q.push(['amt', DL('How much can you set aside as margin?', 'Teminat için ne kadar ayırabilirsiniz?'), money.map(([v, l]) => [String(v), l + ' TL'])]); if (!P.risk) Q.push(qR); }
+  else if (k === 'alloc') { if (P.h == null) Q.push(qH); if (!P.risk) Q.push(qR); if (!P.amt && S.parsed && S.parsed.sub === 'mix') Q.push(qA); }
+  else if (k === 'fund') Q.push(['goal', DL('What matters most for this fund?', 'Bu fon için en önemlisi ne?'), [['lowrisk', DL('less risk', 'daha az risk')], ['ret', DL('more return', 'daha çok getiri')], ['dep', DL('beating the deposit', 'mevduatı geçmek')]]]);
+  return Q.slice(0, 3); }
+function bdAskBack(S) { const Q = bdQuestions(S); if (!Q.length) return; BD_UI.thread.push({ who: 'ED', html: `<div>${DL('To sharpen the answer the board asks you:', 'Cevabı netleştirmek için kurul size soruyor:')}</div>${Q.map(([key, q, opts]) => `<div class="bd-qq"><div>${esc(q)}</div><div class="bd-qopts">${opts.map(([v, l]) => `<button class="bd-pq" data-bd-qa="${esc(key + ':' + v)}">${esc(l)}</button>`).join('')}</div></div>`).join('')}` }); bdThreadRender(); }
+{ const _ask = bdAsk; bdAsk = async function (q, keep) { await _ask(q, keep); bdAskBack(BD_UI.S); }; }
+{ const _rv = bdRevote; bdRevote = async function (note, mut) { await _rv(note, mut); bdAskBack(BD_UI.S); }; }
+async function bdQA(v) { const [key, val] = String(v).split(':'); const lab = { mkt: { TR: 'BIST', US: DL('US', 'ABD'), TEFAS: 'TEFAS', ALL: DL('any market', 'fark etmez') } };
+  const say = { mkt: DL('Market: ', 'Piyasa: ') + ((lab.mkt[val]) || val), h: DL(`Horizon: ${val} month(s)`, `Süre: ${val} ay`), risk: DL('Risk: ', 'Risk: ') + ({ '-1': DL('cautious', 'temkinli'), '0': DL('balanced', 'dengeli'), '1': DL('aggressive', 'atak') })[val], amt: DL('Amount: ', 'Tutar: ') + bdMoneyTxt(+val), fund: DL('Fund: ', 'Fon: ') + ((bdFundsAll().find(p => p.id === val) || {}).name || val), why: DL('Reason: ', 'Neden: ') + val, goal: DL('Goal: ', 'Hedef: ') + val }[key] || v;
+  BD_UI.thread.push({ who: 'you', t: say }); bdThreadRender();
+  if (key === 'why') { const S = BD_UI.S, sym = S && S.parsed && S.parsed.sym; const q = val === 'loss' ? DL(`I am at a loss on ${sym} — what now?`, `${sym} hissesinde zarardayım, ne yapayım?`) : val === 'profit' ? DL(`I am in profit on ${sym} — take it?`, `${sym} hissesinde kârdayım, kârı alayım mı?`) : DL(`Should I sell ${sym}?`, `${sym} satayım mı?`); await bdRevoteQ(q, P => { if (val === 'cash') P.cash = true; if (val === 'other') P.conv = -0.15; }); return; }
+  await bdRevote(null, P => { if (key === 'mkt') P.mkt = val === 'ALL' ? null : val; if (key === 'h') P.h = +val; if (key === 'risk') P.risk = +val; if (key === 'amt') P.amt = +val; if (key === 'fund') P.fundId = val; if (key === 'goal') { if (val === 'lowrisk') P.risk = -1; if (val === 'ret') P.risk = 1; if (val === 'dep') P.costLow = false; } }); }
+async function bdRevoteQ(q, mut) { const S = BD_UI.S; if (S) S.q = q; await bdRevote(null, mut); }
+{ const _t = bdTarget; bdTarget = function (o) { if (BD_P.fundId) { const p = bdFundsAll().find(q => q.id === BD_P.fundId); if (p) return p; } return _t(o); }; }
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-bd-qa]'); if (!b) return; e.stopPropagation(); const qq = b.closest('.bd-qq'); if (qq) qq.querySelectorAll('button').forEach(x => x.disabled = true); bdQA(b.dataset.bdQa); }, true);
+// preset: the scan, in both languages
+for (const g of BD_PRE) if (g[0] === 'stock') { const i = g[2].findIndex(q => /Which share should I buy/.test(q[0])); if (i >= 0) g[2][i] = ['Scan the market: which share should I buy?', 'Piyasayı tara: hangi hisseyi alayım?']; g[2].splice(i + 1, 0, ['Which share should I add to my fund?', 'Fonuma hangi hisseyi ekleyeyim?']); }
+Object.assign(window.__gncBd, { scan: m => bdScan(m), questions: () => bdQuestions(BD_UI.S), qa: v => bdQA(v) });
+document.head.insertAdjacentHTML('beforeend', `<style id="bd3-css">.bd-qq{margin-top:6px}.bd-qopts{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}.bd-qopts button:disabled{opacity:.45;cursor:default}</style>`);
 
 /* v2.14 end */
 Object.assign(TR, { 'GitHub version · prices update about every 30–60 minutes on weekdays · your data stays in this browser': 'GitHub sürümü · fiyatlar iş günleri yaklaşık 30–60 dakikada bir güncellenir · verileriniz bu tarayıcıda kalır',
