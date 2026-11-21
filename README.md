@@ -5,6 +5,12 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.14: Yönetim Kurulu ve daha çok ışık
+
+- Yeni üst sekme “Yönetim Kurulu”: 13 yatırımcı modeli (Buffett, Munger, Graham, Lynch, Druckenmiller, Marks, Dalio, Simons, Soros, Mobius, Greenblatt, Thorp, Bogle), Risk Officer ve CFO oy verir (15 oy, basit çoğunluk; eşitlikte başkan temkinli tarafı seçer), General Counsel SPK mevzuatı notu ekler, Executive Director oturumu yönetir. Hisse, karşılaştırma, VİOP (yön, kontrat, koruma, teminat çağrısı, vade dönümü), fon, para dağılımı, TEFAS fonu, sektör, gündem ve vergi/hukuk soruları; altı grupta yaklaşık 40 hazır soru. Toplantı masası, söz şeridi, itiraz yayları, meclis grafiği, karar kartı (“Bilete aktar”), tutanak ve üye karnesi.
+- İsteğe bağlı yapay zekâ modu: Anthropic API anahtarı yalnızca tarayıcıda saklanır; tartışmayı Claude yazar, rakamlar uygulamadan gelir; hata olursa kural tabanlı kurul gösterilir.
+- Işıklar: yedi renk (hemen bak, yakında karar, olay/alarm, fırsat, bilgi, Pointer önerisi, eski veri), üç tempo, yeni kurallar (52 hafta dibi/zirvesi, satırda %20 zarar, fon mevduatın gerisinde, tek satır %40'ı aşıyor, USD/TRY'de günde %2, VİOP teminat ve vade, planlanan çıkış, KAP, makro takvim, halka arz, hedef getiri), Özet'te “Bugün dikkat” şeridi, sekmelerde nokta, renge göre süzme, renk başına aç/kapat ve “Gördüm”.
+
 ## v2.13: tüm TEFAS fonları, sade sekmeler, tarih ve uyarı ışıkları
 
 - TEFAS Nisan 2026'da veri adreslerini değiştirdi; uygulama yeni adreslere taşındı. TEFAS'ta işlem gören tüm yatırım fonları günlük fiyatlarıyla uygulamada; Piyasalar'daki “TEFAS fon rehberi” tüm yatırım ve emeklilik fonlarını tür, risk ve dönem getirisine göre listeler.
