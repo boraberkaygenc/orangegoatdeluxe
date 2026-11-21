@@ -261,7 +261,7 @@ Bugün hesaplananlar: RSI 14, 20/50/200 günlük ortalamalar, ATR, 52 hafta zirv
    - **Nerede:** fon kartları ve içerik, Tüm varlıklar, izleme listesi, Özet sayfasında “Bugün dikkat” şeridi, Piyasalar kartları ve hareket edenler tablosu, üst sekmelerde (ilgili sekmenin yanında küçük nokta), VİOP pozisyonları.
    - **Liste:** zilin yanındaki listede renge göre gruplama ve süzme; her ışığın nedeni, tarihi ve “gördüm” (o gün için susturma) düğmesi; renk başına aç/kapat.
 
-179. **Yatırımcı heyeti (virattt/ai-hedge-fund'dan, MIT lisansı):** Seçim: uygulamaya taşı, model sağlayıcısı Anthropic.
+179. **[beklemede: kullanıcı farklı bir yol düşünüyor]** **Yatırımcı heyeti (virattt/ai-hedge-fund'dan, MIT lisansı):** Seçim: uygulamaya taşı, model sağlayıcısı Anthropic.
    - **Ne taşınır:** Beş yatırımcı ajanının talimatları (Buffett, Munger, Graham, Lynch, Druckenmiller), tarih sızıntısını önleyen kurallar (“yalnızca verilen veriden, son bilanço tarihini bugün say, sayı uydurma”), JSON yanıt biçimi (yön, güven 0–100, 2–4 cümle gerekçe) ve kazanç sürprizi (PEAD) modeli. Kaynak ve lisans dosyada belirtilir.
    - **Veri:** Financial Datasets yerine uygulamanın kendi tarihli temel verileri (ABD: SEC EDGAR, BIST: İş Yatırım; fund.json). Böylece BIST hisseleri de değerlendirilir.
    - **Nerede çalışır:** Her gece yayın işleminde; fonlardaki hisseler, izleme listesi ve en yüksek puanlı hisseler için sınırlı sayıda. Temel veri değişmedikçe aynı hisse yeniden sorulmaz (içerik özeti ile önbellek); günlük istek ve süre sınırı vardır.
