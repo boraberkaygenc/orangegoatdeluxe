@@ -5,6 +5,11 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.17: 66 hazır soru, fonların teşhisi, satış listesi ve önce-soru akışı
+
+- “Fonlarımızın sorunu ne?”, “Bu hafta ne satmalıyım?”, “Hangi hisseleri almalı, hangilerini satmalıyım?” gibi yeni soru türleri; dokuz grupta 66 hazır soru, Türkçe ve İngilizce.
+- Eksik bilgi varsa kurul önce sorar; cevaplarınız tercih profili olarak hatırlanır.
+
 ## v2.16: Kurul piyasayı tarıyor ve size soru soruyor
 
 - “Hangi hisseyi alayım / ekleyeyim?” soruları (Türkçe veya İngilizce) gerçek bir piyasa taramasına gider: tüm enstrümanlar, altı farklı tarama, kısa liste ve kurul oylaması.
