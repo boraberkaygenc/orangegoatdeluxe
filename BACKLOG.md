@@ -249,5 +249,17 @@ Bugün hesaplananlar: RSI 14, 20/50/200 günlük ortalamalar, ATR, 52 hafta zirv
 
 177. **[yapıldı v2.13]** **TEFAS'ın yeni veri adresleri ve tüm fonlar:** TEFAS Nisan 2026'da eski /api/DB adreslerini kapattı; uygulama yeni /api/funds adreslerine (JSON) taşınır, kendini her istekte “GNC-Terminal” olarak tanıtır, istekler arasında bekler ve 429 yanıtında 50 saniye durur. TEFAS'ta işlem gören tüm yatırım fonları uygulamaya eklenir (günlük fiyat, büyüklük, yatırımcı sayısı, kategori sırası); Piyasalar'da tüm yatırım ve emeklilik fonlarını gösteren “TEFAS fon rehberi” bulunur. Fiyatlar her çalışmada zaman sınırıyla çekilir, yetişmeyenler sonraki çalışmaya kalır.
 
+178. **Işıkların sayısı ve çeşitliliği:** 176'daki üç renk ve beş kurala ek olarak:
+   - **Renkler ve biçimler:** kırmızı (hemen bak), turuncu (yakında karar), sarı (alarm/olay), yeşil (fırsat/kâr al), mavi (bilgi), mor (Pointer önerisi), gri (veri eski). Aciliyete göre üç hız: hızlı çift atım (acil), yavaş yanıp sönme (dikkat), sabit halka (bilgi).
+   - **Yeni kırmızı:** 52 haftanın dibi, satırda %20'den fazla zarar, fonun mevduatın gerisine düşmesi, fonda tek satırın %40'ı aşması, USD/TRY'de günde %2'den fazla hareket, VİOP teminat tamamlama riski.
+   - **Yeni turuncu:** planlanan çıkış tarihine 7 günden az kalması, VİOP vadesine 5 günden az kalması, Kaçın işaretinin bitmesine 3 gün kalması.
+   - **Yeni sarı:** 7 gün içinde temettü hak kullanımı, bilanço tarihi veya genel kurul; elinizdeki hisse için yeni KAP bildirimi; aracı kurum not/hedef değişikliği.
+   - **Yeni yeşil:** 52 haftanın zirvesi (geçmişte olumlu sinyal), fonun hedef getiriye ulaşması, aracı kurum hedefinin %30 üstü potansiyel.
+   - **Mavi:** temettü hesaba geçti, yeni halka arz, elinizdeki hisse için yeni araştırma notu.
+   - **Mor:** fonun Pointer'ında kırmızı ana sorun ve uygulanabilir reçete.
+   - **Gri:** fiyatı 3 işlem gününden eski veya TEFAS'tan çekilemeyen enstrüman.
+   - **Nerede:** fon kartları ve içerik, Tüm varlıklar, izleme listesi, Özet sayfasında “Bugün dikkat” şeridi, Piyasalar kartları ve hareket edenler tablosu, üst sekmelerde (ilgili sekmenin yanında küçük nokta), VİOP pozisyonları.
+   - **Liste:** zilin yanındaki listede renge göre gruplama ve süzme; her ışığın nedeni, tarihi ve “gördüm” (o gün için susturma) düğmesi; renk başına aç/kapat.
+
 ## Kullanıcının ekledikleri
 (boş)
