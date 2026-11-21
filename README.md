@@ -5,6 +5,12 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.15: Yönetim Kurulu sorulara doğrudan cevap veriyor ve konuşulabiliyor
+
+- Her soru kendi cevabını alır (ne kadar süre, giriş ve stop, zarar/kâr durumu, temettü, halka arz, altın vadeli mi gram altın mı, fonun zayıf halkası, fonun mevduatı geçme olasılığı, faiz kararı, bu hafta).
+- General Counsel yalnızca ilgili bir hukuki veya vergisel konu varsa konuşur.
+- Kurulla konuşma: devam soruları, karara itiraz ve yeniden oylama, üyeye tıklayıp yalnız ona soru.
+
 ## v2.14: Yönetim Kurulu ve daha çok ışık
 
 - Yeni üst sekme “Yönetim Kurulu”: 13 yatırımcı modeli (Buffett, Munger, Graham, Lynch, Druckenmiller, Marks, Dalio, Simons, Soros, Mobius, Greenblatt, Thorp, Bogle), Risk Officer ve CFO oy verir (15 oy, basit çoğunluk; eşitlikte başkan temkinli tarafı seçer), General Counsel SPK mevzuatı notu ekler, Executive Director oturumu yönetir. Hisse, karşılaştırma, VİOP (yön, kontrat, koruma, teminat çağrısı, vade dönümü), fon, para dağılımı, TEFAS fonu, sektör, gündem ve vergi/hukuk soruları; altı grupta yaklaşık 40 hazır soru. Toplantı masası, söz şeridi, itiraz yayları, meclis grafiği, karar kartı (“Bilete aktar”), tutanak ve üye karnesi.

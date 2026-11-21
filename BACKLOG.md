@@ -287,5 +287,7 @@ Bugün hesaplananlar: RSI 14, 20/50/200 günlük ortalamalar, ATR, 52 hafta zirv
    - **Motor:** kural tabanlı kurul her zaman çalışır (API ve ücret gerekmez, uygulamanın kendi verisiyle anında). İsteğe bağlı: kullanıcı Yönetim Kurulu sekmesinde kendi Anthropic API anahtarını girerse aynı kurul yapay zekâ ile serbest tartışır; anahtar yalnızca o tarayıcıda saklanır, rakamlar yine uygulamanın verisinden gelir.
    - **Tutanak ve karne:** her oturum tarihiyle tutanak olarak saklanır; 1, 3 ve 12 ay sonra kararın ve her üyenin oyunun sonucu gösterilir (üye karnesi).
 
+181. **[yapıldı v2.15]** **Yönetim Kurulu düzeltmeleri ve etkileşim:** Her sorunun kendi cevabı karar kartının başında (“Sorunuzun cevabı”): ne kadar süre (vade motorundan en iyi süre, süreye göre mevduat farkı ve olasılık tablosu), giriş fiyatı/stop/hedef, zarardayken, kârdayken (iz süren stop), temettü öncesi, halka arz (sembolsüz kontrol listesi), altın vadeli mi gram altın mı, fonun en zayıf halkası, fon mevduatı geçer mi (olasılık), faiz kararı ve bu hafta (takvim). General Counsel yalnızca soruyla ilgili hukuki/vergisel konu varsa konuşur; genel uyarı sayfa altında. Etkileşim: devam soruları (“Neden?”, “Ya %10 düşerse?”, tutar, süre, daha temkinli/atak; kurul önceki oturumu hatırlar ve yeniden oylar, fikrini değiştirenler gösterilir), “İtiraz et” (8 gerekçe; yeniden oylama), masadaki üyeye tıklayınca gerekçesi, baktığı rakamlar, karnesi ve yalnız o üyeye soru.
+
 ## Kullanıcının ekledikleri
 (boş)
