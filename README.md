@@ -5,6 +5,11 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.18: Fon içinde hisse, mevduat ve döviz arasında değişim
+
+- Fonun “İçerik ve İşlem” sekmesindeki “⇆ Hisse · Mevduat · Döviz” düğmesiyle fondaki bir hisseyi, nakdi, doları veya mevduatı tek işlemde başka birine çevirebilirsiniz (örneğin hisse → vadeli mevduat, mevduat → hisse, TL → dolar, dolar → hisse).
+- Gereken tüm adımlar (satış, Ziraat kuruyla çevirme, mevduat açma/bozma, alış) aynı tarihte fonun defterine yazılır; yatırılan ana para değişmez, yalnızca masraf ve kur farkı yansır. İşlem “Undo” ile geri alınabilir.
+
 ## v2.17: 66 hazır soru, fonların teşhisi, satış listesi ve önce-soru akışı
 
 - “Fonlarımızın sorunu ne?”, “Bu hafta ne satmalıyım?”, “Hangi hisseleri almalı, hangilerini satmalıyım?” gibi yeni soru türleri; dokuz grupta 66 hazır soru, Türkçe ve İngilizce.
