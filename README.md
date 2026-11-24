@@ -5,6 +5,12 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.22: Ekran görüntüsünden işlem, telefonda sekmeler
+
+- Fonun işlem penceresinde “📷 Ekran görüntüsünden doldur”: aracı kurumun emir/gerçekleşme ekranının görüntüsü seçilir veya yapıştırılır; görüntü yalnızca bu cihazda okunur (Tesseract.js, Türkçe + İngilizce, hiçbir yere gönderilmez). Sembol, alış/satış, gerçekleşme tarihi ve saati, adet, fiyat, para birimi, ücret ve toplam çıkarılır; toplam kontrol edilir ve pencere doldurulur. Ücret dolar ise o günün kuruyla TL’ye çevrilir. Kaydetmeden önce “Emin misiniz?” ekranı gelir.
+- “Örnekle dene” düğmesi, fondaki bir varlık için uydurma bir emir ekranı çizip aynı yolu gösterir. Fon sayfasında “📷 Ekran görüntüsünden” düğmesi de vardır.
+- Telefonda fonun dört sekmesi tek satıra sığar; “Basit görünüm” düğmesi sekme satırından fon başlığına taşındı. Kaydırırken sekmelerin altında tek satırlık işlem çubuğu (Al, Sat, Değiştir, Çevir, ↶) sabit kalır ve fon başlığı artık içeriğin üstüne binmez.
+
 ## v2.21: Fiyat otomatik, elle giriş uyarılı, her işlemde onay ekranı
 
 - Al / Sat / Değiştir penceresinde fiyat varsayılan olarak otomatiktir: bugün için piyasa fiyatı, geçmiş tarih için o günün kapanışı kullanılır ve fiyat kutusu kilitlidir. Satışta adet veya “Satış tutarı (TL)” yazılır; diğeri fiyattan hesaplanır.

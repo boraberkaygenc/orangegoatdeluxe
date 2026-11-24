@@ -328,23 +328,23 @@ Bugün hesaplananlar: RSI 14, 20/50/200 günlük ortalamalar, ATR, 52 hafta zirv
 215. **[kabul edildi]** **Komut paleti:** Ctrl K araması eylem de alır: “THYAO sat”, “mevduat aç”, “GNC II’yi aç”; ilgili pencere dolu açılır.
 216. **[kabul edildi]** **Korelasyon ağı:** Fondaki varlıkların birbirleriyle ilişkisi ağ grafiği; birlikte hareket edenler yakın ve kalın çizgiyle — çeşitlendirmenin görsel kanıtı.
 217. **[kabul edildi]** **Kurumsal tipografi ve marka:** Logo turuncusu yalnızca vurgu rengi; başlıklar için ince ve geniş bir display yazı tipi, metin için okunaklı sans; 4–6 boyutlu net tipografi ölçeği.
-218. **[öneri]** **Logonun sıfırdan oluşması:** Açılışta keçi logosunun hatları SVG ile boş ekrandan çizilir, ardından turuncu dolgu ve “GNC” yazısı belirir (~0,9 sn). Çizimin ilerlemesi veri yüklemesine bağlıdır: logo tamamlandığında veri hazırdır.
-219. **[öneri]** **Logo ailesi:** Tek renk monogram, küçük boyutta okunur sade favicon, açık/koyu tema varyantları; turuncu yalnızca vurgu.
-220. **[öneri]** **Yaşayan logo:** Piyasa açıkken logoda çok hafif bir nabız, veri eskiyse logo griye döner; logo durum göstergesi olarak da çalışır.
-221. **[öneri]** **“Ya olursa” simülatörü:** Kaydırıcılarla BIST (−%30…+%30), USD/TRY ve faiz değiştirilir; fonun değeri ve kalemleri canlı çubuklarla tepki verir.
-222. **[öneri]** **Olası yollar grafiği:** Monte Carlo’nun 200 olası yolu ince çizgiler, ortanca kalın çizgi, hedef çizgisi ve “hedefe ulaşma olasılığı %”.
-223. **[öneri]** **Geriye dönük oynatıcı:** “Bu fonu 2018’de kursaydım” — oynat düğmesiyle grafik zamanla çizilir; kur şoku, pandemi gibi krizler işaretlenir.
-224. **[öneri]** **Kriz kartları:** 2018 kur şoku, 2020 pandemi, Aralık 2021 gibi senaryolarda fonun kaybı ve toparlanma süresi kart hâlinde.
-225. **[öneri]** **Odak modu:** Tek dokunuşla yalnızca toplam varlık, bugünkü değişim ve bugün yapılacaklar görünür.
-226. **[öneri]** **Tutarları gizle:** Üst çubukta göz simgesiyle tüm tutarlar ••• olur, yüzdeler kalır; kalabalık ortamda kullanım için.
-227. **[öneri]** **Sistem tercihine uyum:** Cihazda büyük yazı veya yüksek kontrast açıksa uygulama kendiliğinden uyar; Ayarlara seçenek eklenmez.
-228. **[öneri]** **Tek durum küresi:** Üst çubukta piyasa, veri ve fonların ortak durumunu gösteren tek küre; dokununca nedenler listelenir.
-229. **[öneri]** **Fon kartında ışık yerine renk çubuğu:** Kartın sol kenarında mevduata göre durumu gösteren ince renk çubuğu; parlama yok.
-230. **[öneri]** **Takvim nabzı:** TCMB, TÜİK gibi yaklaşan önemli günler takvimde ve özet satırında yalnızca son 48 saatte hafifçe vurgulanır.
-231. **[öneri]** **Sekme yerleşimi sorunu:** Telefonda fonun sekmeleri (Özet, İçerik ve İşlem, Pointer, Geçmiş) satıra sığmıyor ve “Basit görünüm” düğmesi sekme satırında kesiliyor; sekmeler tam görünür hâle getirilecek, görünüm düğmesi sekme satırından çıkarılacak.
-232. **[öneri]** **Yönetim Kurulu: net cevap ve süreç:** En üstte tek karar kutusu (ör. “THYAO’nun %30’unu sat — güven: orta”), 3 maddelik gerekçe, “Bunu uygula” düğmesi (işlem penceresi dolu açılır); süreç adımları Soru → Veri → Tartışma → Oylama → Karar ilerleme çubuğuyla; oy dağılımı tek çubuk; tartışma ayrıntısı katlanır.
-233. **[öneri]** **Pointer: görselli ve kolay analiz:** Her bulgu bir cümle + bir grafik: mevduata göre fark iki çubuk, risk kadranı, yoğunlaşma halka grafiği, “ne yapmalı” tek düğme; teknik terim yok, gerekirse ? ile açıklanır.
-234. **[öneri]** **Ekran görüntüsünden fon içi işlem:** Fonda “📷 Ekran görüntüsünden ekle”: aracı kurum emir ekranı yüklenir; yalnızca tarayıcı içinde (Tesseract.js OCR, görüntü cihazdan çıkmaz) sembol, yön, tarih-saat, adet, fiyat, para birimi, ücret ve toplam çıkarılır; toplam kontrolü yapılır (ör. NVIDIA limit satış 0,18 × 135,20 $ − 1,50 $ = 22,83 $); işlem penceresi dolu açılır ve onay ekranından sonra fona işlenir. Örnek görüntü test olarak eklenir.
+218. **[kabul edildi]** **Logonun sıfırdan oluşması:** Açılışta keçi logosunun hatları SVG ile boş ekrandan çizilir, ardından turuncu dolgu ve “GNC” yazısı belirir (~0,9 sn). Çizimin ilerlemesi veri yüklemesine bağlıdır: logo tamamlandığında veri hazırdır.
+219. **[kabul edildi]** **Logo ailesi:** Tek renk monogram, küçük boyutta okunur sade favicon, açık/koyu tema varyantları; turuncu yalnızca vurgu.
+220. **[kabul edildi]** **Yaşayan logo:** Piyasa açıkken logoda çok hafif bir nabız, veri eskiyse logo griye döner; logo durum göstergesi olarak da çalışır.
+221. **[kabul edildi]** **“Ya olursa” simülatörü:** Kaydırıcılarla BIST (−%30…+%30), USD/TRY ve faiz değiştirilir; fonun değeri ve kalemleri canlı çubuklarla tepki verir.
+222. **[kabul edildi]** **Olası yollar grafiği:** Monte Carlo’nun 200 olası yolu ince çizgiler, ortanca kalın çizgi, hedef çizgisi ve “hedefe ulaşma olasılığı %”.
+223. **[kabul edildi]** **Geriye dönük oynatıcı:** “Bu fonu 2018’de kursaydım” — oynat düğmesiyle grafik zamanla çizilir; kur şoku, pandemi gibi krizler işaretlenir.
+224. **[kabul edildi]** **Kriz kartları:** 2018 kur şoku, 2020 pandemi, Aralık 2021 gibi senaryolarda fonun kaybı ve toparlanma süresi kart hâlinde.
+225. **[kabul edildi]** **Odak modu:** Tek dokunuşla yalnızca toplam varlık, bugünkü değişim ve bugün yapılacaklar görünür.
+226. **[kabul edildi]** **Tutarları gizle:** Üst çubukta göz simgesiyle tüm tutarlar ••• olur, yüzdeler kalır; kalabalık ortamda kullanım için.
+227. **[kabul edildi]** **Sistem tercihine uyum:** Cihazda büyük yazı veya yüksek kontrast açıksa uygulama kendiliğinden uyar; Ayarlara seçenek eklenmez.
+228. **[kabul edildi]** **Tek durum küresi:** Üst çubukta piyasa, veri ve fonların ortak durumunu gösteren tek küre; dokununca nedenler listelenir.
+229. **[kabul edildi]** **Fon kartında ışık yerine renk çubuğu:** Kartın sol kenarında mevduata göre durumu gösteren ince renk çubuğu; parlama yok.
+230. **[kabul edildi]** **Takvim nabzı:** TCMB, TÜİK gibi yaklaşan önemli günler takvimde ve özet satırında yalnızca son 48 saatte hafifçe vurgulanır.
+231. **[yapıldı v2.22]** **Sekme yerleşimi sorunu:** Telefonda fonun sekmeleri (Özet, İçerik ve İşlem, Pointer, Geçmiş) satıra sığmıyor ve “Basit görünüm” düğmesi sekme satırında kesiliyor; sekmeler tam görünür hâle getirilecek, görünüm düğmesi sekme satırından çıkarılacak.
+232. **[kabul edildi]** **Yönetim Kurulu: net cevap ve süreç:** En üstte tek karar kutusu (ör. “THYAO’nun %30’unu sat — güven: orta”), 3 maddelik gerekçe, “Bunu uygula” düğmesi (işlem penceresi dolu açılır); süreç adımları Soru → Veri → Tartışma → Oylama → Karar ilerleme çubuğuyla; oy dağılımı tek çubuk; tartışma ayrıntısı katlanır.
+233. **[kabul edildi]** **Pointer: görselli ve kolay analiz:** Her bulgu bir cümle + bir grafik: mevduata göre fark iki çubuk, risk kadranı, yoğunlaşma halka grafiği, “ne yapmalı” tek düğme; teknik terim yok, gerekirse ? ile açıklanır.
+234. **[yapıldı v2.22]** **Ekran görüntüsünden fon içi işlem:** Fonda “📷 Ekran görüntüsünden ekle”: aracı kurum emir ekranı yüklenir; yalnızca tarayıcı içinde (Tesseract.js OCR, görüntü cihazdan çıkmaz) sembol, yön, tarih-saat, adet, fiyat, para birimi, ücret ve toplam çıkarılır; toplam kontrolü yapılır (ör. NVIDIA limit satış 0,18 × 135,20 $ − 1,50 $ = 22,83 $); işlem penceresi dolu açılır ve onay ekranından sonra fona işlenir. Örnek görüntü test olarak eklenir.
 
 ## Kullanıcının ekledikleri
 (boş)

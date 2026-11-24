@@ -4352,7 +4352,8 @@ function dlUndoLast(id) { const p = (state.packages || []).find(q => q.id === id
   try { dlFpCache.delete(p.id); } catch (e) { }
   journal(`${p.name}: ${DL('undone', 'geri alındı')} — ${dlPlain(u.c.label)}.`, { kind: 'order', pkg: p.id }); saveUser('packages'); renderAll(); reopenSheet(); toast(DL('Undone: ', 'Geri alındı: ') + dlPlain(u.c.label)); return true; }
 function dlUndoBtn(p, card) { const u = dlUndoable(p); if (!u && card) return ''; const lab = u ? dlPlain(u.c.label) : DL('Nothing to undo', 'Geri alınacak işlem yok');
-  return `<button class="dlx-undo" data-dlx-undo="${esc(p.id)}" title="${esc(lab)}" ${u ? '' : 'disabled'}>↶ ${DL('Undo', 'Geri al')}</button>`; }
+  return `<button class="dlx-undo" data-dlx-undo="${esc(p.id)}" title="${esc(lab)}" ${u ? '' : 'disabled'} aria-label="${esc(DL('Undo', 'Geri al'))}">${dlUndoLab()}</button>`; }
+function dlUndoLab() { return `<span class="xf-long">↶ ${DL('Undo', 'Geri al')}</span><span class="xf-short">↶</span>`; }
 function dlUndoBars() { const w = state.sheet; if (!w || w.type !== 'pkg') return; const p = (state.packages || []).find(q => q.id === w.id); if (!p || p.status === 'closed') return;
   for (const id of ['dlx-ttbar', 'xf-qbar']) { const bar = $(id); if (!bar) continue; const old = bar.querySelector('[data-dlx-undo]'); if (old) old.remove(); bar.insertAdjacentHTML('beforeend', dlUndoBtn(p)); } }
 { const _rs = renderSheet; renderSheet = function () { _rs.apply(this, arguments); try { dlUndoBars(); } catch (e) { } }; }
@@ -4362,7 +4363,7 @@ setTimeout(() => { try { dlUndoCards(); } catch (e) { } }, 1600);
 { const _su = saveUser; saveUser = function () { const r = _su.apply(this, arguments); setTimeout(() => { try { dlUndoBars(); dlUndoCards(); } catch (e) { } }, 60); return r; }; }
 document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-dlx-undo]'); if (!b) return; e.stopPropagation(); e.preventDefault(); if (b.disabled) return;
   const p = (state.packages || []).find(q => q.id === b.dataset.dlxUndo), u = dlUndoable(p); if (!u) return;
-  if (!b.dataset.sure) { b.dataset.sure = '1'; b.classList.add('sure'); b.textContent = DL('Undo “', '“') + (L => L.length > 60 ? L.slice(0, 58) + '…' : L)(dlPlain(u.c.label)) + DL('”? Tap again', '” geri alınsın mı? Tekrar dokunun'); setTimeout(() => { if (b.isConnected) { delete b.dataset.sure; b.classList.remove('sure'); b.textContent = '↶ ' + DL('Undo', 'Geri al'); } }, 5000); return; }
+  if (!b.dataset.sure) { b.dataset.sure = '1'; b.classList.add('sure'); b.textContent = DL('Undo “', '“') + (L => L.length > 60 ? L.slice(0, 58) + '…' : L)(dlPlain(u.c.label)) + DL('”? Tap again', '” geri alınsın mı? Tekrar dokunun'); setTimeout(() => { if (b.isConnected) { delete b.dataset.sure; b.classList.remove('sure'); b.innerHTML = dlUndoLab(); } }, 5000); return; }
   dlUndoLast(p.id); }, true);
 // the short toast after a save: Turkish label and longer on screen
 { const _t = toast; toast = function (t, undo) { const r = _t(t, undo); if (undo) { const b = $('undo'), el = $('toast'); if (b) b.textContent = '↶ ' + DL('Undo', 'Geri al'); if (el) { clearTimeout(el._t); el._t = setTimeout(() => el.hidden = true, 12000); } } return r; }; }
@@ -4424,6 +4425,109 @@ function ttShowConfirm(m, html, go, yesId = 'tt-yes') { const kids = [...m.child
   ok.onclick = () => { if (ok.disabled) return; const why = ($('xf-why') && $('xf-why').value || '').trim();
     ttShowConfirm(m, `<p class="hint" style="margin:0 0 6px">${DL('Date', 'Tarih')}: <b>${dlDate($('xf-date').value || today())}</b> · ${esc(p.name)}</p><div class="xf-cprev">${$('xf-prev').innerHTML}</div>${why ? `<p class="hint">${DL('Reason', 'Neden')}: ${esc(why)}</p>` : ''}`, go, 'xf-yes'); }; }; }
 document.head.insertAdjacentHTML('beforeend', `<style id="tt-conf-css">.tt-pmrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 10px}.tt-pmrow .hint:last-child{flex-basis:100%}input.tt-ro{background:var(--bg2,rgba(0,0,0,.04));color:var(--dim,#666)}.tt-warn{border:1px solid var(--down,#b33);color:var(--down,#b33);background:rgba(200,40,40,.06);border-radius:8px;padding:8px 10px;margin:8px 0;line-height:1.45}.tt-warn>div+div{margin-top:6px}.tt-conf h4{margin:4px 0 10px}.tt-clist{margin:0 0 8px;padding-left:20px}.tt-clist li{margin-bottom:8px}.tt-cres{font-size:.92em;margin:4px 0 0;padding:6px 8px;border-left:3px solid var(--line,#ddd)}@media (max-width:700px){#tt-pm{display:flex;flex-wrap:wrap}#tt-pm button{flex:1 1 100%}.tt-conf .row-inline button{flex:1 1 100%;min-height:42px}}</style>`);
+
+/* ---- 231 fund tabs on a phone: all four tabs visible in one row, the view switch moves out of the tab row, the trade row sticks below the tabs ---- */
+function dlTabsFit() { const nav = $('dlx-nav'); if (!nav) return; const phone = window.matchMedia('(max-width:700px)').matches, mode = nav.querySelector('[data-dlx-mode]'), bar = document.querySelector('#sheet .sheet-bar');
+  if (phone && mode && bar) { mode.style.marginLeft = ''; mode.classList.add('dlx-mode-out'); bar.appendChild(mode); }
+  if (!phone) { const out = document.querySelector('#sheet .sheet-bar [data-dlx-mode]'); if (out) { out.classList.remove('dlx-mode-out'); out.style.marginLeft = 'auto'; nav.appendChild(out); } }
+  const q = $('xf-qbar'); if (q) { q.style.top = phone ? nav.offsetHeight + 'px' : '';
+    const xb = q.querySelector('[data-xf]'); if (xb && !xb.querySelector('.xf-long')) xb.innerHTML = `<span class="xf-long">${xb.innerHTML}</span><span class="xf-short">⇆ ${DL('Convert', 'Çevir')}</span>`; } }
+{ const _rs = renderSheet; renderSheet = function () { _rs.apply(this, arguments); try { dlTabsFit(); } catch (e) { } }; }
+window.addEventListener('resize', () => { try { dlTabsFit(); } catch (e) { } });
+document.addEventListener('click', e => { if (e.target.closest && e.target.closest('[data-ftab]')) setTimeout(() => { try { dlTabsFit(); } catch (er) { } }, 10); }, true);
+document.head.insertAdjacentHTML('beforeend', `<style id="dlx-tabs-css">@media (max-width:700px){#sheet .sheet-bar{position:static}#dlx-nav.dlx-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;overflow:visible;padding:6px 8px}#dlx-nav.dlx-nav button[data-ftab]{white-space:normal;line-height:1.15;font-size:12.5px;padding:6px 2px;min-height:40px;border-radius:10px;text-align:center;overflow-wrap:anywhere}.sheet-bar .dlx-mode-out{font-size:12px}#xf-qbar.xf-qbar{display:grid;grid-template-columns:1fr 1fr 1.3fr 1.1fr 44px;gap:5px;padding:5px 0}#xf-qbar.xf-qbar[hidden]{display:none}#xf-qbar.xf-qbar button{min-height:38px;padding:4px 2px;font-size:13px;white-space:nowrap;margin:0}#xf-qbar .xf-long{display:none}#xf-qbar .dlx-undo.sure{grid-column:1/-1;white-space:normal}}.xf-short{display:none}@media (max-width:700px){#xf-qbar .xf-short{display:inline}}</style>`);
+
+/* ---- 234 a trade from a screenshot: the broker's order screen is read inside the browser (Tesseract.js, nothing leaves the device), the fields fill the trade ticket, the user checks and confirms ---- */
+const OCR_MON = { ocak: 1, şubat: 2, subat: 2, mart: 3, nisan: 4, mayıs: 5, mayis: 5, haziran: 6, temmuz: 7, ağustos: 8, agustos: 8, eylül: 9, eylul: 9, ekim: 10, kasım: 11, kasim: 11, aralık: 12, aralik: 12, jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+const ocrLow = s => String(s || '').replace(/İ/g, 'i').toLowerCase();
+function ocrNum(s) { s = String(s).replace(/[^\d.,-]/g, ''); if (!s) return null; const c = s.lastIndexOf(','), d = s.lastIndexOf('.');
+  if (c >= 0 && d >= 0) s = c > d ? s.replace(/\./g, '').replace(',', '.') : s.replace(/,/g, '');
+  else if (c >= 0) s = /,\d{3}$/.test(s) && s.split(',').length > 2 ? s.replace(/,/g, '') : s.replace(',', '.');
+  else if (d >= 0 && /^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, '');
+  const v = parseFloat(s); return isFinite(v) ? v : null; }
+function ocrNums(line) { const t = String(line).replace(/\d{1,2}:\d{2}(:\d{2})?/g, ' ').replace(/\b(19|20)\d{2}\b/g, ' '); return (t.match(/-?\d[\d.,]*/g) || []).map(ocrNum).filter(v => v != null); }
+function ocrCcy(s) { return /\$|usd|dolar/i.test(s) ? 'USD' : /₺|\btl\b|try|türk lirası/i.test(s) ? 'TRY' : null; }
+// parse the text of a broker's order / execution screen
+function ocrParse(text, p) { const lines = String(text || '').split(/\n+/).map(l => l.replace(/\s+/g, ' ').trim()).filter(Boolean), low = lines.map(ocrLow), R = { raw: text, lines };
+  const find = (re, excl) => { for (let i = 0; i < lines.length; i++) if (re.test(low[i]) && !(excl && excl.test(low[i]))) return i; return -1; };
+  const after = (i, k = 1) => { const v = ocrNums(lines[i]); if (v.length) return v[v.length - 1]; for (let j = i + 1; j <= i + k && j < lines.length; j++) { const w = ocrNums(lines[j]); if (w.length) return w[w.length - 1]; } return null; };
+  const all = low.join(' \n ');
+  const SELL = /sat[ıi][şs]|\bsell|\bsold/, BUY = /(^|[^a-zçğıöşü])al[ıi][şs]|\bbuy|\bbought/;
+  R.side = SELL.test(all) && !BUY.test(all) ? 'sell' : BUY.test(all) && !SELL.test(all) ? 'buy' : null;
+  const tip = find(/emir tipi|[iı][şs]lem tipi|order type|y[öo]n(ü|u)?\s/); if (tip >= 0) { if (SELL.test(low[tip])) R.side = 'sell'; else if (BUY.test(low[tip])) R.side = 'buy'; }
+  // date: prefer the execution date
+  const dateIn = s => { let m = ocrLow(s).match(/(\d{1,2})\s+([a-zçğıöşü]{3,8})\.?\s+(\d{4})(?:[, ]+(\d{1,2}:\d{2}(?::\d{2})?))?/); if (m && OCR_MON[m[2]] != null) return { d: `${m[3]}-${String(OCR_MON[m[2]]).padStart(2, '0')}-${m[1].padStart(2, '0')}`, t: m[4] || '' };
+    m = s.match(/(\d{1,2})[./-](\d{1,2})[./-](\d{4})(?:[, ]+(\d{1,2}:\d{2}(?::\d{2})?))?/); if (m) return { d: `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`, t: m[4] || '' };
+    m = s.match(/(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{1,2}:\d{2}(?::\d{2})?))?/); if (m) return { d: `${m[1]}-${m[2]}-${m[3]}`, t: m[4] || '' }; return null; };
+  for (const re of [/ger[çc]ekle[şs]me|execut|filled/, /[iı][şs]lem tarihi|tarih|date/, /.*/]) { const i = find(re); if (i < 0) continue; const x = dateIn(lines[i]) || (lines[i + 1] && dateIn(lines[i + 1])); if (x) { R.date = x.d; R.time = x.t; break; } }
+  // executed: “0,18 pay için $135,20”
+  const ex = find(/(pay|adet|lot) i[çc]in|shares at|@/); if (ex >= 0) { const v = ocrNums(lines[ex]); if (v.length >= 2) { R.qty = v[0]; R.price = v[1]; } R.ccy = ocrCcy(lines[ex]) || R.ccy; }
+  if (R.qty == null) { const i = find(/adet|miktar|\blot\b|quantity|shares|\bpay\b/, /fiyat|[üu]cret|tutar/); if (i >= 0) R.qty = after(i); }
+  if (R.price == null) { const i = find(/fiyat|price|kur\b/, /toplam|tutar/); if (i >= 0) { R.price = after(i); R.ccy = ocrCcy(lines[i]) || R.ccy; } }
+  { const i = find(/[üu]cret|komisyon|commission|\bfee|masraf|bsmv/); if (i >= 0) { R.fee = after(i); R.feeCcy = ocrCcy(lines[i]) || ocrCcy(lines[i + 1] || ''); } }
+  { const i = find(/^(toplam|net tutar|tutar|total|net)\b|toplam/); if (i >= 0) { R.total = after(i); R.ccy = R.ccy || ocrCcy(lines[i]); } }
+  R.ccy = R.ccy || ocrCcy(text) || 'TRY'; R.feeCcy = R.feeCcy || R.ccy;
+  // symbol: the fund's own holdings first, then every known instrument (exact ticker, then the name's first word)
+  const words = new Set((String(text).match(/[A-Za-zÇĞİÖŞÜçğıöşü][A-Za-z0-9ÇĞİÖŞÜçğıöşü.]{1,14}/g) || []).map(w => w.toUpperCase().replace(/İ/g, 'I'))), stop = new Set(['EMIR', 'DURUM', 'LIMIT', 'PIYASA', 'FIYAT', 'ADET', 'TOPLAM', 'SATIS', 'ALIS', 'GIRILEN', 'SAAT', 'ARALIGI', 'SEANS', 'ISLEM', 'UCRETI', 'TARIHI', 'DETAYLARI', 'GERCEKLESTI', 'GERCEKLESEN', 'GECERLILIK', 'SURESI', 'KAPANISINA', 'KADAR', 'UZATILMIS', 'SAATLERI', 'ICIN', 'ORDER', 'TOTAL', 'PRICE', 'MARKET', 'BUY', 'SELL', 'FEE', 'DATE', 'STATUS', 'FILLED']);
+  const norm = w => w.toUpperCase().replace(/İ/g, 'I').replace(/Ş/g, 'S').replace(/Ğ/g, 'G').replace(/Ü/g, 'U').replace(/Ö/g, 'O').replace(/Ç/g, 'C');
+  const W = new Set([...words].map(norm)), own = (p && p.lines || []).filter(l => !l.closed && l.qty > 0).map(l => l.symbol), cand = [...new Set(own.concat((state.scored || []).map(x => x.symbol)))];
+  const nameOf = s => (state.map[s] || {}).name || '';
+  const byTick = (list, n) => list.find(s => s.length >= n && W.has(norm(s)) && !stop.has(norm(s))), byName = list => list.find(s => { const f = norm((nameOf(s).split(/[\s,.]+/)[0] || '')); return f.length >= 4 && !stop.has(f) && W.has(f); });
+  const head = new Set(lines.slice(0, 6).join(' ').toUpperCase().replace(/İ/g, 'I').split(/[^A-Z0-9ÇĞÖŞÜ.]+/).map(norm)), inHead = s => head.has(norm(s)) || head.has(norm((nameOf(s).split(/[\s,.]+/)[0] || '')));
+  const all2 = (state.scored || []).map(x => x.symbol);
+  R.symbol = byTick(own, 2) || byName(own) || byName(all2.filter(inHead)) || byTick(all2.filter(inHead), 3) || byName(all2) || byTick(all2, 4) || null;
+  // checks
+  if (R.qty > 0 && R.price > 0) { const gross = R.qty * R.price, fee = R.fee && R.feeCcy === R.ccy ? R.fee : 0; R.calc = R.side === 'buy' ? gross + fee : gross - fee; if (R.total > 0) R.ok = Math.abs(R.calc - R.total) <= Math.max(0.02, R.total * 0.005) || Math.abs(gross - R.total) <= Math.max(0.02, R.total * 0.005); }
+  return R; }
+// image → cleaner image for OCR: upscale, grey, dark screens inverted to dark-on-light
+function ocrPrep(img) { const k = Math.max(1, Math.min(2.5, 1800 / Math.max(img.width, img.height) * 1.6)), c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); const g = c.getContext('2d'); g.drawImage(img, 0, 0, c.width, c.height);
+  const d = g.getImageData(0, 0, c.width, c.height), a = d.data; let sum = 0; for (let i = 0; i < a.length; i += 4) { const y = 0.299 * a[i] + 0.587 * a[i + 1] + 0.114 * a[i + 2]; a[i] = a[i + 1] = a[i + 2] = y; sum += y; }
+  if (sum / (a.length / 4) < 128) for (let i = 0; i < a.length; i += 4) a[i] = a[i + 1] = a[i + 2] = 255 - a[i]; g.putImageData(d, 0, 0); return c; }
+let ocrLibP = null; function ocrLib() { if (window.Tesseract) return Promise.resolve(window.Tesseract); if (!ocrLibP) ocrLibP = new Promise((ok, no) => { const s = document.createElement('script'); s.src = new URL('lib/ocr/tesseract.min.js', location.href).href; s.onload = () => ok(window.Tesseract); s.onerror = () => { ocrLibP = null; no(new Error(DL('The text reader could not be loaded; check the connection.', 'Metin okuyucu yüklenemedi; bağlantıyı kontrol edin.'))); }; document.head.appendChild(s); }); return ocrLibP; }
+async function ocrRead(file, onp) { const T0 = await ocrLib(), base = new URL('lib/ocr/', location.href).href;
+  const img = await new Promise((ok, no) => { const u = URL.createObjectURL(file), i = new Image(); i.onload = () => ok(i); i.onerror = () => no(new Error(DL('This file is not an image.', 'Bu dosya bir görüntü değil.'))); i.src = u; });
+  const w = await T0.createWorker(['tur', 'eng'], 1, { workerPath: base + 'worker.min.js', corePath: base, langPath: base.replace(/\/$/, ''), gzip: true, logger: m => { if (onp && m.status === 'recognizing text') onp(m.progress); } });
+  try { const r = await w.recognize(ocrPrep(img)); return r.data.text; } finally { w.terminate(); } }
+// a made-up example screen drawn on a canvas (no real account data)
+function ocrSample(p) { const l = (p.lines || []).find(z => !z.closed && z.qty > 0), sym = l ? l.symbol : 'THYAO', x = state.map[sym] || {}, side = l ? 'sell' : 'buy', usd = x.ccy === 'USD';
+  const px = ttRefPx(sym, today()) || 100, q = l ? (usd ? Math.min(l.qty, 0.18) : Math.max(1, Math.floor(Math.min(l.qty, 10)))) : 10, fee = usd ? 1.5 : Math.round(q * px * 0.002 * 100) / 100, tot = side === 'sell' ? q * px - fee : q * px + fee;
+  const f = v => (usd ? '$' : '') + v.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + (usd ? '' : ' TL'), fq = v => v.toLocaleString('tr-TR', { maximumFractionDigits: 4 });
+  const d = new Date(), M = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'], ds = `${d.getDate()} ${M[d.getMonth()]} ${d.getFullYear()}, 11:08:05`;
+  const rows = [['Durum', 'Gerçekleşti'], ['Emir tipi', side === 'sell' ? 'Limit satış' : 'Limit alış'], ['Emir tarihi', ds], ['Girilen limit fiyat', f(px)], ['Girilen adet', fq(q)], ['Gerçekleşme tarihi', ds], ['Gerçekleşen işlem', `${fq(q)} pay için ${f(px)}`], ['İşlem ücreti', f(fee)], ['Toplam', f(tot)]];
+  const c = document.createElement('canvas'); c.width = 900; c.height = 260 + rows.length * 120; const g = c.getContext('2d'); g.fillStyle = '#0b0b0d'; g.fillRect(0, 0, c.width, c.height); g.fillStyle = '#f2f2f2'; g.font = '600 44px system-ui, sans-serif'; g.fillText('Emir detayları — ÖRNEK', 48, 90); g.font = '700 52px system-ui, sans-serif'; g.fillText((x.name || sym).toUpperCase(), 48, 200);
+  rows.forEach(([a, b], i) => { const y = 320 + i * 120; g.font = '400 36px system-ui, sans-serif'; g.fillStyle = '#d8d8d8'; g.fillText(a, 48, y); g.font = '500 38px system-ui, sans-serif'; g.fillStyle = '#ffffff'; const w = g.measureText(b).width; g.fillText(b, c.width - 48 - w, y); g.fillStyle = '#26262b'; g.fillRect(48, y + 44, c.width - 96, 2); });
+  return new Promise(ok => c.toBlob(b => ok(new File([b], 'ornek-emir.png', { type: 'image/png' })), 'image/png')); }
+// fill the open trade ticket from a parsed screen
+function ocrFill(p, R) { const m = $('modal').querySelector('.dlx-tt'); if (!m) return DL('Open the trade ticket first.', 'Önce işlem penceresini açın.'); const side = R.side || 'buy', sym = R.symbol;
+  if (!sym) return DL('No known symbol was found in the image; pick it by hand.', 'Görüntüde bilinen bir sembol bulunamadı; sembolü elle seçin.');
+  const modeB = m.querySelector(`[data-tt-mode="${side}"]`); if (modeB && !modeB.disabled) modeB.click();
+  if (side === 'sell') { const opt = [...$('tt-sl').options].find(o => (p.lines[+o.value] || {}).symbol === sym); if (!opt) return DL(`This fund has no ${sym} to sell; record the purchase first.`, `Bu fonda satılacak ${sym} yok; önce alışını kaydedin.`); $('tt-sl').value = opt.value; $('tt-sl').dispatchEvent(new Event('change', { bubbles: true })); }
+  else { $('tt-bs').value = sym; $('tt-bs').dispatchEvent(new Event('change', { bubbles: true })); }
+  const man = m.querySelector('[data-tt-pm="man"]'); if (man) man.click();
+  if (R.date && R.date <= today() && R.date >= ($('tt-d').min || '0')) { $('tt-d').value = R.date; $('tt-d').dispatchEvent(new Event('change', { bubbles: true })); }
+  const put = (id, v) => { const e = $(id); if (!e || v == null) return; e.value = String(+(+v).toFixed(4)); if (e.oninput) e.oninput(); e.dispatchEvent(new Event('input', { bubbles: true })); };
+  const fx = R.ccy === 'USD' ? dlFx(R.date || today()) : 1, feeTL = R.fee != null ? R.fee * (R.feeCcy === 'USD' ? dlFx(R.date || today()) : 1) : null;
+  if (side === 'sell') { put('tt-sq', R.qty); put('tt-sp', R.price); if (feeTL != null) put('tt-sf', feeTL); } else { put('tt-bq', R.qty); put('tt-bp', R.price); if (feeTL != null) put('tt-bf', feeTL); }
+  const why = $('tt-why'); if (why && !why.value) why.value = DL('From a screenshot', 'Ekran görüntüsünden') + (R.date ? ` · ${dlDate(R.date)}${R.time ? ' ' + R.time : ''}` : '');
+  return null; }
+function ocrPanel(p, R, err) { const box = $('tt-ocr'); if (!box) return; const u = R && R.ccy === 'USD' ? '$' : '', N = v => v == null ? '<span class="down">?</span>' : u + fmtN(v, v % 1 ? (Math.abs(v) < 1 ? 4 : 2) : 0);
+  if (!R) { box.innerHTML = err ? `<p class="down">${esc(err)}</p>` : ''; return; }
+  const ok = R.ok === true ? `<span class="up">✓ ${DL('total matches', 'toplam tutuyor')}</span>` : R.ok === false ? `<span class="down">⚠ ${DL(`total does not match: ${N(R.calc)} calculated, ${N(R.total)} on the screen`, `toplam tutmuyor: hesaplanan ${N(R.calc)}, ekranda ${N(R.total)}`)}</span>` : '';
+  box.innerHTML = `<div class="ocr-res"><b>📷 ${DL('Read from the image', 'Görüntüden okunanlar')}</b> ${ok}<table><tr><td>${DL('Symbol', 'Sembol')}</td><td><b>${esc(R.symbol || '?')}</b></td><td>${DL('Side', 'Yön')}</td><td><b>${R.side === 'sell' ? DL('Sell', 'Satış') : R.side === 'buy' ? DL('Buy', 'Alış') : '?'}</b></td></tr><tr><td>${DL('Date', 'Tarih')}</td><td>${R.date ? dlDate(R.date) + (R.time ? ' ' + esc(R.time) : '') : '?'}</td><td>${DL('Units', 'Adet')}</td><td>${R.qty == null ? '?' : fmtN(R.qty, R.qty % 1 ? 4 : 0)}</td></tr><tr><td>${DL('Price', 'Fiyat')}</td><td>${N(R.price)}</td><td>${DL('Fee', 'Ücret')}</td><td>${R.fee == null ? '—' : N(R.fee)}</td></tr><tr><td>${DL('Total', 'Toplam')}</td><td>${N(R.total)}</td><td></td><td></td></tr></table>${err ? `<p class="down">${esc(err)}</p>` : `<p class="hint">${DL('The ticket below is filled in; check every field, then review and confirm.', 'Aşağıdaki pencere dolduruldu; her alanı kontrol edip gözden geçirin ve onaylayın.')}</p>`}<details><summary class="hint">${DL('Text read', 'Okunan metin')}</summary><pre class="ocr-raw">${esc(R.raw || '')}</pre></details></div>`; }
+async function ocrRun(p, file) { const box = $('tt-ocr'); if (!box) return; box.innerHTML = `<div class="ocr-res"><b>📷 ${DL('Reading the image…', 'Görüntü okunuyor…')}</b> <span id="ocr-pc">0%</span><div class="ocr-bar"><i id="ocr-bi"></i></div><p class="hint">${DL('Reading happens on this device; the image is not sent anywhere. The first time takes longer.', 'Okuma bu cihazda yapılır; görüntü hiçbir yere gönderilmez. İlk seferde biraz uzun sürer.')}</p></div>`;
+  try { const text = await ocrRead(file, v => { const a = $('ocr-pc'), b = $('ocr-bi'); if (a) a.textContent = Math.round(v * 100) + '%'; if (b) b.style.width = Math.round(v * 100) + '%'; }); const R = ocrParse(text, p); window.__gncOcrLast = R; const err = ocrFill(p, R); ocrPanel(p, R, err); }
+  catch (e) { ocrPanel(p, null, e.message || String(e)); } }
+function ocrAttach(p, m) { if ($('tt-ocrb')) return; const mode = $('tt-mode'); mode.insertAdjacentHTML('afterend', `<div class="ocr-row"><button type="button" id="tt-ocrb">📷 ${DL('Fill from a screenshot', 'Ekran görüntüsünden doldur')}</button><button type="button" class="quiet" id="tt-ocrs">${DL('Try with an example', 'Örnekle dene')}</button><input type="file" id="tt-ocrf" accept="image/*" hidden></div><div id="tt-ocr"></div>`);
+  $('tt-ocrb').onclick = () => $('tt-ocrf').click(); $('tt-ocrf').onchange = e => { const f = e.target.files && e.target.files[0]; if (f) ocrRun(p, f); e.target.value = ''; };
+  $('tt-ocrs').onclick = async () => ocrRun(p, await ocrSample(p));
+  m.addEventListener('paste', e => { const it = [...(e.clipboardData || {}).items || []].find(i => /^image\//.test(i.type)); if (it) { e.preventDefault(); ocrRun(p, it.getAsFile()); } }); }
+{ const _td = dlTicketDialog; dlTicketDialog = function (p, mode, sym, opts) { _td.apply(this, arguments); const m = $('modal').querySelector('.dlx-tt'); if (m) try { ocrAttach(p, m); if (opts && opts.ocr) $('tt-ocrf').click(); } catch (e) { console.error(e); } }; }
+// a camera button next to Buy / Sell on the fund page opens the ticket and the image picker
+function ocrBars() { for (const id of ['dlx-ttbar']) { const bar = $(id); if (!bar || bar.querySelector('[data-ocr-open]')) continue; const u = bar.querySelector('[data-dlx-undo]'); (u || bar.lastElementChild).insertAdjacentHTML(u ? 'beforebegin' : 'afterend', `<button data-ocr-open="1" title="${esc(DL('Record a trade from a screenshot of the broker’s order screen', 'Aracı kurumun emir ekranı görüntüsünden işlem kaydet'))}">📷 ${DL('From a screenshot', 'Ekran görüntüsünden')}</button>`); } }
+{ const _rs = renderSheet; renderSheet = function () { _rs.apply(this, arguments); try { ocrBars(); } catch (e) { } }; }
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-ocr-open]'); if (!b || !state.sheet || state.sheet.type !== 'pkg') return; e.stopPropagation(); e.preventDefault(); const p = state.packages.find(q => q.id === state.sheet.id); if (p) dlTicketDialog(p, dlOpenLines(p).length ? 'sell' : 'buy', null, { ocr: true }); }, true);
+window.__gncOcr = { parse: (t, id) => ocrParse(t, id ? state.packages.find(p => p.id === id) : null), sample: id => ocrSample(state.packages.find(p => p.id === id)), last: () => window.__gncOcrLast };
+document.head.insertAdjacentHTML('beforeend', `<style id="ocr-css">.ocr-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 8px}.ocr-res{border:1px solid var(--rule,#ddd);border-radius:10px;padding:8px 10px;margin:0 0 10px;background:var(--panel,#fff)}.ocr-res table{width:100%;margin:6px 0;font-size:.95em}.ocr-res td{padding:2px 6px 2px 0}.ocr-res td:nth-child(odd){color:var(--dim,#777)}.ocr-bar{height:6px;border-radius:3px;background:var(--rule,#e5e5e5);margin:6px 0;overflow:hidden}.ocr-bar i{display:block;height:100%;width:0;background:var(--accent,#1f3a68);transition:width .2s}.ocr-raw{white-space:pre-wrap;font-size:11px;max-height:160px;overflow:auto}@media (max-width:700px){.ocr-row button{flex:1 1 100%;min-height:40px}}</style>`);
 
 /* v2.14 end */
 Object.assign(TR, { 'GitHub version · prices update about every 30–60 minutes on weekdays · your data stays in this browser': 'GitHub sürümü · fiyatlar iş günleri yaklaşık 30–60 dakikada bir güncellenir · verileriniz bu tarayıcıda kalır',
