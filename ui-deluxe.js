@@ -4369,6 +4369,62 @@ document.addEventListener('click', e => { const b = e.target.closest && e.target
 window.__gncUndo = { last: id => { const u = dlUndoable(state.packages.find(p => p.id === id)); return u ? u.c.label : null; }, undo: id => dlUndoLast(id) };
 document.head.insertAdjacentHTML('beforeend', `<style id="dlx-undo-css">.dlx-undo{margin-left:auto}.dlx-undo.sure{border-color:var(--down,#b33);color:var(--down,#b33)}.xf-cardbar .dlx-undo{margin-left:6px}@media (max-width:700px){.xf-qbar .dlx-undo{flex:1 1 100%;margin-left:0}.dlx-undo.sure{white-space:normal}}</style>`);
 
+/* ---- 187 trade ticket: market or closing price by default, manual price on request with a sanity warning, and an “Are you sure?” screen before anything is saved ---- */
+const TT_WARN = 0.10;
+function ttRefPx(sym, d) { try { const v = dlPxOn(sym, d); return v > 0 ? v : null; } catch (e) { return null; } }
+function ttPx(v) { return fmtN(v, v >= 100 ? 2 : 4); }
+function ttEnhance(p, m) { const D = () => $('tt-d').value || today(), $v = id => dlNum($(id).value), md = () => (m.querySelector('#tt-mode .active') || {}).dataset.ttMode, sl = () => p.lines[+$('tt-sl').value] || null, bsym = () => ($('tt-bs').value || '').trim().toUpperCase();
+  const setv = (id, v, dp = 4) => { const e = $(id); if (e && document.activeElement !== e) e.value = v == null || !isFinite(v) ? '' : String(+(+v).toFixed(dp)); };
+  let manual = false; const kept = {};
+  const dr = $('tt-d').closest('.row-inline'); dr.insertAdjacentHTML('afterend', `<div class="tt-pmrow"><span class="hint">${DL('Price', 'Fiyat')}:</span><div class="seg" id="tt-pm"><button type="button" data-tt-pm="auto" class="active">${DL('Automatic: market / closing price', 'Otomatik: piyasa / kapanış fiyatı')}</button><button type="button" data-tt-pm="man">${DL('Enter by hand', 'Elle gir')}</button></div><span class="hint" id="tt-pmh"></span></div>`);
+  const sq = $('tt-sq').closest('span'); sq.insertAdjacentHTML('afterend', `<label for="tt-samt">${DL('Sale amount (TRY, before costs)', 'Satış tutarı (TL, masraf öncesi)')}</label><input id="tt-samt" type="text" inputmode="decimal" style="width:130px">`);
+  $('tt-err').insertAdjacentHTML('beforebegin', '<div id="tt-warn" class="tt-warn" hidden></div>');
+  const fxs = s => { try { return dlFxOf(s, D()) || 1; } catch (e) { return 1; } }, frac = s => (state.map[s] || {}).cls === 'TEFAS' || (state.map[s] || {}).cls === 'CMDTY';
+  const kick = id => { const e = $(id); if (e && e.oninput) e.oninput(); };
+  function refill() { if (manual) return; let miss = [];
+    if (md() !== 'buy' && sl()) { const r = ttRefPx(sl().symbol, D()); if (r) { setv('tt-sp', r); } else miss.push(sl().symbol); }
+    if (md() !== 'sell' && state.map[bsym()]) { const r = ttRefPx(bsym(), D()); if (r) setv('tt-bp', r); else miss.push(bsym()); }
+    if (miss.length) { setMode(true, DL(`No price found for ${miss.join(', ')} on this date; enter it by hand.`, `${miss.join(', ')} için bu tarihte fiyat bulunamadı; fiyatı elle girin.`)); return; }
+    kick('tt-sp'); kick('tt-bp'); }
+  function setMode(man, why) { manual = man; m.querySelectorAll('[data-tt-pm]').forEach(b => b.classList.toggle('active', (b.dataset.ttPm === 'man') === man));
+    for (const id of ['tt-sp', 'tt-bp']) { const e = $(id); e.readOnly = !man; e.classList.toggle('tt-ro', !man); }
+    $('tt-pmh').textContent = why || (man ? DL('Enter units, price and amount yourself; a large gap from the market price is flagged.', 'Adet, fiyat ve tutarı kendiniz girin; piyasa fiyatından büyük fark uyarılır.') : DL('Type units or an amount; the other is calculated from the price.', 'Adet veya tutar yazın; diğeri fiyattan hesaplanır.'));
+    if (!man) refill(); sync(); }
+  function warnFor(sym, px, q) { const r = ttRefPx(sym, D()); if (!r || !(px > 0)) return ''; const g = px / r - 1; if (Math.abs(g) < TT_WARN) return ''; const diff = (q > 0 ? q : 0) * (px - r) * fxs(sym);
+    return `<div>⚠ <b>${esc(sym)}</b>: ${DL(`the price entered, ${ttPx(px)}, is ${fmtN(Math.abs(g) * 100, 1)}% ${g > 0 ? 'above' : 'below'} the market / closing price of ${ttPx(r)}`, `girilen fiyat ${ttPx(px)}, piyasa / kapanış fiyatı ${ttPx(r)} ile %${fmtN(Math.abs(g) * 100, 1)} fark gösteriyor (${g > 0 ? 'üstünde' : 'altında'})`)}${q > 0 ? DL(` — about ${T(Math.abs(diff))} on this trade`, `; bu işlemde yaklaşık ${T(Math.abs(diff))} fark eder`) : ''}. ${DL('This does not look like a sensible figure; check it.', 'Bu mantıklı bir hesap görünmüyor; lütfen kontrol edin.')}</div>`; }
+  function sync() { if ($('tt-conf')) return; const mo = md(); let w = '';
+    if (mo !== 'buy' && sl()) { const s = sl().symbol, q = $v('tt-sq'), px = $v('tt-sp'); setv('tt-samt', q > 0 && px > 0 ? q * px * fxs(s) : null, 2); if (manual) w += warnFor(s, px, q); kept.sp = $('tt-sp').value; }
+    if (mo !== 'sell' && state.map[bsym()]) { const s = bsym(), q = $v('tt-bq'), px = $v('tt-bp'); if (manual) w += warnFor(s, px, q); kept.bp = $('tt-bp').value; }
+    const box = $('tt-warn'); box.innerHTML = w; box.hidden = !w; }
+  $('tt-samt').oninput = () => { const l = sl(); if (!l) return; const a = $v('tt-samt'), fx = fxs(l.symbol); if (!(a > 0)) return;
+    if (manual && $v('tt-sq') > 0) { setv('tt-sp', a / ($v('tt-sq') * fx)); kick('tt-sp'); }
+    else { const px = $v('tt-sp'); if (!(px > 0)) return; let q = a / (px * fx); q = frac(l.symbol) ? Math.round(q * 1e4) / 1e4 : Math.floor(q + 1e-9); setv('tt-sq', Math.min(q, l.qty)); kick('tt-sq'); }
+    sync(); };
+  m.querySelector('#tt-pm').onclick = e => { const b = e.target.closest('[data-tt-pm]'); if (b) setMode(b.dataset.ttPm === 'man'); };
+  m.addEventListener('input', e => { if (e.target.id !== 'tt-samt') sync(); });
+  m.addEventListener('change', e => { const id = e.target.id; if (id === 'tt-d') { if (manual) { if (kept.sp != null) { $('tt-sp').value = kept.sp; kick('tt-sp'); } if (kept.bp != null && $('tt-bp').value !== kept.bp) { $('tt-bp').value = kept.bp; kick('tt-bp'); } } else refill(); }
+    if ((id === 'tt-sl' || id === 'tt-bs') && !manual) setTimeout(refill, 0); setTimeout(sync, 0); });
+  m.addEventListener('click', e => { if (e.target.closest('#tt-mode, #tt-all, #tt-half')) setTimeout(() => { if (!manual) refill(); sync(); }, 0); });
+  setMode(false);
+  // confirmation screen
+  const ok = $('tt-ok'), go = ok.onclick; ok.textContent = DL('Review the trade', 'İşlemi gözden geçir');
+  ok.onclick = () => { if (ok.disabled) return; const mo = md(), d = D(), rows = [];
+    if (mo !== 'buy' && sl()) { const s = sl().symbol, q = $v('tt-sq'), px = $v('tt-sp'); rows.push(`<li>▼ ${DL(`Sell <b>${fmtN(q, q % 1 ? 4 : 0)} ${esc(s)}</b> at ${ttPx(px)}`, `<b>${fmtN(q, q % 1 ? 4 : 0)} ${esc(s)}</b> ${ttPx(px)} fiyattan satılacak`)} <span class="dim">(${manual ? DL('price entered by hand', 'fiyat elle girildi') : DL('market / closing price', 'piyasa / kapanış fiyatı')})</span><div class="tt-cres">${$('tt-sres').innerHTML}</div></li>`); }
+    if (mo !== 'sell') { const s = bsym(), q = $v('tt-bq'), px = $v('tt-bp'); rows.push(`<li>▲ ${DL(`Buy <b>${fmtN(q, q % 1 ? 4 : 0)} ${esc(s)}</b> at ${ttPx(px)}`, `<b>${fmtN(q, q % 1 ? 4 : 0)} ${esc(s)}</b> ${ttPx(px)} fiyattan alınacak`)} <span class="dim">(${manual ? DL('price entered by hand', 'fiyat elle girildi') : DL('market / closing price', 'piyasa / kapanış fiyatı')})</span><div class="tt-cres">${$('tt-bres').innerHTML}</div></li>`); }
+    const why = ($('tt-why').value || '').trim(), warn = $('tt-warn').hidden ? '' : `<div class="tt-warn">${$('tt-warn').innerHTML}</div>`;
+    ttShowConfirm(m, `<p class="hint" style="margin:0 0 6px">${DL('Date', 'Tarih')}: <b>${dlDate(d)}</b> · ${esc(p.name)}</p><ol class="tt-clist">${rows.join('')}</ol>${why ? `<p class="hint">${DL('Reason', 'Neden')}: ${esc(why)}</p>` : ''}${warn}<div class="tt-cmix">${$('tt-mix').innerHTML}</div>`, go); }; }
+function ttShowConfirm(m, html, go, yesId = 'tt-yes') { const kids = [...m.children].filter(c => c.tagName !== 'H3'); const was = kids.map(c => c.hidden); kids.forEach(c => c.hidden = true);
+  m.insertAdjacentHTML('beforeend', `<div id="tt-conf" class="tt-conf"><h4>${DL('Are you sure? This is what will be recorded and what it does to the fund', 'Emin misiniz? Yapılacak işlem ve fona etkisi')}</h4>${html}<div class="row-inline" style="justify-content:flex-end;gap:8px;margin-top:12px;flex-wrap:wrap"><button id="tt-back" type="button">${DL('Back, change it', 'Geri dön, düzelt')}</button><button class="primary" id="${yesId}" type="button">${DL('Confirm and save', 'Onayla ve kaydet')}</button></div></div>`);
+  const conf = $('tt-conf'); try { m.scrollTop = 0; conf.scrollIntoView({ block: 'start' }); } catch (e) { }
+  $('tt-back').onclick = () => { conf.remove(); kids.forEach((c, i) => c.hidden = was[i]); };
+  $(yesId).onclick = () => { const b = $(yesId); b.disabled = true; conf.remove(); kids.forEach((c, i) => c.hidden = was[i]); go(); }; }
+{ const _td = dlTicketDialog; dlTicketDialog = function (p) { _td.apply(this, arguments); const m = $('modal').querySelector('.dlx-tt'); if (m && !$('tt-pm')) try { ttEnhance(p, m); } catch (e) { console.error(e); } }; }
+// the share · deposit · FX exchange gets the same confirmation step
+{ const _xd = xfDialog; xfDialog = function (p) { _xd.apply(this, arguments); const m = $('modal').querySelector('.xf'); const ok = $('xf-ok'); if (!m || !ok || ok.dataset.conf) return; ok.dataset.conf = '1'; const go = ok.onclick; ok.textContent = DL('Review', 'Gözden geçir');
+  ok.onclick = () => { if (ok.disabled) return; const why = ($('xf-why') && $('xf-why').value || '').trim();
+    ttShowConfirm(m, `<p class="hint" style="margin:0 0 6px">${DL('Date', 'Tarih')}: <b>${dlDate($('xf-date').value || today())}</b> · ${esc(p.name)}</p><div class="xf-cprev">${$('xf-prev').innerHTML}</div>${why ? `<p class="hint">${DL('Reason', 'Neden')}: ${esc(why)}</p>` : ''}`, go, 'xf-yes'); }; }; }
+document.head.insertAdjacentHTML('beforeend', `<style id="tt-conf-css">.tt-pmrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 10px}.tt-pmrow .hint:last-child{flex-basis:100%}input.tt-ro{background:var(--bg2,rgba(0,0,0,.04));color:var(--dim,#666)}.tt-warn{border:1px solid var(--down,#b33);color:var(--down,#b33);background:rgba(200,40,40,.06);border-radius:8px;padding:8px 10px;margin:8px 0;line-height:1.45}.tt-warn>div+div{margin-top:6px}.tt-conf h4{margin:4px 0 10px}.tt-clist{margin:0 0 8px;padding-left:20px}.tt-clist li{margin-bottom:8px}.tt-cres{font-size:.92em;margin:4px 0 0;padding:6px 8px;border-left:3px solid var(--line,#ddd)}@media (max-width:700px){#tt-pm{display:flex;flex-wrap:wrap}#tt-pm button{flex:1 1 100%}.tt-conf .row-inline button{flex:1 1 100%;min-height:42px}}</style>`);
+
 /* v2.14 end */
 Object.assign(TR, { 'GitHub version · prices update about every 30–60 minutes on weekdays · your data stays in this browser': 'GitHub sürümü · fiyatlar iş günleri yaklaşık 30–60 dakikada bir güncellenir · verileriniz bu tarayıcıda kalır',
   'Glossary': 'Sözlük', 'Add fund from external investment report': 'Dış yatırım raporundan fon ekle', 'TRY time deposit': 'TL vadeli mevduat', 'Money-market fund': 'Para piyasası fonu', 'BIST 100 index fund': 'BIST 100 endeks fonu', 'USD deposit': 'USD mevduat', 'Inflation (CPI) — value kept': 'Enflasyon (TÜFE) — korunan değer' });

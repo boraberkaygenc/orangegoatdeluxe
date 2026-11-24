@@ -5,6 +5,12 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.21: Fiyat otomatik, elle giriş uyarılı, her işlemde onay ekranı
+
+- Al / Sat / Değiştir penceresinde fiyat varsayılan olarak otomatiktir: bugün için piyasa fiyatı, geçmiş tarih için o günün kapanışı kullanılır ve fiyat kutusu kilitlidir. Satışta adet veya “Satış tutarı (TL)” yazılır; diğeri fiyattan hesaplanır.
+- “Elle gir” seçilirse adet, fiyat ve tutar ayrı ayrı girilir (tutar yazılınca fiyat hesaplanır). Girilen fiyat piyasa / kapanış fiyatından %10’dan fazla saparsa kırmızı uyarı çıkar: farkın yüzdesi ve bu işlemde kaç TL tuttuğu yazılır, “Bu mantıklı bir hesap görünmüyor” denir.
+- Her işlemde (Al, Sat, Değiştir ve Hisse · Mevduat · Döviz değişimi) önce “Emin misiniz?” ekranı gelir: yapılacak işlem, satış tutarı, maliyet, kâr/zarar, vergi tahmini, nakit kullanımı, varsa uyarı ve fon dağılımının önce → sonra hâli gösterilir. İşlem yalnızca “Onayla ve kaydet” ile yapılır; “Geri dön, düzelt” forma döner.
+
 ## v2.20: Fon alım-satımında kalıcı “Geri al” düğmesi
 
 - Fonun Al / Sat / Değiştir satırında (her sekmede) ve Fonlarım’daki fon kartında “↶ Geri al” düğmesi vardır; fondaki son işlemi (alış, satış, değişim, mevduat, döviz çevirme, düzeltme) geri alır. Yanlışlıkla basmaya karşı ikinci dokunuşta onay ister ve neyin geri alınacağını yazar.
