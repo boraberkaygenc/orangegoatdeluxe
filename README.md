@@ -5,6 +5,11 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.19: Telefonda satış ve değişim düğmeleri her yerde
+
+- Fon açıldığında Al, Sat, Değiştir ve “Hisse · Mevduat · Döviz” düğmeleri hangi sekme seçili olursa olsun sekmelerin hemen altında görünür; telefonda büyük, iki sütunlu düğmeler olarak gösterilir.
+- Fonlarım’daki her fon kartında “⇆ Sat / değiştir” düğmesi vardır; fonu açar ve değişim penceresini doğrudan getirir.
+
 ## v2.18: Fon içinde hisse, mevduat ve döviz arasında değişim
 
 - Fonun “İçerik ve İşlem” sekmesindeki “⇆ Hisse · Mevduat · Döviz” düğmesiyle fondaki bir hisseyi, nakdi, doları veya mevduatı tek işlemde başka birine çevirebilirsiniz (örneğin hisse → vadeli mevduat, mevduat → hisse, TL → dolar, dolar → hisse).
