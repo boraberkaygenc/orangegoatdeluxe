@@ -5,6 +5,11 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.20: Fon alım-satımında kalıcı “Geri al” düğmesi
+
+- Fonun Al / Sat / Değiştir satırında (her sekmede) ve Fonlarım’daki fon kartında “↶ Geri al” düğmesi vardır; fondaki son işlemi (alış, satış, değişim, mevduat, döviz çevirme, düzeltme) geri alır. Yanlışlıkla basmaya karşı ikinci dokunuşta onay ister ve neyin geri alınacağını yazar.
+- Art arda basılarak işlemler sondan başa doğru tek tek geri alınabilir; her geri alma Değişiklik geçmişine ve günlüğe yazılır. Kaydetmeden sonra çıkan kısa bildirimdeki düğme de artık “Geri al” yazar ve 12 saniye ekranda kalır.
+
 ## v2.19: Telefonda satış ve değişim düğmeleri her yerde
 
 - Fon açıldığında Al, Sat, Değiştir ve “Hisse · Mevduat · Döviz” düğmeleri hangi sekme seçili olursa olsun sekmelerin hemen altında görünür; telefonda büyük, iki sütunlu düğmeler olarak gösterilir.

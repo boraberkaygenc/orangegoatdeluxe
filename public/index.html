@@ -180,7 +180,7 @@ abbr[data-explain],[data-explain]{text-decoration:underline dotted var(--muted);
 <style>#dlx-splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--bg,#f4f3ef);transition:opacity .35s ease}#dlx-splash.out{opacity:0;pointer-events:none}.sp-box{display:flex;flex-direction:column;align-items:center;gap:12px;font-family:"IBM Plex Sans",system-ui,sans-serif;color:var(--fg,#1b1a17)}.sp-name{font-size:20px;font-weight:600;letter-spacing:-.2px}.sp-name span{color:#c25a00}.sp-bar{width:220px;height:4px;border-radius:2px;background:rgba(127,127,127,.2);overflow:hidden}.sp-bar i{display:block;height:100%;width:8%;background:#c25a00;border-radius:2px;transition:width .4s ease}.sp-msg{font-size:12.5px;color:var(--muted,#7a776f);min-height:1em}@media (prefers-reduced-motion:reduce){#dlx-splash{transition:none}}</style>
 <script>(function(){var tr=(navigator.language||'').toLowerCase().indexOf('tr')===0;try{var s=localStorage.getItem('dlx_lang');if(s)tr=s==='tr'}catch(e){}window.__dlxSplash=function(p,msgEn,msgTr){var b=document.getElementById('sp-bar'),m=document.getElementById('sp-msg');if(b)b.style.width=Math.round(p)+'%';if(m)m.textContent=tr?msgTr:msgEn};window.__dlxSplash(10,'Opening…','Açılıyor…');setTimeout(function(){window.__dlxSplash(35,'Loading your data…','Verileriniz yükleniyor…')},250);setTimeout(function(){window.__dlxSplash(60,'Loading market data…','Piyasa verisi yükleniyor…')},700);setTimeout(function(){var s=document.getElementById('dlx-splash');if(s)s.classList.add('out');setTimeout(function(){if(s)s.remove()},400)},12000);})();</script>
 <header class="top">
-  <span class="brand">GNC Terminal<small id="app-ver" title="Build date">v5.19 · orangegoat v2.19 Deluxe · 2026-11-24</small></span><span id="mkt-badges" class="mkt" aria-live="off"></span>
+  <span class="brand">GNC Terminal<small id="app-ver" title="Build date">v5.20 · orangegoat v2.20 Deluxe · 2026-11-24</small></span><span id="mkt-badges" class="mkt" aria-live="off"></span>
   <nav class="tabs" id="tabs">
     <button data-group="TODAY">Today<span class="k">F1</span></button>
     <button data-group="MARKETS">Markets<span class="k">F2</span></button>
@@ -5751,7 +5751,7 @@ function dlActionDialog(p, kind, depId) {
       const impl = t.ccy === 'TRY' ? t.amount / to : to / t.amount; if (Math.abs(impl / r - 1) > 0.002 && !$('dx-ok').dataset.sure) { $('dx-ok').dataset.sure = '1'; return err(DL('The rate and the amounts do not agree (see above). Fix one, or press Save again to keep them as they are.', 'Kur ile tutarlar tutmuyor (yukarıya bakın). Birini düzeltin ya da olduğu gibi kaydetmek için Kaydet’e tekrar basın.')); } }
     if (kind === 'in' || kind === 'out') { if (t.ccy === 'USD') t.fx = dlFx(date); }
     if (kind === 'dep-open') { const demand = $('dx-kind').value === 'demand', rate = num('dx-rate'); if (rate === null || rate < 0) return err(DL('Enter the interest rate.', 'Faiz oranını girin.')); const mat = demand ? null : $('dx-mat').value; if (!demand && !(mat > date)) return err(DL('The maturity must be after the start date.', 'Vade tarihi başlangıçtan sonra olmalı.')); Object.assign(t, { depId: DX.newId('dep'), rate, maturity: mat, stopaj: num('dx-stop') || 0 }); state.S.dlxStopaj = t.stopaj; }
-    p.tx = p.tx || []; const before = JSON.stringify(p.tx);
+    p.tx = p.tx || []; const before = JSON.stringify(p.tx); const snap0 = dlSnap(p);
     let added = null; if ((kind === 'dep-open' || kind === 'fx') && $('dx-auto') && $('dx-auto').checked) { const have = DX.replay(p.tx, date, dlFx, dlSettleAt).cash[t.ccy] || 0, need = (+t.amount || 0) + (+t.fee || 0) + (+t.bsmv || 0) + (+t.kmv || 0);
       if (have < need - 0.005) { added = { id: DX.newId('tx'), date, type: 'in', ccy: t.ccy, amount: DX.r2(need - Math.max(0, have)), fx: t.ccy === 'USD' ? dlFx(date) : undefined, note: DL('added for ', 'eklendi: ') + (kind === 'fx' ? DL('conversion', 'döviz çevirme') : DL('deposit', 'mevduat')) }; p.tx.push(added); } }
     p.tx.push(t);
@@ -5759,7 +5759,7 @@ function dlActionDialog(p, kind, depId) {
     if (kind === 'dep-close') { const add = DX.maturities(p.tx, today()); /* nothing: the deposit is closed now */ }
     if (added) journal(`${p.name}: ${DX.txText(added, k => k)} (${date}).`, { kind: 'order', pkg: p.id });
     dlNormalize(p); journal(`${p.name}: ${DX.txText(t, k => k)}${t.fee ? ` · ${DL('commission', 'komisyon')} ${dlN(t.fee)}` : ''}${t.bsmv ? ` · BSMV ${dlN(t.bsmv)}` : ''}${t.kmv ? ` · KMV ${dlN(t.kmv)}` : ''} (${date}).`, { kind: 'order', pkg: p.id });
-    saveUser('packages'); closeModal(); renderAll(); reopenSheet(); toast(DL('Saved', 'Kaydedildi'), () => { p = (state.packages || []).find(q => q.id === p.id) || p; p.tx = JSON.parse(before); dlNormalize(p); saveUser('packages'); renderAll(); reopenSheet(); toast(DL('Undone', 'Geri alındı')); });
+    p.changes = (p.changes || []).concat([{ at: new Date().toISOString(), label: `${DX.txText(t, k => k)} (${date})`, snap: snap0 }]).slice(-30); saveUser('packages'); closeModal(); renderAll(); reopenSheet(); const pid = p.id; toast(DL('Saved', 'Kaydedildi'), () => dlUndoLast(pid));
   };
 }
 document.addEventListener('click', e => {
@@ -6206,7 +6206,7 @@ function dlRedateEntry(p, key, date) {
   dlAfterLines(p); return null;
 }
 function dlEntryChange(p, fn, label) {
-  const before = JSON.stringify(p); const err = fn(); const chk = !err && DX.replay(p.tx || [], today(), dlFx, dlSettleAt);
+  const before = JSON.stringify(p); const err = fn(); if (typeof label === 'function') label = label(); label = String(label).replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim(); const chk = !err && DX.replay(p.tx || [], today(), dlFx, dlSettleAt);
   if (err || (chk && chk.warn.length)) { const keep = JSON.parse(before); for (const k of Object.keys(p)) delete p[k]; Object.assign(p, keep); toast(err || DL('Not changed: later entries need this money on that date — ', 'Değiştirilmedi: sonraki kayıtlar o tarihte bu paraya ihtiyaç duyuyor — ') + chk.warn[0]); return false; }
   journal(`${p.name}: ${label}.`, { kind: 'order', pkg: p.id }); saveUser('packages'); renderAll(); reopenSheet();
   toast(DL('Saved', 'Kaydedildi'), () => { const keep = JSON.parse(before); p = (state.packages || []).find(q => q.id === keep.id) || p; for (const k of Object.keys(p)) delete p[k]; Object.assign(p, keep); saveUser('packages'); renderAll(); reopenSheet(); toast(DL('Undone', 'Geri alındı')); }); return true;
@@ -6660,7 +6660,7 @@ function dlItemForecastHTML(p, it) {
 
 /* ================= Phase 8 B: change history, edit from everywhere, total wealth on the home page ================= */
 const dlSnap = p => { const o = JSON.parse(JSON.stringify(p)); delete o.changes; return o; };
-{ const _ec = dlEntryChange; dlEntryChange = function (p, fn, label) { const snap = dlSnap(p), ok = _ec(p, fn, label); if (ok) { p.changes = (p.changes || []).concat([{ at: new Date().toISOString(), label, snap }]).slice(-30); saveUser('packages'); } return ok; }; }
+{ const _ec = dlEntryChange; dlEntryChange = function (p, fn, label) { const snap = dlSnap(p), ok = _ec(p, fn, label); if (typeof label === 'function') label = label(); label = String(label).replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim(); if (ok) { p.changes = (p.changes || []).concat([{ at: new Date().toISOString(), label, snap }]).slice(-30); saveUser('packages'); } return ok; }; }
 function dlHistoryPanelHTML(p) { const ch = (p.changes || []).slice().reverse(); if (!ch.length) return '';
   return `<div class="panel wide" id="dlx-changes"><h2>${DL('Change history', 'Değişiklik geçmişi')} <span class="sub">${DL('every correction, newest first; any earlier state can be restored', 'her düzeltme, en yenisi üstte; önceki her hâle dönülebilir')}</span></h2><div class="body"><table><tr><th class="l">${DL('When', 'Ne zaman')}</th><th class="l">${DL('What changed', 'Ne değişti')}</th><th></th></tr>
     ${ch.map((c, i) => `<tr><td class="l mono" style="white-space:nowrap">${esc(new Date(c.at).toLocaleString(state.S.lang === 'tr' ? 'tr-TR' : 'en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }))}</td><td class="l txt">${esc(c.label)}</td><td><button class="quiet" data-dlx-restore="${ch.length - 1 - i}">${DL('Restore the state before this', 'Bundan önceki hâle dön')}</button></td></tr>`).join('')}</table></div></div>`; }
@@ -8394,7 +8394,7 @@ function dlTicketDialog(p, mode, sym) { if (!p || p.status === 'closed') return;
     const ok = dlEntryChange(p, () => { let proceeds = 0;
       if (m !== 'buy') { const li = +$('tt-sl').value, l = p.lines[li], q = Math.min($v('tt-sq'), l.qty), c = dlApplySale(p, li, q, $v('tt-sp'), dd, $v('tt-sf') || 0, why); proceeds = c.value; txt.push(DL(`sold ${fmtN(q, q % 1 ? 4 : 0)} ${l.symbol} at ${fmtN($v('tt-sp'), 4)} (${T(c.value)}, ${c.gain >= 0 ? '+' : ''}${T(c.gain)})`, `${fmtN(q, q % 1 ? 4 : 0)} ${l.symbol} ${fmtN($v('tt-sp'), 4)} fiyattan satıldı (${T(c.value)}, ${c.gain >= 0 ? '+' : ''}${T(c.gain)})`)); }
       if (m !== 'sell') { const s = bsym(), q = $v('tt-bq'); let cash = 0; try { cash = Math.max(0, dlSleeve(p, dd).cash.TRY); } catch (e) { } const r = dlApplyBuy(p, s, q, $v('tt-bp'), dd, $v('tt-bf') || 0, $('tt-cash').checked ? cash : 0, why); txt.push(DL(`bought ${fmtN(q, q % 1 ? 4 : 0)} ${s} at ${fmtN($v('tt-bp'), 4)} (${T(r.amount)}${r.use > 0.5 ? `, ${T(r.use)} from the fund’s cash` : ''})`, `${fmtN(q, q % 1 ? 4 : 0)} ${s} ${fmtN($v('tt-bp'), 4)} fiyattan alındı (${T(r.amount)}${r.use > 0.5 ? `, ${T(r.use)} fondaki nakitten` : ''})`)); void proceeds; }
-      dlAfterLines(p); dlNormalize(p); return null; }, txt.join('; ') || DL('trade', 'işlem'));
+      dlAfterLines(p); dlNormalize(p); return null; }, () => txt.join('; ') || DL('trade', 'işlem'));
     if (ok) closeModal(); };
   if (lines.length) fillSell(false); if (bsym()) fillBuy(); auto.bamt = mode === 'swap'; upd(); }
 // buttons: a trading bar on Holdings and trading, Sell / Swap on every open line
@@ -9920,6 +9920,31 @@ function xfCards() { document.querySelectorAll('.card[data-pkg]').forEach(c => {
 document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-xf-card]'); if (!b) return; e.stopPropagation(); e.preventDefault(); const id = b.dataset.xfCard; try { openSheet({ type: 'pkg', id }); state.dlxFTab = 'hold'; dlApplyFtabs(); xfQbar(); } catch (er) { } setTimeout(() => { const p = (state.packages || []).find(q => q.id === id); if (p) xfDialog(p); }, 120); }, true);
 setTimeout(() => { try { xfCards(); } catch (e) { } }, 1500);
 document.head.insertAdjacentHTML('beforeend', `<style id="xf-css2">.xf-qbar{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 10px}.xf-qbar[hidden]{display:none}.xf-qbar button{flex:0 0 auto}@media (max-width:700px){.xf-qbar{position:sticky;top:0;z-index:5;background:var(--bg,#f4f2ee);padding:6px 0;margin:4px 0 8px}.xf-qbar button{flex:1 1 calc(50% - 8px);min-height:40px}}.xf-cardbar{margin:4px 0 8px;display:flex}.xf-cardbar button{font-size:13px}</style>`);
+
+/* ---- 186 undo in a fund: a lasting “Undo” button beside Buy / Sell (and on each fund card), step by step, for trades, exchanges, deposits and conversions ---- */
+const dlPlain = t => String(t == null ? '' : t).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+function dlUndoable(p) { const ch = (p && p.changes) || []; for (let i = ch.length - 1; i >= 0; i--) { const c = ch[i]; if (c.undo || c.undone) continue; if (!c.snap) return null; return { i, c }; } return null; }
+function dlUndoLast(id) { const p = (state.packages || []).find(q => q.id === id), u = dlUndoable(p); if (!u) return false; const hist = p.changes.slice(); hist[u.i] = Object.assign({}, u.c, { undone: true }); const cur = dlSnap(p);
+  for (const k of Object.keys(p)) delete p[k]; Object.assign(p, JSON.parse(JSON.stringify(u.c.snap))); p.changes = hist.concat([{ at: new Date().toISOString(), label: DL('undone: ', 'geri alındı: ') + dlPlain(u.c.label), snap: cur, undo: true }]).slice(-30);
+  try { dlFpCache.delete(p.id); } catch (e) { }
+  journal(`${p.name}: ${DL('undone', 'geri alındı')} — ${dlPlain(u.c.label)}.`, { kind: 'order', pkg: p.id }); saveUser('packages'); renderAll(); reopenSheet(); toast(DL('Undone: ', 'Geri alındı: ') + dlPlain(u.c.label)); return true; }
+function dlUndoBtn(p, card) { const u = dlUndoable(p); if (!u && card) return ''; const lab = u ? dlPlain(u.c.label) : DL('Nothing to undo', 'Geri alınacak işlem yok');
+  return `<button class="dlx-undo" data-dlx-undo="${esc(p.id)}" title="${esc(lab)}" ${u ? '' : 'disabled'}>↶ ${DL('Undo', 'Geri al')}</button>`; }
+function dlUndoBars() { const w = state.sheet; if (!w || w.type !== 'pkg') return; const p = (state.packages || []).find(q => q.id === w.id); if (!p || p.status === 'closed') return;
+  for (const id of ['dlx-ttbar', 'xf-qbar']) { const bar = $(id); if (!bar) continue; const old = bar.querySelector('[data-dlx-undo]'); if (old) old.remove(); bar.insertAdjacentHTML('beforeend', dlUndoBtn(p)); } }
+{ const _rs = renderSheet; renderSheet = function () { _rs.apply(this, arguments); try { dlUndoBars(); } catch (e) { } }; }
+function dlUndoCards() { document.querySelectorAll('.card[data-pkg] .xf-cardbar').forEach(bar => { const p = (state.packages || []).find(q => q.id === bar.closest('.card').dataset.pkg); const old = bar.querySelector('[data-dlx-undo]'); if (old) old.remove(); if (p) bar.insertAdjacentHTML('beforeend', dlUndoBtn(p, true)); }); }
+{ const _ra = renderAll; renderAll = function () { _ra.apply(this, arguments); setTimeout(() => { try { dlUndoCards(); } catch (e) { } }, 0); }; }
+setTimeout(() => { try { dlUndoCards(); } catch (e) { } }, 1600);
+{ const _su = saveUser; saveUser = function () { const r = _su.apply(this, arguments); setTimeout(() => { try { dlUndoBars(); dlUndoCards(); } catch (e) { } }, 60); return r; }; }
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-dlx-undo]'); if (!b) return; e.stopPropagation(); e.preventDefault(); if (b.disabled) return;
+  const p = (state.packages || []).find(q => q.id === b.dataset.dlxUndo), u = dlUndoable(p); if (!u) return;
+  if (!b.dataset.sure) { b.dataset.sure = '1'; b.classList.add('sure'); b.textContent = DL('Undo “', '“') + (L => L.length > 60 ? L.slice(0, 58) + '…' : L)(dlPlain(u.c.label)) + DL('”? Tap again', '” geri alınsın mı? Tekrar dokunun'); setTimeout(() => { if (b.isConnected) { delete b.dataset.sure; b.classList.remove('sure'); b.textContent = '↶ ' + DL('Undo', 'Geri al'); } }, 5000); return; }
+  dlUndoLast(p.id); }, true);
+// the short toast after a save: Turkish label and longer on screen
+{ const _t = toast; toast = function (t, undo) { const r = _t(t, undo); if (undo) { const b = $('undo'), el = $('toast'); if (b) b.textContent = '↶ ' + DL('Undo', 'Geri al'); if (el) { clearTimeout(el._t); el._t = setTimeout(() => el.hidden = true, 12000); } } return r; }; }
+window.__gncUndo = { last: id => { const u = dlUndoable(state.packages.find(p => p.id === id)); return u ? u.c.label : null; }, undo: id => dlUndoLast(id) };
+document.head.insertAdjacentHTML('beforeend', `<style id="dlx-undo-css">.dlx-undo{margin-left:auto}.dlx-undo.sure{border-color:var(--down,#b33);color:var(--down,#b33)}.xf-cardbar .dlx-undo{margin-left:6px}@media (max-width:700px){.xf-qbar .dlx-undo{flex:1 1 100%;margin-left:0}.dlx-undo.sure{white-space:normal}}</style>`);
 
 /* v2.14 end */
 Object.assign(TR, { 'GitHub version · prices update about every 30–60 minutes on weekdays · your data stays in this browser': 'GitHub sürümü · fiyatlar iş günleri yaklaşık 30–60 dakikada bir güncellenir · verileriniz bu tarayıcıda kalır',

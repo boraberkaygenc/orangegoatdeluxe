@@ -296,6 +296,7 @@ Bugün hesaplananlar: RSI 14, 20/50/200 günlük ortalamalar, ATR, 52 hafta zirv
 184. **[yapıldı v2.18]** **Fon içi değişim (hisse ↔ mevduat ↔ döviz):** Fonun “İçerik ve İşlem” sekmesine “⇆ Hisse · Mevduat · Döviz” düğmesi eklendi. Kaynak olarak açık bir hisse/fon/altın satırı, TL nakit, USD nakit veya açık bir mevduat; hedef olarak hisse/fon/altın, TL nakit, dolar, TL vadeli mevduat veya USD vadeli mevduat seçilir. Gerekli adımlar (satış, Ziraat kuruyla çevirme ve %0,2 KMV, mevduat açma veya bozma, alış) aynı tarihte tek seferde deftere yazılır; önizleme önce/sonra dağılımını gösterir; vadeden önce bozmada faiz kaybı seçilebilir; geri alınabilir. Ayrıca fon kayıtlarındaki “Undo” düğmesinin kayıttan sonra çalışmaması hatası düzeltildi.
 
 185. **[yapıldı v2.19]** **Telefonda alım-satım düğmelerinin görünür olması:** Al, Sat, Değiştir ve “Hisse · Mevduat · Döviz” düğmeleri yalnızca “İçerik ve İşlem” sekmesindeydi; telefonda fon “Özet” sekmesinde açıldığı için görülmüyordu. Düğmeler artık fonun sekmelerinin hemen altında her sekmede görünür (telefonda iki sütun, kaydırırken üstte sabit kalır); ayrıca Fonlarım’daki her fon kartına “⇆ Sat / değiştir” düğmesi eklendi.
+186. **[yapıldı v2.20]** **Fon alım-satımında geri alma:** Geri alma yalnızca 7 saniyelik “Undo” bildirimindeydi; mevduat ve döviz çevirme işlemleri değişiklik geçmişine hiç yazılmıyordu. Artık fonun işlem satırında ve fon kartında kalıcı, onaylı, adım adım çalışan “↶ Geri al” düğmesi vardır; tüm fon işlemleri geçmişe kaydedilir.
 
 ## Kullanıcının ekledikleri
 (boş)
