@@ -331,10 +331,10 @@ Bugün hesaplananlar: RSI 14, 20/50/200 günlük ortalamalar, ATR, 52 hafta zirv
 218. **[yapıldı v2.23]** **Logonun sıfırdan oluşması:** Açılışta keçi logosunun hatları SVG ile boş ekrandan çizilir, ardından turuncu dolgu ve “GNC” yazısı belirir (~0,9 sn). Çizimin ilerlemesi veri yüklemesine bağlıdır: logo tamamlandığında veri hazırdır.
 219. **[kabul edildi]** **Logo ailesi:** Tek renk monogram, küçük boyutta okunur sade favicon, açık/koyu tema varyantları; turuncu yalnızca vurgu.
 220. **[kabul edildi]** **Yaşayan logo:** Piyasa açıkken logoda çok hafif bir nabız, veri eskiyse logo griye döner; logo durum göstergesi olarak da çalışır.
-221. **[kabul edildi]** **“Ya olursa” simülatörü:** Kaydırıcılarla BIST (−%30…+%30), USD/TRY ve faiz değiştirilir; fonun değeri ve kalemleri canlı çubuklarla tepki verir.
-222. **[kabul edildi]** **Olası yollar grafiği:** Monte Carlo’nun 200 olası yolu ince çizgiler, ortanca kalın çizgi, hedef çizgisi ve “hedefe ulaşma olasılığı %”.
-223. **[kabul edildi]** **Geriye dönük oynatıcı:** “Bu fonu 2018’de kursaydım” — oynat düğmesiyle grafik zamanla çizilir; kur şoku, pandemi gibi krizler işaretlenir.
-224. **[kabul edildi]** **Kriz kartları:** 2018 kur şoku, 2020 pandemi, Aralık 2021 gibi senaryolarda fonun kaybı ve toparlanma süresi kart hâlinde.
+221. **[yapıldı v2.25]** **“Ya olursa” simülatörü:** Kaydırıcılarla BIST (−%30…+%30), USD/TRY ve faiz değiştirilir; fonun değeri ve kalemleri canlı çubuklarla tepki verir.
+222. **[yapıldı v2.25]** **Olası yollar grafiği:** Monte Carlo’nun 200 olası yolu ince çizgiler, ortanca kalın çizgi, hedef çizgisi ve “hedefe ulaşma olasılığı %”.
+223. **[yapıldı v2.25]** **Geriye dönük oynatıcı:** “Bu fonu 2018’de kursaydım” — oynat düğmesiyle grafik zamanla çizilir; kur şoku, pandemi gibi krizler işaretlenir.
+224. **[yapıldı v2.25]** **Kriz kartları:** 2018 kur şoku, 2020 pandemi, Aralık 2021 gibi senaryolarda fonun kaybı ve toparlanma süresi kart hâlinde.
 225. **[kabul edildi]** **Odak modu:** Tek dokunuşla yalnızca toplam varlık, bugünkü değişim ve bugün yapılacaklar görünür.
 226. **[kabul edildi]** **Tutarları gizle:** Üst çubukta göz simgesiyle tüm tutarlar ••• olur, yüzdeler kalır; kalabalık ortamda kullanım için.
 227. **[kabul edildi]** **Sistem tercihine uyum:** Cihazda büyük yazı veya yüksek kontrast açıksa uygulama kendiliğinden uyar; Ayarlara seçenek eklenmez.
@@ -346,6 +346,7 @@ Bugün hesaplananlar: RSI 14, 20/50/200 günlük ortalamalar, ATR, 52 hafta zirv
 233. **[yapıldı v2.24]** **Pointer: görselli ve kolay analiz:** Her bulgu bir cümle + bir grafik: mevduata göre fark iki çubuk, risk kadranı, yoğunlaşma halka grafiği, “ne yapmalı” tek düğme; teknik terim yok, gerekirse ? ile açıklanır.
 234. **[yapıldı v2.22]** **Ekran görüntüsünden fon içi işlem:** Fonda “📷 Ekran görüntüsünden ekle”: aracı kurum emir ekranı yüklenir; yalnızca tarayıcı içinde (Tesseract.js OCR, görüntü cihazdan çıkmaz) sembol, yön, tarih-saat, adet, fiyat, para birimi, ücret ve toplam çıkarılır; toplam kontrolü yapılır (ör. NVIDIA limit satış 0,18 × 135,20 $ − 1,50 $ = 22,83 $); işlem penceresi dolu açılır ve onay ekranından sonra fona işlenir. Örnek görüntü test olarak eklenir.
 235. **[yapıldı v2.24]** **Masaüstünde animasyonlar çalışmıyor:** İşletim sisteminde animasyon efektleri kapalıyken uygulama bütün animasyon ve geçişleri kapatıyordu; uygulama artık bu sistem ayarından bağımsız olarak animasyonları gösterir.
+236. **[yapıldı v2.25]** **Ekran görüntüsünden talimat alınamıyor:** “📷 Ekran görüntüsünden” düğmesi v2.22’de yalnızca İçerik sekmesindeki eski işlem çubuğuna eklenmişti; v2.23’ten sonra görünen işlem çubuğunda bulunmadığı için özellik kullanılamıyordu. Düğme görünen çubuğa taşındı; ayrıca fon sayfasına görüntü yapıştırma (Ctrl+V) ve sürükleyip bırakma eklendi.
 
 ## Kullanıcının ekledikleri
 (boş)

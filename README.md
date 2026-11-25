@@ -5,6 +5,16 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.25: Ekran görüntüsünden işlem yeniden çalışıyor ve simülasyonlar
+
+- Ekran görüntüsü düzeltmesi: “📷 Ekran görüntüsünden” düğmesi yalnızca gizli kalan eski işlem çubuğundaydı; artık her sekmede görünen Al / Sat / Değiştir çubuğundadır. Aracı kurumun emir ekranı görüntüsü fon sayfasına yapıştırılabilir (Ctrl+V) veya sürüklenip bırakılabilir; işlem penceresi açılır, görüntü cihazda okunur ve alanlar doldurulur. Kayıt yine kullanıcının onayıyla yapılır.
+- Simülasyonlar (fonun Pointer sekmesinde, tek panel, dört bölüm):
+  - Ya olursa: BIST 100, Dolar/TL ve TL faizi kaydırıcılarıyla fonun değeri ve her kalemin çubuğu canlı olarak büyür ve küçülür; “2018 tipi şok”, “TL değer kaybeder” gibi hazır seçenekler vardır.
+  - Olası yollar: Monte Carlo’nun 200 olası yolu ince çizgilerle (hedefin üstünde bitenler yeşil, altında bitenler kırmızı), ortanca yol kalın çizgiyle ve hedef çizgisiyle çizilir; büyük yazıyla “hedefe ulaşma olasılığı %” gösterilir. Fonun yıllık hedef getirisi varsa hedef odur, yoksa mevduattır.
+  - Geçmişte: “Bu fonu 2018’de kursaydım” — yıl seçilip Oynat’a basılınca fonun değeri zamanla çizilir; aynı paranın dolarda tutulması da gösterilir, krizler işaretlenir ve çizgi oradan geçerken yanar.
+  - Krizler: 2018 kur şoku, 2020 pandemi, Aralık 2021 kur şoku ve Mart 2025 piyasa şokunda fonun (bugünkü dağılımıyla) kaybı, toparlanma süresi ve küçük bir grafik kart hâlinde.
+- Uzun geçmiş: Yayın aşaması, her varlık için 2015’ten bu yana haftalık kapanışları küçük ayrı dosyalara yazar (data/long); sayfa bunları yalnızca Geçmişte ve Krizler açıldığında, yalnızca fondaki varlıklar için yükler.
+
 ## v2.24: Kurulun net cevabı, resimli Pointer ve masaüstünde animasyonlar
 
 - Masaüstü düzeltmesi: İşletim sisteminde “animasyon efektleri” kapalı olduğunda (Windows’ta sık görülür) tarayıcı “azaltılmış hareket” bildiriyordu ve uygulama bütün animasyon ve geçişleri kapatıyordu. Bu kural kaldırıldı; açılış logosu, sekme geçişleri, sayfa ve pencere geçişleri, ışıklar ve Kurul tartışması her bilgisayarda çalışır.
