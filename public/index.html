@@ -176,11 +176,13 @@ abbr[data-explain],[data-explain]{text-decoration:underline dotted var(--muted);
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
-</head><body><div id="dlx-splash" aria-live="polite"><div class="sp-box"><svg width="56" height="56" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#c25a00"/><path d="M12.2 12.4C10.6 7.6 7.2 6.4 5.2 8.8M19.8 12.4C21.4 7.6 24.8 6.4 26.8 8.8" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M11.2 13.6 6.8 15.4l4.6 1.4zM20.8 13.6l4.4 1.8-4.6 1.4z" fill="#fff"/><path d="M11 12.2h10l-1.6 9.2L16 25.4l-3.4-4z" fill="#fff"/><circle cx="13.7" cy="15.8" r="1.05" fill="#c25a00"/><circle cx="18.3" cy="15.8" r="1.05" fill="#c25a00"/><path d="M14.6 25 16 29.2 17.4 25z" fill="#fff"/></svg><div class="sp-name">orangegoat <span>Deluxe</span></div><div class="sp-bar"><i id="sp-bar"></i></div><div class="sp-msg" id="sp-msg"></div></div></div>
-<style>#dlx-splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--bg,#f4f3ef);transition:opacity .35s ease}#dlx-splash.out{opacity:0;pointer-events:none}.sp-box{display:flex;flex-direction:column;align-items:center;gap:12px;font-family:"IBM Plex Sans",system-ui,sans-serif;color:var(--fg,#1b1a17)}.sp-name{font-size:20px;font-weight:600;letter-spacing:-.2px}.sp-name span{color:#c25a00}.sp-bar{width:220px;height:4px;border-radius:2px;background:rgba(127,127,127,.2);overflow:hidden}.sp-bar i{display:block;height:100%;width:8%;background:#c25a00;border-radius:2px;transition:width .4s ease}.sp-msg{font-size:12.5px;color:var(--muted,#7a776f);min-height:1em}@media (prefers-reduced-motion:reduce){#dlx-splash{transition:none}}</style>
-<script>(function(){var tr=(navigator.language||'').toLowerCase().indexOf('tr')===0;try{var s=localStorage.getItem('dlx_lang');if(s)tr=s==='tr'}catch(e){}window.__dlxSplash=function(p,msgEn,msgTr){var b=document.getElementById('sp-bar'),m=document.getElementById('sp-msg');if(b)b.style.width=Math.round(p)+'%';if(m)m.textContent=tr?msgTr:msgEn};window.__dlxSplash(10,'Opening…','Açılıyor…');setTimeout(function(){window.__dlxSplash(35,'Loading your data…','Verileriniz yükleniyor…')},250);setTimeout(function(){window.__dlxSplash(60,'Loading market data…','Piyasa verisi yükleniyor…')},700);setTimeout(function(){var s=document.getElementById('dlx-splash');if(s)s.classList.add('out');setTimeout(function(){if(s)s.remove()},400)},12000);})();</script>
+</head><body><div id="dlx-splash" aria-live="polite"><div class="sp-box"><svg class="sp-logo lg" width="88" height="88" viewBox="0 0 32 32" aria-hidden="true"><rect class="lg-f" x=".6" y=".6" width="30.8" height="30.8" rx="7" pathLength="1"/><path class="lg-h" pathLength="1" d="M12.2 12.4C10.6 7.6 7.2 6.4 5.2 8.8"/><path class="lg-h" pathLength="1" d="M19.8 12.4C21.4 7.6 24.8 6.4 26.8 8.8"/><path class="lg-w" pathLength="1" d="M11.2 13.6 6.8 15.4l4.6 1.4zM20.8 13.6l4.4 1.8-4.6 1.4z"/><path class="lg-w" pathLength="1" d="M11 12.2h10l-1.6 9.2L16 25.4l-3.4-4z"/><circle class="lg-e" cx="13.7" cy="15.8" r="1.05"/><circle class="lg-e" cx="18.3" cy="15.8" r="1.05"/><path class="lg-b" d="M14.6 25 16 29.2 17.4 25z"/></svg><div class="sp-name"><b>GNC</b> <span>orangegoat Deluxe</span></div><div class="sp-bar"><i id="sp-bar"></i></div><div class="sp-msg" id="sp-msg"></div></div></div>
+<style>#dlx-splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--bg,#f4f3ef);transition:opacity .3s ease}#dlx-splash.out{opacity:0;pointer-events:none}.sp-box{display:flex;flex-direction:column;align-items:center;gap:12px;font-family:"IBM Plex Sans",system-ui,sans-serif;color:var(--fg,#1b1a17)}.sp-name{font-size:20px;font-weight:600;letter-spacing:-.2px;opacity:0;transform:translateY(4px);transition:opacity .25s ease,transform .25s ease}.sp-name b{letter-spacing:.06em}.sp-name span{color:#c25a00;font-weight:500}.lg.s4~.sp-name{opacity:1;transform:none}.sp-bar{width:180px;height:3px;border-radius:2px;background:rgba(127,127,127,.18);overflow:hidden}.sp-bar i{display:block;height:100%;width:8%;background:#c25a00;border-radius:2px;transition:width .3s ease}.sp-msg{font-size:12.5px;color:var(--muted,#7a776f);min-height:1em;font-variant-numeric:tabular-nums}
+.lg .lg-f{fill:#c25a00;fill-opacity:0;stroke:#c25a00;stroke-width:1.2;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset .32s ease,fill-opacity .22s ease .2s}.lg .lg-h{fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset .28s ease}.lg .lg-w{fill:#fff;fill-opacity:0;stroke:#fff;stroke-width:.7;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset .26s ease,fill-opacity .18s ease .16s}.lg .lg-e,.lg .lg-b{fill:#c25a00;opacity:0;transform-box:fill-box;transform-origin:center;transform:scale(.2);transition:opacity .18s ease,transform .22s cubic-bezier(.3,1.6,.5,1)}.lg .lg-b{fill:#fff}.lg.s1 .lg-f{stroke-dashoffset:0;fill-opacity:1}.lg.s2 .lg-h{stroke-dashoffset:0}.lg.s3 .lg-w{stroke-dashoffset:0;fill-opacity:1}.lg.s4 .lg-e,.lg.s4 .lg-b{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){#dlx-splash,#dlx-splash *{transition:none!important}}</style>
+<script>(function(){window.__dlxT0=Date.now();var tr=(navigator.language||'').toLowerCase().indexOf('tr')===0,seen=false;try{var s=localStorage.getItem('dlx_lang');if(s)tr=s==='tr';seen=!!localStorage.getItem('dlx_seen')}catch(e){}var sp=document.getElementById('dlx-splash');if(seen&&sp){sp.remove();window.__dlxSplash=function(){};return}var lg=sp&&sp.querySelector('.lg');var mx=0;window.__dlxSplash=function(p,msgEn,msgTr){if(p<mx)return;mx=p;var b=document.getElementById('sp-bar'),m=document.getElementById('sp-msg');if(b)b.style.width=Math.round(p)+'%';if(m)m.textContent=tr?msgTr:msgEn;if(lg){if(p>=10)lg.classList.add('s1');if(p>=35)lg.classList.add('s2');if(p>=60)lg.classList.add('s3');if(p>=100)lg.classList.add('s4')}};window.__dlxSplash(10,'Opening… 1/4','Açılıyor… 1/4');setTimeout(function(){window.__dlxSplash(35,'Loading your data… 2/4','Verileriniz yükleniyor… 2/4')},230);setTimeout(function(){window.__dlxSplash(60,'Loading prices… 3/4','Fiyatlar yükleniyor… 3/4')},460);setTimeout(function(){var s=document.getElementById('dlx-splash');if(!s)return;window.__dlxSplash(100,'Showing what is ready','Hazır olanlar gösteriliyor');setTimeout(function(){s.classList.add('out');setTimeout(function(){if(s)s.remove()},300)},450)},2600);})();</script>
 <header class="top">
-  <span class="brand">GNC Terminal<small id="app-ver" title="Build date">v5.22 · orangegoat v2.22 Deluxe · 2026-11-24</small></span><span id="mkt-badges" class="mkt" aria-live="off"></span>
+  <span class="brand">GNC Terminal<small id="app-ver" title="Build date">v5.23 · orangegoat v2.23 Deluxe · 2026-11-25</small></span><span id="mkt-badges" class="mkt" aria-live="off"></span>
   <nav class="tabs" id="tabs">
     <button data-group="TODAY">Today<span class="k">F1</span></button>
     <button data-group="MARKETS">Markets<span class="k">F2</span></button>
@@ -5757,9 +5759,9 @@ function dlActionDialog(p, kind, depId) {
     p.tx.push(t);
     const chk = DX.replay(p.tx, today(), dlFx, dlSettleAt); if (chk.warn.length && kind !== 'in') { p.tx = JSON.parse(before); return err(DL('Not enough cash for this on that date: ', 'O tarihte bunun için yeterli nakit yok: ') + chk.warn[0] + DL('. Add money first (it can be back-dated).', '. Önce para ekleyin (geçmiş tarihli olabilir).')); }
     if (kind === 'dep-close') { const add = DX.maturities(p.tx, today()); /* nothing: the deposit is closed now */ }
-    if (added) journal(`${p.name}: ${DX.txText(added, k => k)} (${date}).`, { kind: 'order', pkg: p.id });
-    dlNormalize(p); journal(`${p.name}: ${DX.txText(t, k => k)}${t.fee ? ` · ${DL('commission', 'komisyon')} ${dlN(t.fee)}` : ''}${t.bsmv ? ` · BSMV ${dlN(t.bsmv)}` : ''}${t.kmv ? ` · KMV ${dlN(t.kmv)}` : ''} (${date}).`, { kind: 'order', pkg: p.id });
-    p.changes = (p.changes || []).concat([{ at: new Date().toISOString(), label: `${DX.txText(t, k => k)} (${date})`, snap: snap0 }]).slice(-30); saveUser('packages'); closeModal(); renderAll(); reopenSheet(); const pid = p.id; toast(DL('Saved', 'Kaydedildi'), () => dlUndoLast(pid));
+    if (added) journal(`${p.name}: ${DX.txText(added, dlTxL)} (${date}).`, { kind: 'order', pkg: p.id });
+    dlNormalize(p); journal(`${p.name}: ${DX.txText(t, dlTxL)}${t.fee ? ` · ${DL('commission', 'komisyon')} ${dlN(t.fee)}` : ''}${t.bsmv ? ` · BSMV ${dlN(t.bsmv)}` : ''}${t.kmv ? ` · KMV ${dlN(t.kmv)}` : ''} (${date}).`, { kind: 'order', pkg: p.id });
+    p.changes = (p.changes || []).concat([{ at: new Date().toISOString(), label: `${DX.txText(t, dlTxL)} (${date})`, snap: snap0 }]).slice(-30); saveUser('packages'); closeModal(); renderAll(); reopenSheet(); const pid = p.id; toast(DL('Saved', 'Kaydedildi'), () => dlUndoLast(pid));
   };
 }
 document.addEventListener('click', e => {
@@ -6066,7 +6068,7 @@ function dlViopAddDialog(code, pkgId) {
     // v2.1: no separate money-in: the margin is funded implicitly on the trade date (see DELUXE.replay)
     p.tx.push({ id: DX.newId('tx'), date, type: 'viop-open', posId: DX.newId('vp'), code, under: c.under, expiry: c.expiry, side: $('va-side').value, qty, price: px, mult: c.mult, margin: im, ccy: c.ccy === 'USD' ? 'USD' : 'TRY', fee, bsmv });
     const chk = DX.replay(p.tx, today(), dlFx, dlSettleAt); if (chk.warn.length) { p.tx = JSON.parse(before); return err(chk.warn[0]); }
-    dlNormalize(p); journal(`${p.name}: ${DX.txText(p.tx[p.tx.length - 1], k => k)} (${date}).`, { kind: 'order', pkg: p.id }); saveUser('packages'); closeModal(); renderAll();
+    dlNormalize(p); journal(`${p.name}: ${DX.txText(p.tx[p.tx.length - 1], dlTxL)} (${date}).`, { kind: 'order', pkg: p.id }); saveUser('packages'); closeModal(); renderAll();
     toast(DL('Futures position added', 'Vadeli pozisyon eklendi'), () => { p.tx = JSON.parse(before); dlNormalize(p); saveUser('packages'); renderAll(); }); };
 }
 function dlViopCloseDialog(p, posId) {
@@ -6077,7 +6079,7 @@ function dlViopCloseDialog(p, posId) {
   const sum = () => { const px = +$('vc-px').value || 0, pnl = (v.side === 'short' ? -1 : 1) * (px - v.price) * v.mult * v.qty; $('vc-sum').innerHTML = `${DL('Profit / loss', 'Kâr / zarar')}: ${P(pnl / (v.margin * v.qty) * 100)} · ${N(pnl)} TRY`; }; $('vc-px').oninput = sum; sum(); $('vc-cancel').onclick = closeModal;
   $('vc-ok').onclick = () => { const date = $('vc-date').value, px = +$('vc-px').value; if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date > today() || date < v.date) { $('vc-err').textContent = DL('Choose a date between the opening and today.', 'Açılış ile bugün arasında bir tarih seçin.'); return; } if (!(px > 0)) { $('vc-err').textContent = DL('Enter the price.', 'Fiyatı girin.'); return; }
     const before = JSON.stringify(p.tx); p.tx.push({ id: DX.newId('tx'), date, type: 'viop-close', posId, code: v.code, price: px, fee: +$('vc-fee').value || 0, bsmv: +$('vc-bsmv').value || 0 });
-    dlNormalize(p); journal(`${p.name}: ${DX.txText(p.tx[p.tx.length - 1], k => k)} (${date}).`, { kind: 'order', pkg: p.id }); saveUser('packages'); closeModal(); renderAll(); reopenSheet(); toast(DL('Position closed', 'Pozisyon kapatıldı'), () => { p.tx = JSON.parse(before); dlNormalize(p); saveUser('packages'); renderAll(); reopenSheet(); }); };
+    dlNormalize(p); journal(`${p.name}: ${DX.txText(p.tx[p.tx.length - 1], dlTxL)} (${date}).`, { kind: 'order', pkg: p.id }); saveUser('packages'); closeModal(); renderAll(); reopenSheet(); toast(DL('Position closed', 'Pozisyon kapatıldı'), () => { p.tx = JSON.parse(before); dlNormalize(p); saveUser('packages'); renderAll(); reopenSheet(); }); };
 }
 function dlViopPanelHTML(p) {
   const sl = dlSleeve(p); if (!sl.viop.length && !sl.viopClosed.length) return ''; const mm = dlMaint();
@@ -6215,9 +6217,9 @@ document.addEventListener('click', ev => {
   const d = ev.target.closest('button[data-dlx-del]'), ed = ev.target.closest('button[data-dlx-edit]'); if (!d && !ed) return; ev.stopPropagation();
   const p = state.sheet && state.packages.find(q => q.id === state.sheet.id); if (!p) return;
   if (d) { if (!d.dataset.sure) { d.dataset.sure = '1'; d.textContent = DL('Delete?', 'Silinsin mi?'); setTimeout(() => { if (d.isConnected) { delete d.dataset.sure; d.textContent = '✕'; } }, 4000); return; }
-    const key = d.dataset.dlxDel, e = dlEntry(p, key), what = e ? `${e.t === 'tx' ? DX.txText(e.x, k => k) : (e.l && e.l.symbol) + ' ' + e.t} (${e.date})` : key; dlEntryChange(p, () => dlDeleteEntry(p, key), `${DL('entry deleted', 'kayıt silindi')} — ${what}`); return; }
+    const key = d.dataset.dlxDel, e = dlEntry(p, key), what = e ? `${e.t === 'tx' ? DX.txText(e.x, dlTxL) : (e.l && e.l.symbol) + ' ' + e.t} (${e.date})` : key; dlEntryChange(p, () => dlDeleteEntry(p, key), `${DL('entry deleted', 'kayıt silindi')} — ${what}`); return; }
   const key = ed.dataset.dlxEdit, e = dlEntry(p, key); if (!e) return;
-  $('modal').hidden = false; $('modal').innerHTML = `<div class="modal" role="dialog" aria-label="Change date" style="width:min(460px,100%)"><h3>${DL('Change the date', 'Tarihi değiştir')}</h3><p class="hint">${esc(e.t === 'tx' ? DX.txText(e.x, k => k) : `${e.l.symbol} · ${e.t === 'fill' ? DL('buy', 'alış') : DL('sell', 'satış')}`)}</p>
+  $('modal').hidden = false; $('modal').innerHTML = `<div class="modal" role="dialog" aria-label="Change date" style="width:min(460px,100%)"><h3>${DL('Change the date', 'Tarihi değiştir')}</h3><p class="hint">${esc(e.t === 'tx' ? DX.txText(e.x, dlTxL) : `${e.l.symbol} · ${e.t === 'fill' ? DL('buy', 'alış') : DL('sell', 'satış')}`)}</p>
     <div class="form"><label for="de-date">${DL('Date', 'Tarih')}</label><input id="de-date" type="date" value="${esc(e.date)}" max="${today()}"></div><p class="hint" style="margin-top:8px">${DL('The fund start date follows the earliest entry. US shares are revalued at that day’s USD/TRY.', 'Fonun başlangıç tarihi en eski kayda göre ayarlanır. ABD hisseleri o günün USD/TRY kuruyla yeniden değerlenir.')}</p>
     <div class="row-inline" style="justify-content:flex-end;gap:8px;margin-top:12px"><button id="de-cancel">${DL('Cancel', 'Vazgeç')}</button><button class="primary" id="de-ok">${DL('Save', 'Kaydet')}</button></div></div>`;
   $('de-cancel').onclick = closeModal; $('de-ok').onclick = () => { const nd = $('de-date').value; closeModal(); dlEntryChange(p, () => dlRedateEntry(p, key, nd), `${DL('date changed', 'tarih değiştirildi')} ${e.date} → ${nd}`); };
@@ -7314,8 +7316,8 @@ TR_FRAG.push([/^fetched /, [[/^fetched /, 'alındı: ']]], [/ · ok$/, [[/ · ok
 
 /* ================= v2.2 I: opening screen, status lights, tables, motion, charts, empty states ================= */
 // 81: close the opening screen once the first data is on screen
-{ let done = false; const finish = () => { if (done) return; done = true; try { window.__dlxSplash && window.__dlxSplash(100, 'Ready', 'Hazır'); } catch (e) { } const s = $('dlx-splash'); if (s) setTimeout(() => { s.classList.add('out'); setTimeout(() => s.remove(), 400); }, 180); };
-  state.hooks.push(() => { if (state.scored && state.scored.length) finish(); else try { window.__dlxSplash && window.__dlxSplash(80, 'Scoring instruments…', 'Enstrümanlar puanlanıyor…'); } catch (e) { } });
+{ let done = false; const finish = () => { if (done) return; done = true; try { window.__dlxSplash && window.__dlxSplash(100, 'Ready', 'Hazır'); } catch (e) { } try { localStorage.setItem('dlx_seen', '1'); } catch (e) { } const s = $('dlx-splash'); if (s) setTimeout(() => { s.classList.add('out'); setTimeout(() => s.remove(), 300); }, Math.max(200, 950 - (Date.now() - (window.__dlxT0 || 0)))); };
+  state.hooks.push(() => { if (state.scored && state.scored.length) finish(); else try { window.__dlxSplash && window.__dlxSplash(80, 'Scoring instruments… 4/4', 'Enstrümanlar puanlanıyor… 4/4'); } catch (e) { } });
   { const _ra = renderAll; renderAll = function () { _ra.apply(this, arguments); if (state.scored && state.scored.length) setTimeout(finish, 0); }; }
   try { localStorage.setItem('dlx_lang', dlLang()); } catch (e) { } }
 { const _sv = saveSettings; saveSettings = function () { try { localStorage.setItem('dlx_lang', dlLang()); } catch (e) { } return _sv.apply(this, arguments); }; }
@@ -10105,6 +10107,147 @@ function ocrBars() { for (const id of ['dlx-ttbar']) { const bar = $(id); if (!b
 document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-ocr-open]'); if (!b || !state.sheet || state.sheet.type !== 'pkg') return; e.stopPropagation(); e.preventDefault(); const p = state.packages.find(q => q.id === state.sheet.id); if (p) dlTicketDialog(p, dlOpenLines(p).length ? 'sell' : 'buy', null, { ocr: true }); }, true);
 window.__gncOcr = { parse: (t, id) => ocrParse(t, id ? state.packages.find(p => p.id === id) : null), sample: id => ocrSample(state.packages.find(p => p.id === id)), last: () => window.__gncOcrLast };
 document.head.insertAdjacentHTML('beforeend', `<style id="ocr-css">.ocr-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 8px}.ocr-res{border:1px solid var(--rule,#ddd);border-radius:10px;padding:8px 10px;margin:0 0 10px;background:var(--panel,#fff)}.ocr-res table{width:100%;margin:6px 0;font-size:.95em}.ocr-res td{padding:2px 6px 2px 0}.ocr-res td:nth-child(odd){color:var(--dim,#777)}.ocr-bar{height:6px;border-radius:3px;background:var(--rule,#e5e5e5);margin:6px 0;overflow:hidden}.ocr-bar i{display:block;height:100%;width:0;background:var(--accent,#1f3a68);transition:width .2s}.ocr-raw{white-space:pre-wrap;font-size:11px;max-height:160px;overflow:auto}@media (max-width:700px){.ocr-row button{flex:1 1 100%;min-height:40px}}</style>`);
+
+/* ---- v2.23 simplification (188–203) and the logo that forms from zero (218) ---- */
+// 202 transaction texts in the chosen language (journal, change history, undo labels)
+const DL_TXTR = { 'Dividend': 'Temettü', 'gross': 'brüt', 'withholding': 'stopaj', 'net': 'net', 'interest': 'faiz', 'Sale proceeds to fund cash': 'Satış tutarı fon nakdine', 'Fund cash used for a purchase': 'Alış için fon nakdi kullanıldı', 'Money in': 'Para girişi', 'Money out': 'Para çıkışı', 'Convert': 'Döviz çevirme', 'Time deposit': 'Vadeli mevduat', 'Demand deposit': 'Vadesiz mevduat', 'Futures': 'Vadeli', 'short': 'kısa', 'long': 'uzun', 'margin': 'teminat', 'Futures expired': 'Vadeli vade sonu', 'Futures closed': 'Vadeli kapatıldı', 'Deposit closed': 'Mevduat kapatıldı', 'Deposit matured': 'Mevduat vadesi doldu' };
+function dlTxL(k) { return state.S.lang === 'tr' ? (DL_TXTR[k] || k) : k; }
+
+// 188 + 189 + 196 one thin status line; the data light says why it is amber or red
+function dlHealthInfo() { const src = (state.health || {}).sources || {}, bad = Object.values(src).filter(v => v.fails >= 2 || v.breached).length;
+  const lf = Object.values(state.inst || {}).map(x => x.fetchedAt).filter(Boolean).sort().pop(); if (!lf) return { cls: 'a', t: DL('Prices loading…', 'Fiyatlar yükleniyor…'), at: '' };
+  const h = (Date.now() - new Date(lf)) / 36e5, d = Math.floor(h / 24), hr = Math.max(1, Math.round(h));
+  const age = h < 1 ? DL('Prices up to date', 'Fiyatlar güncel') : h < 24 ? DL(`Prices updated ${hr} h ago`, `Fiyatlar ${hr} saat önce güncellendi`) : DL(`Prices updated ${d} day${d > 1 ? 's' : ''} ago`, `Fiyatlar ${d} gün önce güncellendi`);
+  const cls = h >= 168 ? 'r' : h >= 24 || bad ? 'a' : 'g';
+  return { cls, t: age + (bad && cls !== 'r' ? DL(` · ${bad} source${bad > 1 ? 's' : ''} late`, ` · ${bad} kaynak gecikti`) : ''), at: lf }; }
+{ const _rc = renderCtxBar; renderCtxBar = function () { _rc.apply(this, arguments); try { const el = $('ctxbar'); if (!el) return; el.classList.add('dlx-ctx1');
+    let when = ''; for (const s of [...el.children]) { const t = s.textContent.trim(); if (/^(As of|Zaman)\b/.test(t)) { when = t.replace(/^(As of|Zaman)\s*/, ''); s.style.display = 'none'; } else if (/^(Base|Ana para)\b/.test(t) || s.classList.contains('cmdhint')) s.style.display = 'none'; }
+    const hb = $('dlx-health'); if (hb) { const i = dlHealthInfo(); hb.innerHTML = `<i class="lt ${i.cls}"></i><span class="dlx-hl">${esc(i.t)}</span>`; hb.title = `${DL('Data sources', 'Veri kaynakları')}${when ? ' · ' + when : ''}`; if (el.firstElementChild !== hb) el.prepend(hb); } } catch (e) { console.error(e); } }; }
+
+// 195 lights have one meaning; blinking only while there is something to do today
+function dlCalm() { let n = 0; try { n = dlTodo().length; } catch (e) { } document.body.classList.toggle('dlx-calm', !n); }
+
+// 190 + 191 market cards: the score lives only in the ring, as a grade by rank inside the market; colour only on the decision label
+let dlGradeCache = { ref: null, m: null };
+function dlGrade(x) { const s = state.scored || []; if (dlGradeCache.ref !== s) { const m = new Map(), by = {}; for (const z of s) if (z.score != null) (by[z.cls] = by[z.cls] || []).push(z);
+    for (const L of Object.values(by)) { L.sort((a, b) => (b.score - a.score) || ((b.E ?? -1e9) - (a.E ?? -1e9)) || ((b.net12 ?? -1e9) - (a.net12 ?? -1e9))); L.forEach((z, i) => m.set(z.symbol, { top: (i + 1) / L.length * 100, i: i + 1, n: L.length })); }
+    dlGradeCache = { ref: s, m }; } return dlGradeCache.m.get(x.symbol) || null; }
+const dlGradeL = t => t <= 5 ? 'A+' : t <= 15 ? 'A' : t <= 35 ? 'B' : t <= 65 ? 'C' : 'D';
+function dlGradeRing(x) { const g = dlGrade(x); if (!g || x.score == null) return ''; const top = Math.max(1, Math.ceil(g.top));
+  return `<span class="dlx-gr" title="${esc(DL(`Score ${x.score} · ${g.i} of ${g.n} in this market (top ${top}%). A+ = top 5%, A = top 15%, B = top 35%, C = top 65%.`, `Puan ${x.score} · bu piyasada ${g.n} içinde ${g.i}. (ilk %${top}). A+ = ilk %5, A = ilk %15, B = ilk %35, C = ilk %65.`))}"><span class="mk-ring dlx-grade" style="--p:${(100 - g.top + 100 / g.n).toFixed(1)}"><b>${dlGradeL(g.top)}</b></span><small>${DL(`top ${top}%`, `ilk %${top}`)}</small></span>`; }
+{ const _mc = dlMkCard; dlMkCard = function (x, chips) { const h = _mc.call(this, x, (chips || []).filter(c => !/^(score|puan)\b/i.test(String(c[1])))); try { return h.replace(/<span class="mk-ring"[^>]*><b>[^<]*<\/b><\/span>/, dlGradeRing(x)); } catch (e) { return h; } }; }
+
+// 192 preset lists in two levels: the first five stay, the rest open under "More lists"; no list is removed
+{ const _lh = dlListsHTML; dlListsHTML = function () { const h = _lh.apply(this, arguments); try { const t = document.createElement('template'); t.innerHTML = h; const box = t.content.querySelector('.mk-lh .fp-ideas'), other = t.content.querySelector('.mk-other'); if (!box) return h;
+      const chips = [...box.querySelectorAll('.chip')], extra = chips.slice(5).filter(c => !c.classList.contains('on')), open = !!state.dlxMoreLists; const n = extra.length + (other ? other.querySelectorAll('.chip').length : 0); if (!n) return h;
+      const wrap = document.createElement('span'); wrap.className = 'dlx-morel'; if (!open) wrap.hidden = true; extra.forEach(c => wrap.appendChild(c)); box.appendChild(wrap);
+      box.insertAdjacentHTML('beforeend', `<button class="chip dlx-moreb" data-mk-more aria-expanded="${open}">${open ? DL('Fewer lists ▴', 'Daha az liste ▴') : DL(`More lists (${n}) ▾`, `Diğer listeler (${n}) ▾`)}</button>`);
+      if (other) { other.classList.add('dlx-morel'); if (!open && !other.querySelector('.chip.on')) other.hidden = true; } return t.innerHTML; } catch (e) { return h; } }; }
+document.addEventListener('click', e => { const b = e.target.closest('[data-mk-more]'); if (!b) return; state.dlxMoreLists = !state.dlxMoreLists; const root = b.closest('.mk-lists') || document;
+  root.querySelectorAll('.dlx-morel').forEach(x => { x.hidden = !state.dlxMoreLists && !x.querySelector('.chip.on'); }); b.setAttribute('aria-expanded', state.dlxMoreLists);
+  const n = root.querySelectorAll('.dlx-morel .chip').length; b.textContent = state.dlxMoreLists ? DL('Fewer lists ▴', 'Daha az liste ▴') : DL(`More lists (${n}) ▾`, `Diğer listeler (${n}) ▾`); });
+
+// 193 fund header: Edit stays visible; Factsheet / PDF / Word under "Report"; Delete and Close fund under "⋯"
+function dlHeadMenus() { const bar = document.querySelector('#sheet .sheet-bar'); if (!bar || bar.querySelector('.dlx-dd')) return; const pdf = $('pk-pdf'); if (!pdf) return;
+  const fs = $('pk-fs'), dx = $('pk-docx'), cl = $('pk-close'), del = bar.querySelector('[data-fund-delany]'), host = pdf.parentElement;
+  if (fs) fs.textContent = DL('Factsheet', 'Fon bülteni'); if (del) del.textContent = DL('Delete fund…', 'Fonu sil…');
+  const mk = (cls, label, title, items) => { const d = document.createElement('details'); d.className = 'dlx-dd ' + cls; d.innerHTML = `<summary title="${esc(title)}">${label}</summary><div class="dlx-dd-m"></div>`; items.filter(Boolean).forEach(b => d.lastChild.appendChild(b)); return d; };
+  host.appendChild(mk('dlx-rep', DL('Report ▾', 'Rapor ▾'), DL('Factsheet, PDF or Word report', 'Fon bülteni, PDF veya Word raporu'), [fs, pdf, dx]));
+  host.appendChild(mk('dlx-dots', '⋯', DL('More: delete or close the fund', 'Diğer: fonu sil veya kapat'), [del, cl])); }
+document.addEventListener('click', e => { document.querySelectorAll('details.dlx-dd[open]').forEach(d => { if (!d.contains(e.target) || (e.target.closest('.dlx-dd-m button') && !e.target.closest('[data-fund-delany]'))) d.open = false; }); });
+
+// 198 a changed value flashes green or red for about a second
+const dlFlashPrev = {};
+function dlFlashVals() { const items = []; document.querySelectorAll('#dlx-nw .gl-nav').forEach(e => items.push(['nw', e])); document.querySelectorAll('.dlx-mini[data-open-fund] .mini-nav').forEach(e => items.push(['m' + e.closest('[data-open-fund]').dataset.openFund, e]));
+  const sh = state.sheet; if (sh && sh.type === 'pkg') document.querySelectorAll('#sheet .gl-nav').forEach((e, i) => items.push(['s' + sh.id + i, e]));
+  for (const [k, e] of items) { const raw = (e.firstChild && e.firstChild.nodeType === 3 ? e.firstChild.textContent : e.textContent).trim(), v = parseFloat(raw.replace(/[^\d.\-]/g, '')), o = dlFlashPrev[k]; dlFlashPrev[k] = { raw, v };
+    if (o && o.raw !== raw && isFinite(v) && isFinite(o.v)) { e.classList.remove('flash-up', 'flash-down'); void e.offsetWidth; e.classList.add(v >= o.v ? 'flash-up' : 'flash-down'); } } }
+
+// 199 grey skeletons while the first data arrives, so nothing jumps
+function dlBootSkel() { const ready = (state.scored || []).length > 0, old = $('dlx-boot-skel'); if (ready) { if (old) old.remove(); return; } if (old) return; const g = document.querySelector('.view:not([hidden]) .grid'); if (!g) return;
+  g.insertAdjacentHTML('afterbegin', `<div id="dlx-boot-skel" style="display:contents">${dlSkelPanel('dlx-sk1', DL('Total wealth', 'Toplam varlık'), 2)}${dlSkelPanel('dlx-sk2', DL('Loading prices…', 'Fiyatlar yükleniyor…'), 4)}</div>`); }
+try { dlBootSkel(); } catch (e) { }
+state.hooks.push(() => { try { dlBootSkel(); } catch (e) { } });
+
+// 201 Summary opens with one main fact: total, today's change, against the deposit; then today's tasks; calendar and end-of-day note folded
+function dlHeroHTML() { const ps = state.packages.filter(p => p.status !== 'closed'); if (!ps.length) return ''; let ch = 0, base = 0, aw = 0, av = 0, ok = false;
+  for (const p of ps) { try { const closesOf = s => f4LongCloses(s) || (state.map[s] && state.map[s].closes) || []; const sr = DX.valueSeries(p, { today: today(), closesOf, ccyOf: s => (state.map[s] || state.inst[s] || {}).ccy, fxAt: dlFx, valFxAt: dlFxSell, settleAt: dlSettleAt }); if (sr.length < 2) continue;
+      const a = sr[sr.length - 2], b = sr[sr.length - 1]; ch += (b.value - b.invested) - (a.value - a.invested); base += a.value; ok = true; const g = dlGlanceStats(p, sr); if (g.alpha != null && b.value > 0) { aw += g.alpha * b.value; av += b.value; } } catch (e) { } }
+  if (!ok) return ''; const pc = base > 0 ? ch / base * 100 : null, al = av > 0 ? aw / av : null, sg = v => v >= 0 ? '+' : '−';
+  return `<div class="dlx-hero"><span class="${ch >= 0 ? 'up' : 'down'}"><i class="arw">${ch >= 0 ? '▲' : '▼'}</i> ${DL('Today', 'Bugün')} ${sg(ch)}${N(Math.abs(ch), 0)} TRY${pc != null ? ` (${sg(pc)}${dlN(Math.abs(pc), 2)}%)` : ''}</span>${al != null ? `<span class="${al >= 0 ? 'up' : 'down'}">${DL('vs deposit', 'Mevduata göre')} ${sg(al)}${dlN(Math.abs(al), 1)} ${DL('pts', 'puan')}</span>` : ''}</div>`; }
+function dlFoldSet(el, key) { if (!el || el.dataset.f23) return; el.dataset.f23 = '1';
+  const h = el.querySelector('h2'); if (h) { h.style.cursor = 'pointer'; if (!h.querySelector('.dlx-fold')) h.insertAdjacentHTML('beforeend', ' <span class="sub dlx-fold">▾</span>'); } }
+const dlFoldOn = k => { try { return pref.get('fold_' + k, '1') === '1'; } catch (e) { return true; } };
+{ const _e = dlEodHTML; dlEodHTML = function () { const h = _e.apply(this, arguments); return h && dlFoldOn('eod') ? h.replace('<div class="panel wide" id="dlx-eod"', '<div class="panel wide dlx-folded" id="dlx-eod"') : h; }; }
+{ const _c = dlCalHTML; dlCalHTML = function () { const h = _c.apply(this, arguments); return h && dlFoldOn('cal') ? h.replace('<div class="panel wide" id="dlx-cal"', '<div class="panel wide dlx-folded" id="dlx-cal"') : h; }; }
+function dlCalNext(el) { const r = el && el.querySelector('tr'); if (!r || el.querySelector('.dlx-next')) return; const c = r.querySelectorAll('td'); if (c.length < 3) return; const sub = el.querySelector('h2 .sub'); if (sub) sub.insertAdjacentHTML('afterend', ` <span class="sub dlx-next">· ${DL('next', 'sıradaki')}: ${esc(c[0].textContent.trim())} — ${esc(c[2].textContent.trim().split(/ — |, /)[0].slice(0, 48))}</span>`); }
+function dlTodayOrder() { const g = document.querySelector('#view-TODAY .grid'), nw = $('dlx-nw'); if (!g || !nw) return; let ref = null;
+  const head = nw.querySelector('.gl-head > div'); if (head && !nw.querySelector('.dlx-hero')) { const h = dlHeroHTML(); if (h) head.insertAdjacentHTML('beforeend', h); }
+  dlFoldSet($('dlx-cal'), 'cal'); dlFoldSet($('dlx-eod'), 'eod'); dlCalNext($('dlx-cal'));
+  for (const id of ['dlx-nw', 'dlx-ltstrip', 'dlx-todo', 'dlx-minis', 'dlx-heat', 'dlx-cal', 'dlx-eod']) { const el = $(id); if (!el || el.parentElement !== g) continue; if (!ref) { if (g.firstElementChild !== el) g.prepend(el); } else if (ref.nextElementSibling !== el) ref.after(el); ref = el; } }
+{ const _lt = dlLtStrip; dlLtStrip = function () { const r = _lt.apply(this, arguments); try { dlTodayOrder(); } catch (e) { } return r; }; }
+{ const _rt = renderToday; renderToday = function () { _rt.apply(this, arguments); try { const g = document.querySelector('#view-TODAY .grid'), nw = $('dlx-nw'); if (!g || !nw) return; dlTodayOrder(); setTimeout(() => { try { dlTodayOrder(); } catch (e) { } }, 0);
+    const head = nw.querySelector('.gl-head > div'); if (head && !nw.querySelector('.dlx-hero')) { const h = dlHeroHTML(); if (h) head.insertAdjacentHTML('beforeend', h); }
+    dlFoldSet($('dlx-cal'), 'cal'); dlFoldSet($('dlx-eod'), 'eod'); dlCalNext($('dlx-cal')); } catch (e) { console.error(e); } }; }
+document.addEventListener('click', e => { const h = e.target.closest('#dlx-cal h2, #dlx-eod h2'); if (!h || e.target.closest('button, a')) return; const p = h.closest('.panel'); if (p.id === 'dlx-cal') p.classList.toggle('dlx-folded');
+  setTimeout(() => { try { pref.set('fold_' + (p.id === 'dlx-cal' ? 'cal' : 'eod'), p.classList.contains('dlx-folded') ? '1' : '0'); } catch (er) { } }, 0); });
+
+// 203 every "?" gives one sentence and a concrete example
+const DL_GLEX = { 'Alpha': ['A fund that made 30% while the deposit made 25% over the same days has an alpha of +5 points.', 'Aynı günlerde mevduat %25 kazandırırken fon %30 kazandırdıysa alfa +5 puandır.'],
+  'Sharpe ratio': ['Return 40%, deposit 30%, volatility 20% → (40 − 30) ÷ 20 = 0.5.', 'Getiri %40, mevduat %30, oynaklık %20 → (40 − 30) ÷ 20 = 0,5.'],
+  'Volatility': ['30% volatility on 100,000 TRY: in a typical year the value ends roughly between 70,000 and 130,000 TRY.', '100.000 TL için %30 oynaklık: tipik bir yılda değer kabaca 70.000–130.000 TL arasında biter.'],
+  'Beta': ['A beta of 1.2: when the BIST 100 falls 10%, this tends to fall about 12%.', 'Beta 1,2: BIST 100 %10 düştüğünde bu yaklaşık %12 düşme eğilimindedir.'],
+  'Max drawdown': ['Fund rose to 120,000 TRY, then fell to 90,000 TRY: the drawdown is −25%.', 'Fon 120.000 TL’ye çıktı, sonra 90.000 TL’ye indi: en büyük düşüş −%25’tir.'],
+  'VaR': ['1-month VaR of 8,000 TRY: in 19 months out of 20 the loss should stay below 8,000 TRY.', '1 aylık VaR 8.000 TL: 20 aydan 19’unda kayıp 8.000 TL’nin altında kalmalıdır.'],
+  'Expected return': ['Expected 20% on 100,000 TRY means about 120,000 TRY on average — some outcomes higher, some lower.', '100.000 TL için %20 beklenen getiri, ortalamada yaklaşık 120.000 TL demektir; bazı sonuçlar daha yüksek, bazıları daha düşük olur.'],
+  'Percentile': ['The 5th percentile of 110,000 TRY: 95 of 100 simulated futures end above 110,000 TRY.', '5. yüzdelik 110.000 TL: 100 senaryodan 95’i 110.000 TL’nin üstünde biter.'],
+  'NAV': ['Holdings worth 95,000 TRY plus 5,000 TRY cash give a NAV of 100,000 TRY.', '95.000 TL varlık ve 5.000 TL nakit, 100.000 TL net varlık değeri eder.'],
+  'Risk class': ['Class 6 of 7: large swings are normal, like a single BIST share.', '7 üzerinden 6. sınıf: tek bir BIST hissesi gibi büyük dalgalanmalar olağandır.'],
+  'Leverage': ['10,000 TRY margin controlling 100,000 TRY of index futures is 10× leverage: a 3% move is ±30% on the margin.', '10.000 TL teminatla 100.000 TL’lik endeks vadelisi 10 kat kaldıraçtır: %3’lük hareket teminatta ±%30 eder.'],
+  'Margin call': ['Margin 10,000 TRY, maintenance 7,500 TRY: after a 2,600 TRY loss you must top it up.', 'Teminat 10.000 TL, sürdürme 7.500 TL: 2.600 TL zarardan sonra ek teminat yatırmanız gerekir.'],
+  'Carry': ['Spot 100, futures 104 for three months: the 4% gap is mostly the interest difference.', 'Spot 100, üç aylık vadeli 104: aradaki %4 büyük ölçüde faiz farkıdır.'],
+  'Roll': ['Close the December contract and open February so the position continues past expiry.', 'Pozisyon vade sonrasında sürsün diye Aralık sözleşmesini kapatıp Şubat’ı açmak.'],
+  'Break-even': ['Bought at 100 with 1% costs both ways: the price must reach about 102 before you gain.', '100’den alındı, gidiş-dönüş %1 maliyet: kazanmak için fiyatın yaklaşık 102’ye çıkması gerekir.'],
+  'Risk contribution': ['A line that is 20% of the money but 45% of the risk swings much more than the rest.', 'Paranın %20’si ama riskin %45’i olan kalem diğerlerinden çok daha fazla dalgalanır.'],
+  'Hit rate': ['60 right calls out of 100 is a 60% hit rate.', '100 tahminden 60’ı doğru çıktıysa isabet oranı %60’tır.'],
+  'Correlation': ['0.9: they move almost together; 0: unrelated; −0.5: often opposite.', '0,9: neredeyse birlikte hareket eder; 0: ilgisiz; −0,5: sıkça ters yönde.'],
+  'Commodity': ['Gram gold, silver, Brent oil.', 'Gram altın, gümüş, Brent petrol.'] };
+for (const [re, k] of [[/^(alfa|alpha vs deposit)/i, 'Alpha'], [/^(beklenen getiri|expected)/i, 'Expected return']]) DL_QMAP.push([re, k]);
+{ const _an = dlAnnotate; dlAnnotate = function (root) { _an(root); if (!root) return; try { root.querySelectorAll('.k small, .gl-cell small:first-child').forEach(el => { if (el.querySelector('.gl-q')) return; const t = el.textContent.trim(), m = DL_QMAP.find(([re]) => re.test(t)); if (m && DX.GLOSSARY[m[1]]) el.insertAdjacentHTML('beforeend', ` <span class="gl-q" data-gl="${esc(m[1])}" tabindex="0" role="button" aria-label="?">?</span>`); }); } catch (e) { } }; }
+document.addEventListener('click', e => { const q = e.target.closest('.gl-q'); if (!q) return; const ex = DL_GLEX[q.dataset.gl]; if (!ex) return; setTimeout(() => { const pop = $('dlx-glpop'); if (pop && !pop.querySelector('.dlx-glex')) pop.insertAdjacentHTML('beforeend', `<div class="dlx-glex"><b>${DL('Example', 'Örnek')}:</b> ${esc(ex[state.S.lang === 'tr' ? 1 : 0])}</div>`); }, 0); }, true);
+
+// 218 the goat mark draws itself: frame, horns, face, then eyes and beard (header mark on later visits; the splash on the first)
+const DL_GOAT_DRAW = (s, cls = '') => `<svg class="dlx-goat lg ${cls}" width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><rect class="lg-f" x=".6" y=".6" width="30.8" height="30.8" rx="7" pathLength="1"/><path class="lg-h" pathLength="1" d="M12.2 12.4C10.6 7.6 7.2 6.4 5.2 8.8"/><path class="lg-h" pathLength="1" d="M19.8 12.4C21.4 7.6 24.8 6.4 26.8 8.8"/><path class="lg-w" pathLength="1" d="M11.2 13.6 6.8 15.4l4.6 1.4zM20.8 13.6l4.4 1.8-4.6 1.4z"/><path class="lg-w" pathLength="1" d="M11 12.2h10l-1.6 9.2L16 25.4l-3.4-4z"/><circle class="lg-e" cx="13.7" cy="15.8" r="1.05"/><circle class="lg-e" cx="18.3" cy="15.8" r="1.05"/><path class="lg-b" d="M14.6 25 16 29.2 17.4 25z"/></svg>`;
+{ const old = document.querySelector('header .brand .dlx-goat'); if (old) { old.outerHTML = DL_GOAT_DRAW(22, document.getElementById('dlx-splash') ? 's1 s2 s3 s4' : ''); const g = document.querySelector('header .brand .dlx-goat');
+    if (g && !g.classList.contains('s4')) [['s1', 30], ['s2', 180], ['s3', 330], ['s4', 520]].forEach(([c, t]) => setTimeout(() => g.classList.add(c), t)); } }
+
+// wiring
+{ const _ra = renderAll; renderAll = function () { _ra.apply(this, arguments); try { dlCalm(); } catch (e) { } setTimeout(() => { try { dlTodayOrder(); dlFlashVals(); dlBootSkel(); } catch (e) { } }, 0); }; }
+{ const _rs = renderSheet; renderSheet = function () { _rs.apply(this, arguments); try { dlHeadMenus(); } catch (e) { console.error(e); } setTimeout(() => { try { dlFlashVals(); } catch (e) { } }, 0); }; }
+try { dlCalm(); renderCtxBar(); } catch (e) { }
+document.head.insertAdjacentHTML('beforeend', `<style id="dlx-v223-css">
+:root{--mono:var(--sans)!important}body{font-variant-numeric:tabular-nums}input,select,textarea,.mono,b,td,th{font-variant-numeric:tabular-nums}
+#ctxbar.dlx-ctx1{flex-wrap:nowrap;white-space:nowrap;overflow-x:clip;min-width:0}#ctxbar.dlx-ctx1>*{flex:0 0 auto}#ctxbar #dlx-health{flex:0 1 auto;min-width:0;display:inline-flex;align-items:center;padding:0 2px;margin:0}#ctxbar .dlx-hl{overflow:hidden;text-overflow:ellipsis}
+.dlx-inb{display:none!important}
+.mk-l .lt.g::after{animation:none!important;display:none}body.dlx-calm i.dlx-lt{animation:none!important}
+.mk-c.buy,.mk-c.avoid,.mk-c.watch{border-left:1px solid var(--rule,#ddd)}.mk-c:hover{transform:none}
+.dlx-gr{display:inline-flex;flex-direction:column;align-items:center;gap:1px;flex:none}.dlx-gr small{font-size:10px;color:var(--muted)}.mk-ring.dlx-grade{--c:var(--fg2,#5b5f66)}.mk-ring.dlx-grade b{font-size:12px;font-weight:700;font-family:var(--sans)}
+@media (hover:hover){.mk-c .mk-c4{opacity:0;transition:opacity .15s}.mk-c:hover .mk-c4,.mk-c:focus-within .mk-c4{opacity:1}}
+.dlx-moreb{border-style:dashed!important}.dlx-morel{display:contents}.dlx-morel[hidden]{display:none!important}.mk-other.dlx-morel{display:flex}.mk-other.dlx-morel[hidden]{display:none!important}
+details.dlx-dd{position:relative;display:inline-block}#sheet .sheet-bar:has(details.dlx-dd[open]){z-index:60}@media (max-width:700px){#sheet .sheet-bar{position:relative}}details.dlx-dd>summary{list-style:none;cursor:pointer;padding:5px 10px;border:1px solid var(--rule);border-radius:8px;background:var(--panel);font-size:13px;user-select:none}details.dlx-dd>summary::-webkit-details-marker{display:none}details.dlx-dd[open]>summary{background:var(--panel2)}
+.dlx-dd-m{position:absolute;right:0;top:calc(100% + 4px);z-index:30;display:flex;flex-direction:column;min-width:170px;padding:4px;border:1px solid var(--rule);border-radius:10px;background:var(--panel);box-shadow:0 8px 24px rgba(0,0,0,.12)}.dlx-dd-m button{text-align:left;border:0;background:none;margin:0;padding:7px 10px;border-radius:6px;width:100%}.dlx-dd-m button:hover{background:var(--panel2)}
+.dlx-hero{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:14px;font-weight:600}.dlx-hero .arw{font-style:normal}
+#dlx-nw .gl-nav{font-size:32px!important;letter-spacing:-.5px}
+.dlx-glex{margin-top:6px;padding-top:6px;border-top:1px solid var(--rule);font-size:12px}
+.sheet:not([hidden]){animation:dlxFade .18s ease-out}.modal{animation:dlxFade .16s ease-out}.view.dlx-enter{animation:dlxFade .16s ease-out both}.dlx-in{animation:dlxFade .18s ease-out both}@keyframes dlxFade{from{opacity:0}to{opacity:1}}
+.lg .lg-f{fill:var(--goat,#c25a00);fill-opacity:0;stroke:var(--goat,#c25a00);stroke-width:1.2;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset .32s ease,fill-opacity .22s ease .2s}
+.lg .lg-h{fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset .28s ease}
+.lg .lg-w{fill:#fff;fill-opacity:0;stroke:#fff;stroke-width:.7;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset .26s ease,fill-opacity .18s ease .16s}
+.lg .lg-e,.lg .lg-b{fill:var(--goat,#c25a00);opacity:0;transform-box:fill-box;transform-origin:center;transform:scale(.2);transition:opacity .18s ease,transform .22s cubic-bezier(.3,1.6,.5,1)}.lg .lg-b{fill:#fff}
+.lg.s1 .lg-f{stroke-dashoffset:0;fill-opacity:1}.lg.s2 .lg-h{stroke-dashoffset:0}.lg.s3 .lg-w{stroke-dashoffset:0;fill-opacity:1}.lg.s4 .lg-e,.lg.s4 .lg-b{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;transition-delay:0s!important;scroll-behavior:auto!important}}
+</style>`);
+window.__gncV23 = { hero: () => dlHeroHTML(), grade: x => dlGrade(x), health: () => dlHealthInfo(), order: () => dlTodayOrder() };
 
 /* v2.14 end */
 Object.assign(TR, { 'GitHub version · prices update about every 30–60 minutes on weekdays · your data stays in this browser': 'GitHub sürümü · fiyatlar iş günleri yaklaşık 30–60 dakikada bir güncellenir · verileriniz bu tarayıcıda kalır',

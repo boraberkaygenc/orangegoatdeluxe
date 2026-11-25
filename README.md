@@ -5,6 +5,19 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.23: Sadeleştirme ve sıfırdan çizilen logo
+
+- Açılışta keçi logosu boş ekrandan çizilir: önce çerçeve ve turuncu dolgu, sonra boynuzlar, yüz, en son gözler, sakal ve “GNC” yazısı. Çizim yükleme adımlarıyla ilerler (“Fiyatlar yükleniyor… 3/4”); veri hazır olunca açılış ekranı yaklaşık 1 saniyede kapanır, en geç 2,6 saniyede çekilir. Sonraki açılışlarda açılış ekranı gösterilmez; üst çubuktaki küçük logo kendini çizer.
+- Üst alan tek ince satırdır: veri ışığı nedenini yazar (“Fiyatlar 8 gün önce güncellendi”; 1 günden eski sarı, 1 haftadan eski kırmızı), USD/TRY ve fon sayısı. “Ana para TRY” ve komut ipucu kaldırıldı. Okunmamış mesajlar yalnızca zil rozetinde gösterilir.
+- Özet sayfası tek ana bilgiyle açılır: toplam varlık, bugünkü değişim ve mevduata göre fark en üstte; altında “Bugün dikkat” ve “Bugün ne yapmalıyım?”; takvim (sıradaki olay başlıkta) ve gün sonu notu katlıdır, açılan durum hatırlanır.
+- Piyasa kartları: puan yalnızca halkada ve piyasa içi sıraya göre harf notuyla gösterilir (A+ = ilk %5, A = ilk %15, B = ilk %35, C = ilk %65, D = kalanı; altında “ilk %3” gibi). Ayrı “puan 100” etiketi ve renkli kart kenarı kalktı, renk yalnızca karar etiketinde. “Fona ekle” bilgisayarda kartın üzerine gelince görünür.
+- Hazır listelerin ilk beşi görünür; kalanlar ve geçmişte etkisiz listeler “Diğer listeler ▾” altındadır. Hiçbir liste kaldırılmadı.
+- Fon başlığı: “Düzenle” görünür; Fon bülteni (eski adıyla Factsheet), PDF ve Word “Rapor ▾”, “Fonu sil…” ve “Fonu kapat” “⋯” menüsündedir.
+- Tüm sayılar aynı yazı tipinde ve eşit genişlikli rakamlarla gösterilir; sütunlar hizalıdır.
+- Işıkların tek anlamı vardır; yanıp sönme yalnızca bugün yapılacak bir iş varken olur, piyasa açık ışığı artık nabız atmaz.
+- Geçişler kısa solmadır (150–180 ms, kayma yok); cihazda “hareketi azalt” açıksa animasyonlar kapanır. Toplam varlık ve fon değerleri değiştiğinde yaklaşık 1 saniye yeşil/kırmızı vurgulanır. İlk veri gelirken gri iskelet kutular gösterilir.
+- İşlem metinleri (döviz çevirme, mevduat, temettü vb.) seçili dilde yazılır. Terimlerin yanındaki “?” tek cümlelik açıklamanın altında somut bir örnek de verir (Alfa, Sharpe, Oynaklık, Beta, En büyük düşüş, VaR vb.).
+
 ## v2.22: Ekran görüntüsünden işlem, telefonda sekmeler
 
 - Fonun işlem penceresinde “📷 Ekran görüntüsünden doldur”: aracı kurumun emir/gerçekleşme ekranının görüntüsü seçilir veya yapıştırılır; görüntü yalnızca bu cihazda okunur (Tesseract.js, Türkçe + İngilizce, hiçbir yere gönderilmez). Sembol, alış/satış, gerçekleşme tarihi ve saati, adet, fiyat, para birimi, ücret ve toplam çıkarılır; toplam kontrol edilir ve pencere doldurulur. Ücret dolar ise o günün kuruyla TL’ye çevrilir. Kaydetmeden önce “Emin misiniz?” ekranı gelir.
