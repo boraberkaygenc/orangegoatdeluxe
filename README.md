@@ -5,6 +5,12 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.24: Kurulun net cevabı, resimli Pointer ve masaüstünde animasyonlar
+
+- Masaüstü düzeltmesi: İşletim sisteminde “animasyon efektleri” kapalı olduğunda (Windows’ta sık görülür) tarayıcı “azaltılmış hareket” bildiriyordu ve uygulama bütün animasyon ve geçişleri kapatıyordu. Bu kural kaldırıldı; açılış logosu, sekme geçişleri, sayfa ve pencere geçişleri, ışıklar ve Kurul tartışması her bilgisayarda çalışır.
+- Yönetim Kurulu: En üstte tek karar kutusu bulunur (ör. “Al — Güven: yüksek · 15 oyun 11’i”). Altında üç maddelik sade gerekçe, oyların tek renkli çubukta dağılımı ve “Bunu uygula →” düğmesi vardır; düğme işlem penceresini sembolle dolu açar. Süreç “Soru → Veri → Tartışma → Oylama → Karar” adımlarıyla ilerleme çubuğunda gösterilir. Masa, konuşmalar ve oylar “Tartışmanın ayrıntısı” altında katlanır; tartışma oynarken açılır, karar çıkınca kendiliğinden katlanır.
+- Fon Pointer’ı: Üç kart, her biri bir cümle ve bir grafikle: “Mevduata göre” (fon ve mevduat için iki çubuk), “Ne kadar oynar” (sakin–sert kadranı ve tipik yıllık oynama tutarı TL olarak), “Dağılmış mı?” (kalemlerin payını gösteren halka). Altında “Ne yapmalı” satırı ve tek düğme (“Çözümü göster (3 işlem)”) bulunur; düğme çözüm tablosuna götürür ve onu vurgular. Teknik kontrol listesi “Tüm kontroller” altında katlıdır; “Risk (yıllık 1σ)” yerine “Yıllık dalgalanma” yazılır.
+
 ## v2.23: Sadeleştirme ve sıfırdan çizilen logo
 
 - Açılışta keçi logosu boş ekrandan çizilir: önce çerçeve ve turuncu dolgu, sonra boynuzlar, yüz, en son gözler, sakal ve “GNC” yazısı. Çizim yükleme adımlarıyla ilerler (“Fiyatlar yükleniyor… 3/4”); veri hazır olunca açılış ekranı yaklaşık 1 saniyede kapanır, en geç 2,6 saniyede çekilir. Sonraki açılışlarda açılış ekranı gösterilmez; üst çubuktaki küçük logo kendini çizer.
