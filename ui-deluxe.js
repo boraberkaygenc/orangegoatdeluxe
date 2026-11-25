@@ -1444,7 +1444,7 @@ function dlDecorate(root) { if (!root) return;
 { const _rs = renderSheet; renderSheet = function () { _rs(); try { dlDecorate($('sheet')); dlCountUp($('sheet')); } catch (e) { } }; }
 { const _ra = renderAll; renderAll = function () { _ra.apply(this, arguments); setTimeout(() => { try { const v = document.querySelector('.view:not([hidden])'); dlDecorate(v); dlCountUp(v); dlEmptyStates(); } catch (e) { } }, 0); }; }
 // motion: headline numbers count up the first time they appear
-function dlCountUp(root) { if (!root || matchMedia('(prefers-reduced-motion: reduce)').matches) return; root.querySelectorAll('.gl-nav:not([data-cu])').forEach(el => { el.dataset.cu = '1'; const txt = el.textContent, m = txt.match(/-?[\d.,]+/); if (!m) return; const target = +m[0].replace(/,/g, ''); if (!isFinite(target) || Math.abs(target) < 10) return; const t0 = performance.now(), dur = 550, fmt = v => txt.replace(m[0], Math.round(v).toLocaleString('en-US'));
+function dlCountUp(root) { if (!root || false) return; root.querySelectorAll('.gl-nav:not([data-cu])').forEach(el => { el.dataset.cu = '1'; const txt = el.textContent, m = txt.match(/-?[\d.,]+/); if (!m) return; const target = +m[0].replace(/,/g, ''); if (!isFinite(target) || Math.abs(target) < 10) return; const t0 = performance.now(), dur = 550, fmt = v => txt.replace(m[0], Math.round(v).toLocaleString('en-US'));
   const html = el.innerHTML; const step = t => { const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); if (k < 1) { el.textContent = fmt(target * (0.9 + 0.1 * e)); requestAnimationFrame(step); } else el.innerHTML = html; }; requestAnimationFrame(step); }); }
 // empty states: a clear first step instead of an empty page
 function dlEmptyStates() { const pk = $('view-PKGS'); if (pk && !pk.hidden) { const has = (state.packages || []).length, ex = $('dlx-empty-pk'); if (!has && !ex) { const g = pk.querySelector('.grid'); if (g) g.insertAdjacentHTML('afterbegin', `<div class="panel wide dlx-empty" id="dlx-empty-pk"><div class="body">${DL_GOAT(40)}<h3>${DL('No funds yet', 'Henüz fonunuz yok')}</h3><p class="hint">${DL('A fund groups what you hold — shares, gold, USD, deposits, futures — and tracks it against the deposit. Start in one of three ways:', 'Fon, sahip olduklarınızı — hisse, altın, dolar, mevduat, vadeli — bir araya getirir ve mevduatla karşılaştırır. Üç yoldan biriyle başlayın:')}</p><div class="row-inline" style="gap:8px;flex-wrap:wrap;justify-content:center"><button class="primary" data-empty="new">${DL('New fund', 'Yeni fon')}</button><button data-empty="import">${DL('From a broker report', 'Aracı kurum raporundan')}</button><button data-empty="basket">${DL('From the basket', 'Sepetten')}</button></div></div></div>`); } else if (has && ex) ex.remove(); } }
@@ -1503,7 +1503,7 @@ header .brand{display:inline-flex;align-items:center;gap:2px;font-weight:600}
 button,.row,tr.row{transition:background-color .12s ease,color .12s ease,border-color .12s ease}
 /* empty states */
 .dlx-empty .body{text-align:center;padding:26px 16px}.dlx-empty h3{margin:10px 0 4px;font-size:18px}.dlx-empty p{max-width:520px;margin:0 auto 14px}
-@media (prefers-reduced-motion:reduce){.sheet:not([hidden]),.modal,#toast{animation:none}}
+
 </style>`);
 // skeletons instead of "Loading…"
 { const _ap = (s => s); }
@@ -1800,7 +1800,7 @@ document.addEventListener('click', e => { const b = e.target.closest('[data-empt
 document.head.insertAdjacentHTML('beforeend', `<style>
 .lt{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px;background:#8b949e;flex:0 0 auto}
 .lt.g{background:#2ea043;box-shadow:0 0 0 3px rgba(46,160,67,.18)}.lt.a{background:#d29922;box-shadow:0 0 0 3px rgba(210,153,34,.18)}.lt.r{background:#d1242f;box-shadow:0 0 0 3px rgba(209,36,47,.18)}.lt.b{background:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.18)}.lt.x{background:#8b949e}
-.mk-l .lt.g{position:relative}.mk-l .lt.g::after{content:'';position:absolute;inset:-4px;border-radius:50%;background:rgba(46,160,67,.28);animation:dlxPulse 2s ease-in-out infinite;will-change:transform,opacity;pointer-events:none}@keyframes dlxPulse{0%,100%{transform:scale(.6);opacity:.9}50%{transform:scale(1.15);opacity:.15}}@media (prefers-reduced-motion:reduce){.mk-l .lt.g::after{animation:none}}
+.mk-l .lt.g{position:relative}.mk-l .lt.g::after{content:'';position:absolute;inset:-4px;border-radius:50%;background:rgba(46,160,67,.28);animation:dlxPulse 2s ease-in-out infinite;will-change:transform,opacity;pointer-events:none}@keyframes dlxPulse{0%,100%{transform:scale(.6);opacity:.9}50%{transform:scale(1.15);opacity:.15}}
 #mkt-badges .mk-l,#mkt-badges .mk-l span{border:0!important;padding:0!important;background:none!important;border-radius:0!important}
 #cmd{width:190px}#cmd::placeholder{text-transform:none;letter-spacing:0}
 #mkt-badges{display:inline-flex;gap:14px;align-items:center;font-size:12px;color:var(--fg2)}#mkt-badges .mk-l{display:inline-flex;align-items:center;white-space:nowrap;border:0;padding:0;background:none}#mkt-badges b{font-weight:600;color:var(--fg)}.mk-s{margin-left:4px}.mk-w{color:var(--muted);margin-left:4px}
@@ -1814,7 +1814,7 @@ document.head.insertAdjacentHTML('beforeend', `<style>
 tr.row:hover>td{background:var(--sel)}
 .sheet table tr:first-child>th{position:sticky;top:0;background:var(--panel);z-index:1}
 line.xh{stroke:var(--fg2);stroke-width:1;stroke-dasharray:3 3}.xh-tip{position:absolute;pointer-events:none;background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:5px 8px;font-size:12px;box-shadow:0 6px 18px rgba(0,0,0,.14);z-index:5;white-space:nowrap}
-@media (prefers-reduced-motion:reduce){.mk-l .lt.g,.flash-up,.flash-down{animation:none}}
+
 </style>`);
 
 
@@ -2136,7 +2136,7 @@ function dlGuardHTML(x, side, pkgId) { if (!x || !x.e) return ''; const out = []
 // ---- 6 · motion: panels slide in when a view or a sheet opens; numbers count to their value ----
 /* v2.9 motion: panels enter with the Web Animations API (no forced layout per panel); numbers remember their last value across re-renders:
    first appearance → a short rise-in, unchanged → nothing, changed → count from the old value to the new one with a brief green/red glow. */
-const DL_RM = () => matchMedia('(prefers-reduced-motion: reduce)').matches, DL_NUMMEM = new Map();
+const DL_RM = () => false, DL_NUMMEM = new Map();
 function dlAnimIn(root) { if (!root || DL_RM()) return; const ps = [...root.querySelectorAll(':scope .panel, :scope > .grid > .panel')].filter((p, i, a) => a.indexOf(p) === i && p.offsetParent !== null).slice(0, 10);
   ps.forEach((p, i) => { try { p.getAnimations().forEach(a => a.cancel()); p.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 240, delay: i * 28, easing: 'cubic-bezier(.2,.7,.2,1)', fill: 'backwards' }); } catch (e) { } }); dlTween(root); }
 function dlNumKey(el, root, all) { const host = el.closest('[id]'), tile = el.closest('.tile, .gl-cell, .cell, td, .gl-head'), lab = tile && tile.querySelector('.lab, .gl-lab, .k, th');
@@ -2166,7 +2166,7 @@ document.head.insertAdjacentHTML('beforeend', `<style>
 .efx2-r table{width:100%;table-layout:auto}.efx2-r>div{overflow:auto}.efx2-r td{vertical-align:top}.efx2-r td.l.dim{white-space:normal;min-width:180px;max-width:340px;font-size:12px}.efx2-r td:last-child{white-space:nowrap}
 .dlx-efx-big>.row-inline:last-child{position:sticky;bottom:-1px;background:var(--panel,var(--bg,#fff));padding:10px 0 4px;margin-bottom:-4px;border-top:1px solid var(--rule,#ddd);z-index:2}.efx2-grp td{background:var(--panel2,rgba(127,127,127,.07));padding-top:8px}.chip{border:1px solid var(--rule,#ccc);border-radius:999px;padding:2px 10px;font-size:12px;background:transparent;cursor:pointer}.chip.on{background:var(--acc,#e8740c);color:#fff;border-color:transparent}
 .efx-sw{width:22px;height:22px;border-radius:50%;border:2px solid var(--rule,#ccc);padding:0;font-size:11px;line-height:18px;cursor:pointer}.efx-sw.on{outline:2px solid var(--fg,#222);outline-offset:2px}@keyframes dlxFade{from{opacity:.0}to{opacity:1}}
-@media (prefers-reduced-motion: reduce){.dlx-in,.view:not([hidden]){animation:none}}
+
 .dlx-hl td{background:rgba(46,157,106,.09)}.dlx-verdict .dlx-vhead{display:flex;gap:10px;align-items:center;font-size:15px;margin-bottom:10px}.dlx-vdot{width:12px;height:12px;border-radius:50%;display:inline-block;flex:none}.dlx-vdot.good{background:#2e9d6a}.dlx-vdot.warn{background:#d39b1d}.dlx-vdot.bad{background:#c0392b}
 .dlx-verdict.good{border-left:3px solid #2e9d6a}.dlx-verdict.warn{border-left:3px solid #d39b1d}.dlx-verdict.bad{border-left:3px solid #c0392b}.dlx-acts{margin:4px 0 0 18px;padding:0;line-height:1.7}
 .dlx-guard{margin:6px 0 10px;padding:8px 10px;border:1px solid var(--rule);border-radius:8px;background:var(--panel2);font-size:13px;line-height:1.6}.pill.warn{background:rgba(211,155,29,.15);color:#a8740c}.pill.ok{background:rgba(46,157,106,.14);color:#2e9d6a}
@@ -3212,7 +3212,7 @@ document.head.insertAdjacentHTML('beforeend', `<style id="dlx-tabs-css">
 }
 .view.dlx-enter{animation:dlxEnter .2s ease-out both}
 @keyframes dlxEnter{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){.view.dlx-enter{animation:none}#dlx-tabind{transition:none}}
+
 #dlx-clock{margin:0 14px 0 4px;color:var(--fg2);font-size:12.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
 #dlx-clock b{color:var(--fg);font-weight:500}
 @media (max-width:900px){#dlx-clock .dlx-ck-d{display:none}}
@@ -3299,7 +3299,7 @@ i.dlx-lt{display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 6p
 i.dlx-lt.r{--c:#e0453a}i.dlx-lt.g{--c:#2fb37a}i.dlx-lt.a{--c:#e0a92b}
 i.dlx-lt.still{animation:none}
 @keyframes dlxBlink{0%{opacity:1;box-shadow:0 0 0 0 color-mix(in srgb,var(--c) 55%,transparent)}55%{opacity:.35;box-shadow:0 0 0 5px transparent}100%{opacity:1;box-shadow:0 0 0 0 transparent}}
-@media (prefers-reduced-motion:reduce){i.dlx-lt{animation:none}}
+
 #dlx-ltbtn.dlx-ltb{display:inline-flex;gap:8px;align-items:center;font-variant-numeric:tabular-nums}
 #dlx-ltbtn span{display:inline-flex;align-items:center}
 #dlx-ltpop{position:absolute;z-index:80;min-width:300px;max-width:440px;max-height:60vh;overflow:auto;background:var(--panel);color:var(--fg);border:1px solid var(--rule);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.18);font-size:13px}
@@ -3687,7 +3687,7 @@ function bdShow(S, instant) { clearTimeout(BD_UI.timer); BD_UI.S = S; const step
   if (S.err) { $('bd-floor').innerHTML = `<div class="bd-empty">${esc(S.err)}</div>`; return; }
   const tsub = $('bd-tsub'); if (tsub) tsub.textContent = S.title || '';
   const finish = () => { clearTimeout(BD_UI.timer); for (const s of steps) bdMark(s, S); document.querySelectorAll('#bd-svg .bd-seat.speak').forEach(x => x.classList.remove('speak')); const L = $('bd-lines'); if (L) L.innerHTML = ''; bdFloor(steps, steps.length - 1, S); $('bd-hemi').innerHTML = bdHemi(S, S.votes.length); bdCard(S); bdMinutes(S); if (ctl) ctl.innerHTML = `<button class="ghost" id="bd-replay">${DL('Replay the debate', 'Tartışmayı yeniden oynat')}</button>`; };
-  if (instant || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) { finish(); return; }
+  if (instant || (window.matchMedia && false)) { finish(); return; }
   document.querySelectorAll('#bd-svg .bd-seat').forEach(g => { g.classList.remove('voted', 'speak'); g.querySelector('.bd-ring').style.stroke = ''; }); $('bd-arcs').innerHTML = ''; $('bd-card').innerHTML = `<div class="dim">${DL('The board is debating…', 'Kurul tartışıyor…')}</div>`; $('bd-min').innerHTML = '';
   if (ctl) ctl.innerHTML = `<button class="ghost" id="bd-skip">${DL('Skip ▸▸', 'Atla ▸▸')}</button>`;
   let i = 0, nv = 0; const tick = () => { if (BD_UI.S !== S) return; if (i >= steps.length) { finish(); return; } const s = steps[i]; bdMark(s, S); bdFloor(steps, i, S); if (s.k === 'vote') { nv++; $('bd-hemi').innerHTML = bdHemi(S, nv); } i++; BD_UI.timer = setTimeout(tick, s.k === 'vote' ? 650 : s.k === 'open' || s.k === 'close' ? 1500 : 1100); };
@@ -3779,7 +3779,7 @@ document.head.insertAdjacentHTML('beforeend', `<style id="bd-css">
 .bd-card{border:1px solid var(--rule);border-radius:10px;padding:12px}.bd-dec{border-left:4px solid var(--dc);padding:2px 0 8px 10px;margin-bottom:8px}.bd-dl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--fg2)}.bd-dv{font-size:20px;font-weight:600;color:var(--dc)}
 .bd-card dl.kv{font-size:12.5px}.bd-split{font-size:12.5px;width:100%;margin:6px 0}.bd-agenda{padding-left:18px;font-size:12.5px}.bd-agenda li{margin-bottom:6px}
 #bd-min h4,#bd-hist h4{margin:12px 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--fg2)}
-@media (prefers-reduced-motion:reduce){.bd-seat.speak .bd-ring,.bd-beam,.bd-arc,.bd-line.now{animation:none}.bd-arc{stroke-dashoffset:0}}
+
 </style>`);
 
 /* ---- 178 more lights: seven colours, three tempos, more rules, more places, a grouped list with per-colour switches and "seen today" ----
@@ -3868,7 +3868,7 @@ document.head.insertAdjacentHTML('beforeend', `<style id="dlx-lt2-css">
 i.dlx-lt.o{--c:#ee8a2a}i.dlx-lt.b{--c:#3d8bdf}i.dlx-lt.p{--c:#9b5de5}i.dlx-lt.x{--c:#8a8f98}i.dlx-lt.a{--c:#e0b02b}
 i.dlx-lt.t-u{animation:dlxBeat 1.05s ease-in-out infinite}i.dlx-lt.t-s{animation:dlxBlink 1.8s ease-in-out infinite}i.dlx-lt.t-i{animation:none;background:transparent;box-shadow:inset 0 0 0 2px var(--c)}
 @keyframes dlxBeat{0%{transform:scale(1);box-shadow:0 0 0 0 color-mix(in srgb,var(--c) 70%,transparent)}12%{transform:scale(1.35)}24%{transform:scale(1)}36%{transform:scale(1.3)}60%{box-shadow:0 0 0 7px transparent}100%{transform:scale(1);box-shadow:0 0 0 0 transparent}}
-@media (prefers-reduced-motion:reduce){i.dlx-lt.t-u,i.dlx-lt.t-s{animation:none}}
+
 .dlx-tabdot{width:6px!important;height:6px!important;margin:0 0 8px 2px!important}
 #dlx-ltstrip .dlx-lts{display:flex;flex-wrap:wrap;gap:8px}.dlx-ltchip{font:inherit;font-size:12.5px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--rule);background:var(--panel);color:var(--fg);border-radius:999px;padding:4px 12px;cursor:pointer;max-width:420px}.dlx-ltchip span{color:var(--fg2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dlx-ltp-fl{display:flex;flex-wrap:wrap;gap:4px;padding:6px 10px;border-bottom:1px solid var(--rule)}.dlx-ltp-fl .dlx-chip{padding:1px 8px}
@@ -4666,9 +4666,98 @@ details.dlx-dd{position:relative;display:inline-block}#sheet .sheet-bar:has(deta
 .lg .lg-w{fill:#fff;fill-opacity:0;stroke:#fff;stroke-width:.7;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset .26s ease,fill-opacity .18s ease .16s}
 .lg .lg-e,.lg .lg-b{fill:var(--goat,#c25a00);opacity:0;transform-box:fill-box;transform-origin:center;transform:scale(.2);transition:opacity .18s ease,transform .22s cubic-bezier(.3,1.6,.5,1)}.lg .lg-b{fill:#fff}
 .lg.s1 .lg-f{stroke-dashoffset:0;fill-opacity:1}.lg.s2 .lg-h{stroke-dashoffset:0}.lg.s3 .lg-w{stroke-dashoffset:0;fill-opacity:1}.lg.s4 .lg-e,.lg.s4 .lg-b{opacity:1;transform:none}
-@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;transition-delay:0s!important;scroll-behavior:auto!important}}
+
 </style>`);
 window.__gncV23 = { hero: () => dlHeroHTML(), grade: x => dlGrade(x), health: () => dlHealthInfo(), order: () => dlTodayOrder() };
+
+// ---------- v2.24: Board gives one clear answer and shows its process (232); Pointer explains with pictures (233) ----------
+const BD_PROC = [['Question', 'Soru'], ['Data', 'Veri'], ['Debate', 'Tartışma'], ['Vote', 'Oylama'], ['Decision', 'Karar']];
+function bdProcHTML() { const n = BD_UI.proc || 0; return `<ol class="bd-proc" id="bd-proc" style="--p:${n ? ((n - 1) / (BD_PROC.length - 1) * 100).toFixed(0) : 0}%">${BD_PROC.map((l, i) => `<li class="${i + 1 < n ? 'done' : i + 1 === n ? 'now' : ''}"><i>${i + 1 < n ? '✓' : i + 1}</i><span>${DL(l[0], l[1])}</span></li>`).join('')}</ol>`; }
+function bdProcSet(n) { if (n < (BD_UI.proc || 0) && n !== 1) return; BD_UI.proc = n; const el = $('bd-proc'); if (el) el.outerHTML = bdProcHTML(); }
+function bdConf24(S) { if (S.noVote) return [DL('no vote needed', 'oylama gerekmedi'), 'mid']; const r = S.tally.count / Math.max(1, S.votes.length); return r >= 0.7 ? [DL('high', 'yüksek'), 'hi'] : r >= 0.5 ? [DL('medium', 'orta'), 'mid'] : [DL('low', 'düşük'), 'lo']; }
+function bdWhy3(S) { const out = [], seen = new Set(), win = S.tally.win, add = t => { const s = t ? bdShort(t) : ''; const k = s.slice(0, 40).toLowerCase(); if (s && !seen.has(k)) { seen.add(k); out.push(s); } };
+  const tech = /Kelly|F\/K|PD\/DD|P\/E|P\/B|σ|Sharpe|beta|RSI|EV\/|ROE|ROIC|×|=/i, W = S.votes.filter(v => v.o === win).sort((a, b) => (b.c || 0) - (a.c || 0));
+  for (const v of W) { if (out.length >= 3) break; if (!tech.test(bdShort(v.t))) add(v.t); } for (const v of W) { if (out.length >= 3) break; add(v.t); }
+  const c = S.card || {}; if (out.length < 3 && c.risk) add(DL('Biggest risk: ', 'En büyük risk: ') + c.risk); if (out.length < 3 && S.answer) add(S.answer); return out.slice(0, 3); }
+function bdVoteBar(S) { if (S.noVote || !S.votes || !S.votes.length) return ''; const n = {}; for (const v of S.votes) n[v.o] = (n[v.o] || 0) + 1; const tot = S.votes.length;
+  const seg = S.opts.filter(o => n[o.k]).sort((a, b) => n[b.k] - n[a.k]).map((o, i) => { const col = o.c || BD_OC[o.k] || BD_PAL[i % BD_PAL.length]; return `<i style="flex:${n[o.k]};background:${col}" title="${esc(o.l)}: ${n[o.k]}"></i>`; }).join('');
+  const leg = S.opts.filter(o => n[o.k]).sort((a, b) => n[b.k] - n[a.k]).map((o, i) => `<span><s style="background:${o.c || BD_OC[o.k] || BD_PAL[i % BD_PAL.length]}"></s>${esc(o.l)} <b>${n[o.k]}</b></span>`).join('');
+  return `<div class="bd-vbar" aria-label="${esc(DL(`vote split of ${tot}`, `${tot} oyun dağılımı`))}"><div class="bd-vb">${seg}</div><div class="bd-vleg">${leg}</div></div>`; }
+function bdApplyBtn(S) { const c = S.card || {}; if (c.ticket && c.sym && !c.viop) return `<button class="primary" data-bd-ticket="1">${DL('Do this', 'Bunu uygula')} →</button>`;
+  if (c.pointer && c.fund) return `<button class="primary" data-bd-ptr="${esc(c.fund)}">${DL('Do this in the fund', 'Bunu fonda uygula')} →</button>`;
+  if (c.sym && state.map[c.sym]) return `<button class="primary" data-sym="${esc(c.sym)}">${DL('Open', 'Aç')}: ${esc(c.sym)} →</button>`; return ''; }
+function bdDBox(S) { const el = $('bd-dbox'); if (!el) return; if (!S || S.err || !S.tally) { el.hidden = true; return; } const c = S.card || {}, o = S.opts.find(x => x.k === c.action) || S.opts.find(x => x.k === S.tally.win) || {}, col = o.c || BD_OC[o.k] || 'var(--accent)';
+  const [cl, ck] = bdConf24(S), why = bdWhy3(S); el.hidden = false; el.style.setProperty('--dc', col);
+  el.innerHTML = `<div class="bd-dbh"><div><div class="bd-dl">${DL('The board’s answer', 'Kurulun cevabı')}${S.q ? ` · <span class="dim">${esc(String(S.q).slice(0, 80))}</span>` : ''}</div><div class="bd-dbv">${esc(c.label || o.l || '')}</div><div class="bd-conf ${ck}">${DL('Confidence', 'Güven')}: <b>${esc(cl)}</b>${S.noVote ? '' : ` <span class="dim">· ${DL(`${S.tally.count} of ${S.votes.length} votes`, `${S.votes.length} oyun ${S.tally.count}${bdSfx(S.tally.count)}`)}</span>`}</div></div><div class="bd-dba">${bdApplyBtn(S)}</div></div>
+    ${why.length ? `<ol class="bd-why">${why.map(t => `<li>${esc(t)}</li>`).join('')}</ol>` : ''}${bdVoteBar(S)}`; }
+{ const _r = bdRender; bdRender = function () { _r(); const root = $('bd-root'), st = root && root.querySelector('.bd-stage'); if (!st || $('bd-debf')) return;
+    st.insertAdjacentHTML('beforebegin', `<div class="bd-top">${bdProcHTML()}<div class="bd-dbox" id="bd-dbox" hidden></div></div><details class="dlx-fold bd-debf" id="bd-debf"${BD_UI.S ? '' : ' open'}><summary>${DL('The debate in detail: table, speeches and votes', 'Tartışmanın ayrıntısı: masa, konuşmalar ve oylar')}</summary></details>`);
+    $('bd-debf').appendChild(st); if (BD_UI.S && !BD_UI.S.err) { bdDBox(BD_UI.S); } }; }
+{ const _a = bdAsk; bdAsk = async function (q) { if (q && !BD_UI.busy) { const bx = $('bd-dbox'); if (bx) bx.hidden = true; bdProcSet(1); setTimeout(() => { if (BD_UI.busy) bdProcSet(2); }, 120); } return _a.apply(this, arguments); }; }
+{ const _m = bdMark; bdMark = function (s, S) { _m.apply(this, arguments); if (!s) return; const n = s.k === 'vote' ? 4 : s.k === 'close' ? 5 : 3; if (n > (BD_UI.proc || 0)) bdProcSet(n); const d = $('bd-debf'); if (d && !BD_UI.debDone && !d.open) { d.open = true; } }; }
+{ const _sh = bdShow; bdShow = function (S, instant) { BD_UI.debDone = !!instant; if (!instant && S && !S.err) { const d = $('bd-debf'); if (d) d.open = true; const b = $('bd-dbox'); if (b) b.hidden = true; if ((BD_UI.proc || 0) < 3) bdProcSet(3); } return _sh.apply(this, arguments); }; }
+{ const _c = bdCard; bdCard = function (S) { _c.apply(this, arguments); if (!S || S.err) return; bdProcSet(5); bdDBox(S); const d = $('bd-debf'); if (d && !BD_UI.debUser && !BD_UI.debDone) { BD_UI.debDone = true; setTimeout(() => { if (!BD_UI.debUser) d.open = false; }, 500); } BD_UI.debDone = true; }; }
+document.addEventListener('click', e => { if (e.target.closest('#bd-debf > summary')) BD_UI.debUser = true; }, true);
+
+// ---------- 233: fund Pointer in pictures ----------
+function fpBars(fund, dep) { const mx = Math.max(Math.abs(fund), Math.abs(dep), 1), w = v => Math.max(2, Math.abs(v) / mx * 100).toFixed(0);
+  return `<div class="fpv-bars"><div><span>${DL('Your fund', 'Fonunuz')}</span><i><b class="${fund >= dep ? 'up' : 'down'}" style="width:${w(fund)}%"></b></i><em>${esc(fmtPct(fund))}</em></div><div><span>${DL('Deposit', 'Mevduat')}</span><i><b class="dep" style="width:${w(dep)}%"></b></i><em>${esc(fmtPct(dep))}</em></div></div>`; }
+function fpDial(sig) { const v = Math.max(0, Math.min(60, sig || 0)), a = Math.PI * (1 - v / 60), x = 50 + 38 * Math.cos(a), y = 50 - 38 * Math.sin(a), arc = (f, t, c) => { const p = q => [50 + 38 * Math.cos(Math.PI * (1 - q / 60)), 50 - 38 * Math.sin(Math.PI * (1 - q / 60))], [x1, y1] = p(f), [x2, y2] = p(t); return `<path d="M${x1.toFixed(1)} ${y1.toFixed(1)}A38 38 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)}" stroke="${c}" stroke-width="9" fill="none"/>`; };
+  return `<svg class="fpv-dial" viewBox="0 0 100 58" role="img" aria-label="${esc(DL('risk dial', 'risk kadranı'))}">${arc(0, 15, 'var(--up)')}${arc(15.5, 30, 'var(--warn,#e0a92b)')}${arc(30.5, 60, 'var(--down)')}<line class="fpv-needle" x1="50" y1="50" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--fg)" stroke-width="2.4" stroke-linecap="round" style="--r:${(v / 60 * 180 - 90).toFixed(0)}deg"/><circle cx="50" cy="50" r="3.5" fill="var(--fg)"/><text x="7" y="57">${DL('calm', 'sakin')}</text><text x="93" y="57" text-anchor="end">${DL('wild', 'sert')}</text></svg>`; }
+function fpRing(D) { const V = D.V || 1, P = D.port, ks = Object.keys(P).filter(k => P[k] > 1).sort((a, b) => P[b] - P[a]), top = ks.slice(0, 4), rest = ks.slice(4).reduce((a, k) => a + P[k], 0), seg = top.map(k => [dlFpName(k), P[k] / V]); if (rest > 0) seg.push([DL('Other', 'Diğer'), rest / V]);
+  const pal = ['var(--accent)', '#3d7bd9', '#2fa36b', '#8a6fd1', '#8a8f98'], C = 2 * Math.PI * 15.9; let off = 0;
+  const arcs = seg.map(([, w], i) => { const L = Math.max(0, w) * C, s = `<circle r="15.9" cx="20" cy="20" fill="none" stroke="${pal[i % pal.length]}" stroke-width="6" stroke-dasharray="${L.toFixed(2)} ${(C - L).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}"/>`; off += L; return s; }).join('');
+  return `<div class="fpv-ringw"><svg class="fpv-ring" viewBox="0 0 40 40" role="img" aria-label="${esc(DL('share of each holding', 'kalemlerin payı'))}"><g transform="rotate(-90 20 20)">${arcs}</g><text x="20" y="22.5" text-anchor="middle">%${seg[0] ? Math.round(seg[0][1] * 100) : 0}</text></svg><ul>${seg.map(([n, w], i) => `<li><s style="background:${pal[i % pal.length]}"></s>${esc(n)} <b>%${Math.round(w * 100)}</b></li>`).join('')}</ul></div>`; }
+function fpVisHTML(p, D, main) { const b = D.before || {}, dep = D.dep || 0, mu = b.mu || 0, sig = b.sig || 0, gap = mu - dep, V = D.V || 0, P = D.port || {};
+  const ks = Object.keys(P).filter(k => D.A[k] && D.A[k].x && P[k] > 1).sort((a, c) => P[c] - P[a]), top = ks[0], tw = top ? P[top] / (V || 1) : 0, swing = V * sig / 100;
+  const lvl = sig < 15 ? DL('calm', 'sakin') : sig < 30 ? DL('medium', 'orta') : DL('wild', 'sert');
+  const s1 = Math.abs(gap) < 0.5 ? DL('In a year the fund is expected to earn about the same as a bank deposit.', 'Fonun bir yılda mevduat kadar kazandırması bekleniyor.') : gap > 0 ? DL(`In a year the fund is expected to earn about ${dlN(gap, 0)} points more than a bank deposit.`, `Fonun bir yılda mevduattan yaklaşık ${dlN(gap, 0)} puan fazla kazandırması bekleniyor.`) : DL(`In a year the fund is expected to earn about ${dlN(-gap, 0)} points less than a bank deposit.`, `Fonun bir yılda mevduattan yaklaşık ${dlN(-gap, 0)} puan az kazandırması bekleniyor.`);
+  const s2 = DL(`Its value can move up or down by about ${T(swing)} in a typical year: ${lvl}.`, `Fonun değeri tipik bir yılda yaklaşık ${T(swing)} aşağı veya yukarı oynayabilir: ${lvl}.`);
+  const tn = esc(top ? dlFpName(top) : ''); const s3 = top ? (tw > 0.2 ? DL(`${tn} is ${Math.round(tw * 100)}% of the fund; no single holding should be over 20%.`, `${tn} fonun %${Math.round(tw * 100)}’i; tek bir kalemin %20’yi geçmemesi önerilir.`) : DL(`The largest holding, ${tn}, is ${Math.round(tw * 100)}% of the fund: well spread.`, `En büyük kalem ${tn}, fonun %${Math.round(tw * 100)}’i: fon iyi dağılmış.`)) : DL('The fund holds only cash or deposits.', 'Fonda yalnızca nakit veya mevduat var.');
+  const card = (cls, h, s, g) => `<div class="fpv-c ${cls}"><div class="fpv-h">${h}</div>${g}<p>${s}</p></div>`;
+  const R = state.__dlxFp && state.__dlxFp.R, nm = R && R.moves ? R.moves.length : 0;
+  return `<div class="fpv"><div class="fpv-grid">${card(gap >= 0 ? 'g' : 'r', DL('Against the deposit', 'Mevduata göre'), s1, fpBars(mu, dep))}${card(sig < 15 ? 'g' : sig < 30 ? 'a' : 'r', DL('How much it swings', 'Ne kadar oynar'), s2, fpDial(sig))}${card(tw > 0.35 ? 'r' : tw > 0.2 ? 'a' : 'g', DL('Is it spread?', 'Dağılmış mı?'), s3, fpRing(D))}</div>
+    <div class="fpv-do ${main.c}"><div><b>${DL('What to do', 'Ne yapmalı')}:</b> ${esc(main.c === 'green' ? DL('nothing urgent; keep the fund as it is.', 'acil bir şey yok; fonu böyle tutun.') : main.h + ' — ' + main.t)}</div><button class="primary" data-fpv-do>${nm ? DL(`Show the fix (${nm} trade${nm > 1 ? 's' : ''})`, `Çözümü göster (${nm} işlem)`) : DL('Show the options', 'Seçenekleri göster')} ↓</button></div></div>`; }
+{ const _h = dlFpHTML; dlFpHTML = function (p, D) { let h = _h.apply(this, arguments); if (!D) return h; const main = dlFpMain(D, dlFpChecks(D));
+    h = h.replace(/<ul class="fp-checks">([\s\S]*?)<\/ul><\/div>/, (m, li) => `<details class="dlx-fold fp-allc"><summary>${DL('All checks', 'Tüm kontroller')}</summary><ul class="fp-checks">${li}</ul></details></div>`);
+    h = h.replace('<div class="fp-rhead">', fpVisHTML(p, D, main) + '<div class="fp-rhead" id="fp-rhead">').replace('Risk (yıllık 1σ)', 'Yıllık dalgalanma').replace('Risk (1σ a year)', 'Swing in a year');
+    return h; }; }
+document.addEventListener('click', e => { const t = e.target.closest('[data-fpv-do]'); if (!t) return; const r = $('fp-rhead'); if (!r) return; r.scrollIntoView({ behavior: 'smooth', block: 'start' }); const rec = r.parentNode.querySelector('.fp-rec'); if (rec) { rec.classList.remove('fpv-hl'); void rec.offsetWidth; rec.classList.add('fpv-hl'); } }, true);
+(function () { const st = document.createElement('style'); st.id = 'dlx-v224-css'; st.textContent = `
+.bd-top{display:grid;gap:10px;margin:10px 0}
+.bd-proc{list-style:none;margin:0;padding:0 4px;display:flex;justify-content:space-between;position:relative;counter-reset:x}
+.bd-proc::before,.bd-proc::after{content:'';position:absolute;left:16px;right:16px;top:12px;height:3px;border-radius:2px;background:var(--rule)}
+.bd-proc::after{right:auto;width:calc((100% - 32px) * var(--p) / 100);background:var(--accent);transition:width .45s ease}
+.bd-proc li{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:var(--muted);min-width:56px}
+.bd-proc li i{font-style:normal;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--panel);border:2px solid var(--rule);font-weight:600;font-size:12px;transition:background .3s,border-color .3s,color .3s}
+.bd-proc li.done i{background:var(--accent);border-color:var(--accent);color:#fff}.bd-proc li.now i{border-color:var(--accent);color:var(--accent);animation:bdPop .5s ease}.bd-proc li.now,.bd-proc li.done{color:var(--fg)}
+@keyframes bdPop{0%{transform:scale(.7)}60%{transform:scale(1.15)}100%{transform:none}}
+.bd-dbox{border:1px solid var(--rule);border-left:5px solid var(--dc);border-radius:10px;padding:14px 16px;background:var(--panel);animation:dlxFade .3s ease}
+.bd-dbh{display:flex;gap:14px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}.bd-dbv{font-size:21px;font-weight:650;margin:2px 0 4px;color:var(--fg)}
+.bd-conf b{color:var(--fg)}.bd-conf.hi b{color:var(--up)}.bd-conf.lo b{color:var(--down)}
+.bd-why{margin:10px 0 6px 18px;padding:0;display:grid;gap:3px}.bd-why li{line-height:1.4}
+.bd-vbar{margin-top:8px}.bd-vb{display:flex;height:10px;border-radius:5px;overflow:hidden;gap:2px}.bd-vb i{display:block;min-width:4px;transform-origin:left;animation:bdGrow .6s ease both}
+@keyframes bdGrow{from{transform:scaleX(0)}to{transform:none}}
+.bd-vleg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;margin-top:5px;color:var(--muted)}.bd-vleg s{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}.bd-vleg b{color:var(--fg)}
+.bd-debf>summary{font-weight:600}
+.fpv{margin:12px 0}.fpv-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.fpv-c{border:1px solid var(--rule);border-radius:10px;padding:12px;background:var(--panel);border-top:4px solid var(--muted);display:flex;flex-direction:column;gap:8px;animation:dlxFade .3s ease both}
+.fpv-c:nth-child(2){animation-delay:.06s}.fpv-c:nth-child(3){animation-delay:.12s}
+.fpv-c.g{border-top-color:var(--up)}.fpv-c.a{border-top-color:var(--warn,#e0a92b)}.fpv-c.r{border-top-color:var(--down)}
+.fpv-h{font-weight:650}.fpv-c p{margin:0;line-height:1.45}
+.fpv-bars{display:grid;gap:8px}.fpv-bars div{display:grid;grid-template-columns:70px 1fr 58px;align-items:center;gap:8px;font-size:12.5px}.fpv-bars i{display:block;height:14px;background:var(--rule);border-radius:4px;overflow:hidden}
+.fpv-bars b{display:block;height:100%;border-radius:4px;background:var(--up);transform-origin:left;animation:bdGrow .6s ease both}.fpv-bars b.down{background:var(--down)}.fpv-bars b.dep{background:var(--muted)}.fpv-bars em{font-style:normal;text-align:right;font-weight:600}
+.fpv-dial{width:100%;max-width:190px;align-self:center}.fpv-dial text{font-size:6.5px;fill:var(--muted)}.fpv-needle{transform-origin:50px 50px;animation:fpNeedle .8s cubic-bezier(.3,1.4,.5,1) both}
+@keyframes fpNeedle{from{transform:rotate(calc(-90deg - var(--r)))}to{transform:none}}
+.fpv-ringw{display:flex;align-items:center;gap:12px}.fpv-ring{width:92px;height:92px;flex:none}.fpv-ring text{font-size:7px;font-weight:650;fill:var(--fg)}.fpv-ring circle{animation:dlxFade .5s ease both}
+.fpv-ringw ul{list-style:none;margin:0;padding:0;font-size:12px;display:grid;gap:2px}.fpv-ringw s{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px}
+.fpv-do{margin-top:10px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 12px;border-radius:10px;background:var(--bg2,rgba(127,127,127,.08));border-left:4px solid var(--muted)}
+.fpv-do.red{border-left-color:var(--down)}.fpv-do.amber{border-left-color:var(--warn,#e0a92b)}.fpv-do.green{border-left-color:var(--up)}
+.fp-rec.fpv-hl{animation:fpHl 1.6s ease}@keyframes fpHl{0%,40%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:0 0 0 0 transparent}}
+.fp-top:has(.fp-allc){display:flex;flex-direction:column;gap:6px}.fp-allc{margin-top:2px}
+@media (max-width:760px){.fpv-grid{grid-template-columns:1fr}.bd-proc li{min-width:0;font-size:11px}.bd-dbv{font-size:18px}}
+`; document.head.appendChild(st); })();
+window.__gncV24 = { proc: () => BD_UI.proc, dbox: () => $('bd-dbox') && $('bd-dbox').innerText };
 
 /* v2.14 end */
 Object.assign(TR, { 'GitHub version · prices update about every 30–60 minutes on weekdays · your data stays in this browser': 'GitHub sürümü · fiyatlar iş günleri yaklaşık 30–60 dakikada bir güncellenir · verileriniz bu tarayıcıda kalır',

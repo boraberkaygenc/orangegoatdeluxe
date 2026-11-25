@@ -342,9 +342,10 @@ Bugün hesaplananlar: RSI 14, 20/50/200 günlük ortalamalar, ATR, 52 hafta zirv
 229. **[kabul edildi]** **Fon kartında ışık yerine renk çubuğu:** Kartın sol kenarında mevduata göre durumu gösteren ince renk çubuğu; parlama yok.
 230. **[kabul edildi]** **Takvim nabzı:** TCMB, TÜİK gibi yaklaşan önemli günler takvimde ve özet satırında yalnızca son 48 saatte hafifçe vurgulanır.
 231. **[yapıldı v2.22]** **Sekme yerleşimi sorunu:** Telefonda fonun sekmeleri (Özet, İçerik ve İşlem, Pointer, Geçmiş) satıra sığmıyor ve “Basit görünüm” düğmesi sekme satırında kesiliyor; sekmeler tam görünür hâle getirilecek, görünüm düğmesi sekme satırından çıkarılacak.
-232. **[kabul edildi]** **Yönetim Kurulu: net cevap ve süreç:** En üstte tek karar kutusu (ör. “THYAO’nun %30’unu sat — güven: orta”), 3 maddelik gerekçe, “Bunu uygula” düğmesi (işlem penceresi dolu açılır); süreç adımları Soru → Veri → Tartışma → Oylama → Karar ilerleme çubuğuyla; oy dağılımı tek çubuk; tartışma ayrıntısı katlanır.
-233. **[kabul edildi]** **Pointer: görselli ve kolay analiz:** Her bulgu bir cümle + bir grafik: mevduata göre fark iki çubuk, risk kadranı, yoğunlaşma halka grafiği, “ne yapmalı” tek düğme; teknik terim yok, gerekirse ? ile açıklanır.
+232. **[yapıldı v2.24]** **Yönetim Kurulu: net cevap ve süreç:** En üstte tek karar kutusu (ör. “THYAO’nun %30’unu sat — güven: orta”), 3 maddelik gerekçe, “Bunu uygula” düğmesi (işlem penceresi dolu açılır); süreç adımları Soru → Veri → Tartışma → Oylama → Karar ilerleme çubuğuyla; oy dağılımı tek çubuk; tartışma ayrıntısı katlanır.
+233. **[yapıldı v2.24]** **Pointer: görselli ve kolay analiz:** Her bulgu bir cümle + bir grafik: mevduata göre fark iki çubuk, risk kadranı, yoğunlaşma halka grafiği, “ne yapmalı” tek düğme; teknik terim yok, gerekirse ? ile açıklanır.
 234. **[yapıldı v2.22]** **Ekran görüntüsünden fon içi işlem:** Fonda “📷 Ekran görüntüsünden ekle”: aracı kurum emir ekranı yüklenir; yalnızca tarayıcı içinde (Tesseract.js OCR, görüntü cihazdan çıkmaz) sembol, yön, tarih-saat, adet, fiyat, para birimi, ücret ve toplam çıkarılır; toplam kontrolü yapılır (ör. NVIDIA limit satış 0,18 × 135,20 $ − 1,50 $ = 22,83 $); işlem penceresi dolu açılır ve onay ekranından sonra fona işlenir. Örnek görüntü test olarak eklenir.
+235. **[yapıldı v2.24]** **Masaüstünde animasyonlar çalışmıyor:** İşletim sisteminde animasyon efektleri kapalıyken uygulama bütün animasyon ve geçişleri kapatıyordu; uygulama artık bu sistem ayarından bağımsız olarak animasyonları gösterir.
 
 ## Kullanıcının ekledikleri
 (boş)
