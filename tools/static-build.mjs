@@ -67,6 +67,13 @@ try {
   fs.cpSync(path.join(DIR, 'public'), SITE, { recursive: true });
   fs.writeFileSync(path.join(SITE, 'data', 'view.json'), JSON.stringify(payload));
   fs.writeFileSync(path.join(SITE, 'data', 'series.json'), JSON.stringify({ generatedAt: payload.generatedAt, series }));
+  // weekly closes since 2015, one small file per symbol (data/long/<SYM>.json), loaded only when a fund's history player or crisis cards ask for it
+  { const SD = path.join(DIR, 'data', 'series'), LD = path.join(SITE, 'data', 'long'); let n = 0;
+    const wk = d => Math.floor((Date.parse(d + 'T00:00:00Z') / 864e5 + 3) / 7);
+    if (fs.existsSync(SD)) { fs.mkdirSync(LD, { recursive: true }); for (const f of fs.readdirSync(SD)) { if (!f.endsWith('.json') || f.startsWith('_')) continue;
+      try { const s = JSON.parse(fs.readFileSync(path.join(SD, f), 'utf8')), m = new Map(); for (const b of s.bars || []) if (b && b[0] >= '2015-01-01' && +b[1] > 0) m.set(wk(b[0]), [b[0], +(+b[1]).toPrecision(6)]);
+        const w = [...m.values()]; if (w.length > 52) { fs.writeFileSync(path.join(LD, f), JSON.stringify({ s: s.symbol, w })); n++; } } catch (e) { } } }
+    log(`long history: ${n} symbols (weekly closes since 2015)`); }
   { const fh = await j('/api/fundhist').catch(() => ({ fh: {} })); fs.writeFileSync(path.join(SITE, 'data', 'fund.json'), JSON.stringify({ generatedAt: payload.generatedAt, fh: fh.fh || {} })); log(`fund.json: ${Object.keys(fh.fh || {}).length} companies`); }
   fs.copyFileSync(path.join(DIR, 'tools', 'static', 'static-mode.js'), path.join(SITE, 'static-mode.js'));
   fs.copyFileSync(path.join(DIR, 'tools', 'static', 'sw.js'), path.join(SITE, 'sw.js'));
