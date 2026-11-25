@@ -298,22 +298,22 @@ Bugün hesaplananlar: RSI 14, 20/50/200 günlük ortalamalar, ATR, 52 hafta zirv
 185. **[yapıldı v2.19]** **Telefonda alım-satım düğmelerinin görünür olması:** Al, Sat, Değiştir ve “Hisse · Mevduat · Döviz” düğmeleri yalnızca “İçerik ve İşlem” sekmesindeydi; telefonda fon “Özet” sekmesinde açıldığı için görülmüyordu. Düğmeler artık fonun sekmelerinin hemen altında her sekmede görünür (telefonda iki sütun, kaydırırken üstte sabit kalır); ayrıca Fonlarım’daki her fon kartına “⇆ Sat / değiştir” düğmesi eklendi.
 186. **[yapıldı v2.20]** **Fon alım-satımında geri alma:** Geri alma yalnızca 7 saniyelik “Undo” bildirimindeydi; mevduat ve döviz çevirme işlemleri değişiklik geçmişine hiç yazılmıyordu. Artık fonun işlem satırında ve fon kartında kalıcı, onaylı, adım adım çalışan “↶ Geri al” düğmesi vardır; tüm fon işlemleri geçmişe kaydedilir.
 187. **[yapıldı v2.21]** **İşlem penceresinde otomatik fiyat, uyarılı elle giriş ve onay ekranı:** Fiyat varsayılan olarak piyasa / kapanış fiyatından otomatik gelir ve adet ↔ tutar birbirinden hesaplanır; kullanıcı isterse adet, fiyat ve tutarı elle girer. Fiyat piyasadan %10’dan fazla saparsa yüzde ve TL farkıyla uyarı verilir. Tüm fon işlemleri “Emin misiniz?” ekranında işlem ve sonuçları gösterildikten sonra “Onayla ve kaydet” ile gerçekleşir.
-188. **[kabul edildi]** **Üst alanın tek satıra inmesi:** Piyasa durumu ve veri zamanı tek ince satırda; “Ana para TRY” kalkar. Telefonda içerik daha yukarıdan başlar.
-189. **[kabul edildi]** **Uyarıların tek yerde toplanması:** Okunmamış mesaj ve veri uyarısı yalnızca zil rozetinde gösterilir; “Bugün ne yapmalı” kutusundaki tekrar ve ayrı kırmızı ışık kalkar.
-190. **[kabul edildi]** **Piyasa kartlarının sadeleşmesi:** Puan yalnızca halkada; renk yalnızca karar etiketinde; “Fona ekle” üzerine gelince veya kart menüsünde.
-191. **[kabul edildi]** **Ayırt edici puan ölçeği:** 98–100 yığılması yerine liste içi sıra (ilk %5) veya harf notu (A+/A/B…).
-192. **[kabul edildi]** **Hazır listelerin iki seviyeye ayrılması:** En sık 4–5 liste görünür, kalanlar “Diğer listeler ▾” altında; hiçbir liste kaldırılmaz.
-193. **[kabul edildi]** **Fon başlığındaki düğmelerin gruplanması:** Düzenle görünür; PDF/Word/Factsheet “Rapor ▾”; Sil ve Fonu kapat “⋯” menüsünde.
-194. **[kabul edildi]** **Tutarlı sayı yazı tipi:** Tüm sayılarda tabular rakamlı tek yazı tipi; sütunlar hizalı.
-195. **[kabul edildi]** **Işıkların tek anlamı:** Yeşil normal, sarı dikkat, kırmızı müdahale; yanıp sönme yalnızca bugün yapılacak bir iş varken.
-196. **[kabul edildi]** **Veri ışığının nedenini söylemesi:** “Fiyatlar 8 gün önce güncellendi” gibi açıklama; 1 günden eski sarı, 1 haftadan eski kırmızı.
-197. **[kabul edildi]** **Sade ve kısa geçişler:** 150–200 ms solma; kayma/sıçrama yok; sistemde “hareketi azalt” açıksa animasyon kapalı.
-198. **[kabul edildi]** **Değişen değerin kısa vurgusu:** Güncellenen fiyat/NAV yaklaşık 1 sn yeşil/kırmızı zeminle vurgulanır.
-199. **[kabul edildi]** **İskelet yükleme görünümü:** Veri gelirken kutuların gri iskeletleri; düzen kaymaz.
-200. **[kabul edildi]** **Kısa ve işlevli açılış ekranı:** Logo + “Fiyatlar yükleniyor… 2/4”; en fazla ~1 sn; sonraki açılışlarda yalnızca veri yoksa.
-201. **[kabul edildi]** **Özet sayfasının tek ana bilgiyle açılması:** En üstte büyük toplam varlık, bugünkü değişim, mevduata göre fark; altında “Bugün yapılacaklar”; takvim ve gün sonu notu katlanır.
-202. **[kabul edildi]** **Tutarlı dil:** Seçili dilde bütün metinler aynı dilde (ör. döviz çevirme kaydı, Factsheet).
-203. **[kabul edildi]** **Terimlerin tek tıkla açıklanması:** Alfa, Sharpe, Oynaklık vb. için tutarlı ? simgesi; tek cümle + somut örnek.
+188. **[yapıldı v2.23]** **Üst alanın tek satıra inmesi:** Piyasa durumu ve veri zamanı tek ince satırda; “Ana para TRY” kalkar. Telefonda içerik daha yukarıdan başlar.
+189. **[yapıldı v2.23]** **Uyarıların tek yerde toplanması:** Okunmamış mesaj ve veri uyarısı yalnızca zil rozetinde gösterilir; “Bugün ne yapmalı” kutusundaki tekrar ve ayrı kırmızı ışık kalkar.
+190. **[yapıldı v2.23]** **Piyasa kartlarının sadeleşmesi:** Puan yalnızca halkada; renk yalnızca karar etiketinde; “Fona ekle” üzerine gelince veya kart menüsünde.
+191. **[yapıldı v2.23]** **Ayırt edici puan ölçeği:** 98–100 yığılması yerine liste içi sıra (ilk %5) veya harf notu (A+/A/B…).
+192. **[yapıldı v2.23]** **Hazır listelerin iki seviyeye ayrılması:** En sık 4–5 liste görünür, kalanlar “Diğer listeler ▾” altında; hiçbir liste kaldırılmaz.
+193. **[yapıldı v2.23]** **Fon başlığındaki düğmelerin gruplanması:** Düzenle görünür; PDF/Word/Factsheet “Rapor ▾”; Sil ve Fonu kapat “⋯” menüsünde.
+194. **[yapıldı v2.23]** **Tutarlı sayı yazı tipi:** Tüm sayılarda tabular rakamlı tek yazı tipi; sütunlar hizalı.
+195. **[yapıldı v2.23]** **Işıkların tek anlamı:** Yeşil normal, sarı dikkat, kırmızı müdahale; yanıp sönme yalnızca bugün yapılacak bir iş varken.
+196. **[yapıldı v2.23]** **Veri ışığının nedenini söylemesi:** “Fiyatlar 8 gün önce güncellendi” gibi açıklama; 1 günden eski sarı, 1 haftadan eski kırmızı.
+197. **[yapıldı v2.23]** **Sade ve kısa geçişler:** 150–200 ms solma; kayma/sıçrama yok; sistemde “hareketi azalt” açıksa animasyon kapalı.
+198. **[yapıldı v2.23]** **Değişen değerin kısa vurgusu:** Güncellenen fiyat/NAV yaklaşık 1 sn yeşil/kırmızı zeminle vurgulanır.
+199. **[yapıldı v2.23]** **İskelet yükleme görünümü:** Veri gelirken kutuların gri iskeletleri; düzen kaymaz.
+200. **[yapıldı v2.23]** **Kısa ve işlevli açılış ekranı:** Logo + “Fiyatlar yükleniyor… 2/4”; en fazla ~1 sn; sonraki açılışlarda yalnızca veri yoksa.
+201. **[yapıldı v2.23]** **Özet sayfasının tek ana bilgiyle açılması:** En üstte büyük toplam varlık, bugünkü değişim, mevduata göre fark; altında “Bugün yapılacaklar”; takvim ve gün sonu notu katlanır.
+202. **[yapıldı v2.23]** **Tutarlı dil:** Seçili dilde bütün metinler aynı dilde (ör. döviz çevirme kaydı, Factsheet).
+203. **[yapıldı v2.23]** **Terimlerin tek tıkla açıklanması:** Alfa, Sharpe, Oynaklık vb. için tutarlı ? simgesi; tek cümle + somut örnek.
 204. **[kabul edildi]** **Fon sağlık halkaları:** Apple Watch tarzı üç iç içe halka: mevduata göre getiri, risk bütçesi kullanımı, çeşitlendirme. Fonun durumu tek bakışta okunur.
 205. **[kabul edildi]** **Zaman makinesi kaydırıcısı:** Fon sayfasının altında tarih kaydırıcısı; sürüklendikçe NAV, dağılım ve kâr/zarar o güne akıcı biçimde döner.
 206. **[kabul edildi]** **Servet nehri:** Özet’te fon bileşiminin zaman içindeki değişimini gösteren akış (streamgraph) grafiği; durağan pasta yerine.
@@ -328,7 +328,7 @@ Bugün hesaplananlar: RSI 14, 20/50/200 günlük ortalamalar, ATR, 52 hafta zirv
 215. **[kabul edildi]** **Komut paleti:** Ctrl K araması eylem de alır: “THYAO sat”, “mevduat aç”, “GNC II’yi aç”; ilgili pencere dolu açılır.
 216. **[kabul edildi]** **Korelasyon ağı:** Fondaki varlıkların birbirleriyle ilişkisi ağ grafiği; birlikte hareket edenler yakın ve kalın çizgiyle — çeşitlendirmenin görsel kanıtı.
 217. **[kabul edildi]** **Kurumsal tipografi ve marka:** Logo turuncusu yalnızca vurgu rengi; başlıklar için ince ve geniş bir display yazı tipi, metin için okunaklı sans; 4–6 boyutlu net tipografi ölçeği.
-218. **[kabul edildi]** **Logonun sıfırdan oluşması:** Açılışta keçi logosunun hatları SVG ile boş ekrandan çizilir, ardından turuncu dolgu ve “GNC” yazısı belirir (~0,9 sn). Çizimin ilerlemesi veri yüklemesine bağlıdır: logo tamamlandığında veri hazırdır.
+218. **[yapıldı v2.23]** **Logonun sıfırdan oluşması:** Açılışta keçi logosunun hatları SVG ile boş ekrandan çizilir, ardından turuncu dolgu ve “GNC” yazısı belirir (~0,9 sn). Çizimin ilerlemesi veri yüklemesine bağlıdır: logo tamamlandığında veri hazırdır.
 219. **[kabul edildi]** **Logo ailesi:** Tek renk monogram, küçük boyutta okunur sade favicon, açık/koyu tema varyantları; turuncu yalnızca vurgu.
 220. **[kabul edildi]** **Yaşayan logo:** Piyasa açıkken logoda çok hafif bir nabız, veri eskiyse logo griye döner; logo durum göstergesi olarak da çalışır.
 221. **[kabul edildi]** **“Ya olursa” simülatörü:** Kaydırıcılarla BIST (−%30…+%30), USD/TRY ve faiz değiştirilir; fonun değeri ve kalemleri canlı çubuklarla tepki verir.
