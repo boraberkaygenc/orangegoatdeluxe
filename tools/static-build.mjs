@@ -56,6 +56,10 @@ try {
   const docs = {}; for (const [k, v] of Object.entries(view.docs || {})) if (!k.startsWith('data/users/') && k !== 'settings/main' && !k.startsWith('import') && !k.startsWith('remote')) docs[k] = v;
   // the page shows a "refresh running" strip while status/refresh says so; the published copy is a finished snapshot
   if (docs['status/refresh'] && docs['status/refresh'].state === 'running') docs['status/refresh'] = { ...docs['status/refresh'], state: 'done', finishedAt: new Date().toISOString(), note: 'published while the update was still running; the next run continues it' };
+  { const rf = docs['status/refresh'] || {}; log('last refresh:', rf.state || '?', '·', String(rf.note || '').slice(0, 400));
+    const hs = (docs['status/health'] || {}).sources || {}; log('sources:', Object.entries(hs).map(([k, s]) => `${k} ${s && s.lastFail && (!s.lastOk || s.lastFail > s.lastOk) ? 'FAIL x' + s.fails + ' (' + String(s.lastError || '').slice(0, 70) + ')' : 'ok'}${s && s.lastError && !(s.lastFail > s.lastOk) ? ' [' + String(s.lastError).slice(0, 50) + ']' : ''}`).join('; '));
+    const today = new Date().toISOString().slice(0, 10), age = {}; for (const x of Object.values(inst.inst || {})) { const c = x.cls || '?', a = x.asOf || ''; const b = a >= today ? 'today' : a >= new Date(Date.now() - 4 * 864e5).toISOString().slice(0, 10) ? '1-4d' : 'older'; age[c] = age[c] || { today: 0, '1-4d': 0, older: 0 }; age[c][b]++; }
+    log('price dates:', Object.entries(age).map(([c, o]) => `${c} ${o.today}/${o['1-4d']}/${o.older}`).join(', '), '(today/1-4 days/older)'); }
   const health = docs['status/health'] || {}, failing = Object.entries(health.sources || {}).filter(([, s]) => s && s.ok === false).map(([k]) => k); if (failing.length) notes.push('sources failing: ' + failing.join(', '));
   const now = new Date(), next = new Date(now.getTime() + 35 * 60000);
   const payload = { app: 'orangegoat-deluxe', generatedAt: now.toISOString(), nextRun: next.toISOString(), mode: MODE, rev: view.rev, notes, docs, inst: inst.inst || {} };
