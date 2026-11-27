@@ -5,6 +5,14 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.26: Bankayla eşitle
+
+- Fonun işlem çubuğunda “⚖ Bankayla eşitle” düğmesi vardır; İçerik ve İşlem sekmesinde aynı adlı panel açılır.
+- Banka veya aracı kurum uygulamasının ekran görüntüleri birden çok olarak seçilir, yapıştırılır (Ctrl+V) veya sürüklenir. Her görüntü bu cihazda okunur ve türü tanınır: portföy/bakiye ekranı, mevduat, işlem geçmişi, emir detayı. Görüntü hiçbir yere gönderilmez.
+- Kalem kalem tablo: uygulamadaki adet ve değer, bankadaki adet ve değer (okunan veya elle yazılan), fark ve olası neden. Nedenler: adet farkı (eksik alış/satış, bölünme), fiyat zamanı, dolar varlıklarda kur farkı, nakit farkı (kaydedilmemiş para girişi/çıkışı, ücret, temettü), mevduatta bankanın yalnız anaparayı veya stopaj öncesi faizi göstermesi.
+- Her fark için tek tıkla düzeltme: eksik alış/satış işlem penceresini, nakit farkı para girişi/çıkışı penceresini, fonda olmayan mevduat mevduat açma penceresini dolu olarak açar. İşlem geçmişi ve emir görüntülerindeki işlemler deftere göre kontrol edilir; defterde olmayanlar “Kaydet” ile eklenir, olanlar “defterde var” diye işaretlenir. Onaylanmadan hiçbir şey kaydedilmez.
+- Banka toplamı girildiğinde farkın ne kadarının satırlarla açıklandığı ve ne kadarının açıklanmadığı gösterilir. “Eşitlemeyi kaydet” tarihi ve farkı saklar; fonun Özet sekmesinde “Bankayla son eşitleme” satırı görünür.
+
 ## v2.25: Ekran görüntüsünden işlem yeniden çalışıyor ve simülasyonlar
 
 - Ekran görüntüsü düzeltmesi: “📷 Ekran görüntüsünden” düğmesi yalnızca gizli kalan eski işlem çubuğundaydı; artık her sekmede görünen Al / Sat / Değiştir çubuğundadır. Aracı kurumun emir ekranı görüntüsü fon sayfasına yapıştırılabilir (Ctrl+V) veya sürüklenip bırakılabilir; işlem penceresi açılır, görüntü cihazda okunur ve alanlar doldurulur. Kayıt yine kullanıcının onayıyla yapılır.
