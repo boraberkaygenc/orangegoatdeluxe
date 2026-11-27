@@ -10545,10 +10545,11 @@ function rcParseDeposit(text) { const low = ocrLow(text), lines = String(text).s
   D.usd = /\$|usd|dolar/.test(low); return D; }
 function rcParseHistory(text, p, A) { const lines = String(text).split(/\n+/).map(l => l.replace(/\s+/g, ' ').trim()).filter(Boolean), cands = A.lines.map(l => l.sym).concat((state.scored || []).map(x => x.symbol).filter(s => s.length >= 4)), out = [];
   for (let i = 0; i < lines.length; i++) { const l = ocrLow(lines[i]), side = /sat[ıi][şs]|\bsell|\bsold/.test(l) ? 'sell' : /al[ıi][şs]|\bbuy|\bbought/.test(l) ? 'buy' : null; if (!side) continue;
-    const blk = [lines[i - 1] || '', lines[i], lines[i + 1] || ''].join(' '), sym = rcSymIn(blk, cands); if (!sym) continue;
-    const R = ocrParse(blk, p); const nums = ocrNums(lines[i].replace(new RegExp(sym, 'i'), ' ')).concat(ocrNums(lines[i + 1] || '')).filter(v => v > 0); const x = state.map[sym] || {}, px = x.e ? x.e.price : null;
+    const sym = rcSymIn(lines[i], cands) || rcSymIn(lines[i + 1] || '', cands) || rcSymIn(lines[i - 1] || '', cands); if (!sym) continue;
+    const noDate = t => String(t).replace(/\d{1,2}[./-]\d{1,2}[./-]\d{2,4}/g, ' ').replace(/\d{4}-\d{2}-\d{2}/g, ' '), R = ocrParse(lines[i], p), R2 = R.date ? R : ocrParse([lines[i - 1] || '', lines[i]].join('\n'), p);
+    const nums = ocrNums(noDate(lines[i]).replace(new RegExp(sym.replace(/[./]/g, '\\$&'), 'i'), ' ')).concat(ocrNums(noDate(lines[i + 1] || ''))).filter(v => v > 0); const x = state.map[sym] || {}, px = x.e ? x.e.price : null;
     let q = null, pr = null; for (let m = 0; m < nums.length && q == null; m++) for (let n = 0; n < nums.length; n++) if (m !== n && px && nums[n] > px * 0.4 && nums[n] < px * 2.5) { q = nums[m]; pr = nums[n]; break; }
-    if (q == null) continue; out.push({ side, symbol: sym, qty: q, price: pr, date: R.date || null, ccy: x.ccy || 'TRY' }); }
+    if (q == null) continue; out.push({ side, symbol: sym, qty: q, price: pr, date: R2.date || null, ccy: x.ccy || 'TRY' }); }
   return out; }
 // is a trade already in the ledger?
 function rcKnown(p, t) { return DX.txList(p).some(r => (r.kind === t.side) && String(r.text).includes(t.symbol) && Math.abs(r.qty - t.qty) <= Math.max(1e-6, t.qty * 0.001) && (!t.date || Math.abs(DX.daysBetween(r.date, t.date)) <= 3)); }
@@ -10595,7 +10596,7 @@ function rcEval(r, A) { const ok = `<span class="up">✓ ${DL('matches', 'tutuyo
   return { diff: null, why: '' }; }
 function rcTable(p) { const box = $('rc-table'); if (!box) return; const { A, S, rows } = rcRowsData(p); let expl = 0;
   const cell = (r, f, v) => `<input class="rc-in" inputmode="decimal" data-rc-k="${esc(r.k)}" data-rc-f="${f}" value="${rcIn(v)}" placeholder="${f === 'qty' ? DL('units', 'adet') : DL('value', 'değer')}">`;
-  const body = rows.map(r => { const e = rcEval(r, A); if (e.diff != null && e.unit !== 'qty') expl += r.type === 'cash' && r.ccy === 'USD' ? e.diff * A.fx : r.type === 'dep' && r.d.ccy === 'USD' ? e.diff * A.fx : e.diff;
+  const body = rows.map(r => { const e = rcEval(r, A); if (r.type === 'line' && r.bv != null) expl += r.bv - r.av; else if (e.diff != null && e.unit !== 'qty') expl += r.type === 'cash' && r.ccy === 'USD' ? e.diff * A.fx : r.type === 'dep' && r.d.ccy === 'USD' ? e.diff * A.fx : e.diff;
     const appCell = r.type === 'line' ? `${rcQ(r.aq || 0)} <span class="dim">·</span> ${T(r.av)}` : r.type === 'cash' ? dlMoney(r.av, r.ccy) : dlMoney(r.av, r.d.ccy);
     const bankCell = r.type === 'line' ? cell(r, 'qty', r.bq) + cell(r, 'value', r.bv) : cell(r, 'value', r.bv);
     const dc = e.diff == null ? '<span class="dim">—</span>' : e.unit === 'qty' ? `<b class="${e.diff > 0 ? 'up' : 'down'}">${e.diff > 0 ? '+' : ''}${rcQ(e.diff)} ${DL('units', 'adet')}</b>` : `<span class="${Math.abs(e.diff) < 1 ? 'dim' : e.diff > 0 ? 'up' : 'down'}">${e.diff > 0 ? '+' : ''}${e.unit === 'USD' ? dlMoney(e.diff, 'USD') : T(e.diff)}</span>`;
