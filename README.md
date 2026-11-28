@@ -5,6 +5,27 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.33: Eşitleme, kilit, bildirim, banka ekstresi
+
+- **Cihazlar arası şifreli eşitleme:** ⋯ › Cihazlar arası eşitleme. Veriler parolanızla bu cihazda AES-256 ile şifrelenir; size ait gizli bir GitHub Gist'e veya bir dosyaya gider, öbür cihazda aynı parolayla açılır.
+- **Banka ekstresi:** Fonlarım'da "🏦 Banka ekstresi" (veya ⋯ menüsü). CSV dosyası ya da yapıştırılan tablo okunur; satırlar para girişi/çıkışı, faiz, masraf, döviz, mevduat olarak tanınır; daha önce kaydedilenler işaretlenir; seçilenler fona tek seferde eklenir.
+- **Bildirimler:** Tarayıcı/telefon bildirimi ve isteğe bağlı kendi Telegram botunuz; yalnızca uyarı metni gider, tutarlar gizlenir.
+- **Uygulama kilidi ve acil durum dosyası:** PIN (ve destekleyen cihazda Windows Hello / parmak izi); güvendiğiniz kişi için varlık listesi ve hesap notlarıyla tek sayfalık dosya.
+- **Tarihli temel veriler:** Veri işi her ay kâr verimi, defter/fiyat ve ROE'yi saklar; değer sinyalinin testi Model karnesi'nde, aylar biriktikçe dolar.
+
+## v2.32: Hedef planlayıcı, vergi yardımcısı, puan karnesi
+
+- **Hedef ve emeklilik planlayıcı:** Fonlarım'da; hedefe ulaşma olasılığı, %50 ve %80 olasılık için gereken aylık tutar, yelpaze grafiği, aylık hatırlatma.
+- **Vergi yardımcısı:** Masraf ve vergi Sub deck'inde; yıl yıl gerçekleşen kazanç (ilk giren ilk çıkar, ABD hisselerinde gün kuru ve %10 üstü Yİ-ÜFE endekslemesi), temettü ve kesilen vergi; Excel (CSV) ve PDF.
+- **Puan tutuyor mu?:** Model karnesi'nde her ayın en iyi ve en kötü puanlı hisselerinin sonrasındaki getirisi ve 2017–2026 testi.
+- **Temettüye göre düzeltilmiş getiri:** Getiri ve risk istatistikleri temettüyü de sayar.
+
+## v2.31: Görseller ve kolay kullanım
+
+- **Fon:** Sağlık halkaları, beklenti yelpazesi ve hedefe ulaşma olasılığı, fon haritası (ağaç harita), getiri takvimi, zaman makinesi, korelasyon ağı, paylaşılabilir PNG kartı.
+- **Özet:** Servet nehri, odak modu, tutarları gizle (göz simgesi), tek durum küresi, fon kartında renk çubuğu, takvimde 48 saat vurgusu, telefonda günün hikâyesi.
+- **Her yerde:** Ctrl K ile komut ("THYAO sat", "mevduat aç", "odak"), işlem onayında onay işareti ve titreşim, borsa seansına göre üst çubuk tonu, yaşayan logo, tek renk favicon, sistemde yüksek kontrast veya büyük yazı açıksa uyum.
+
 ## v2.30: What If Manager, Deck'ler, görünüm seçici, fon simülasyonu
 
 - **What If Manager:** Her fonun Geçmiş sayfasında ve her hisse/döviz sayfasında: gün gün kâr, aynı paranın vadeli mevduatta getireceği kâr, kalem kalem görünüm, "Bunun yerine…" ve "Bir de bunu ekleseydim…" senaryoları, "Şunu dene" önerileri.

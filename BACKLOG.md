@@ -9,12 +9,12 @@ Sırada (2026-11-15): 56, 58, 59, 60, 63, 64, 65, 66, 67, 70. Yeni sekme planı 
 
 
 ## Veri ve tahmin
-1. Geçmiş bilançoları tarihli saklama → değer sinyalinin (kâr verimi, defter değeri) de test edilmesi
-2. Temettüye göre düzeltilmiş fiyatlar (BIST getirilerinin doğru ölçülmesi)
-3. TCMB Piyasa Katılımcıları Anketi ile mevduat faizi ve kur beklentisinin her ay otomatik güncellenmesi
-4. Kişisel tahmin karnesi: her fon için "o gün ne tahmin edildi, ne oldu" kaydı
-5. Piyasa rejimi tespiti (sakin / çalkantılı dönem) ile risk bantlarının ve sinyal ağırlıklarının döneme göre ayarlanması
-6. Aracı kurum hedef fiyatları ve konsensüs ile model tahmininin yan yana gösterilmesi
+1. **[yapıldı v2.33]** Geçmiş bilançoları tarihli saklama → değer sinyalinin (kâr verimi, defter değeri) de test edilmesi
+2. **[yapıldı v2.32]** Temettüye göre düzeltilmiş fiyatlar (BIST getirilerinin doğru ölçülmesi)
+3. **[zaten vardı]** TCMB Piyasa Katılımcıları Anketi ile mevduat faizi ve kur beklentisinin her ay otomatik güncellenmesi
+4. **[zaten vardı]** Kişisel tahmin karnesi: her fon için "o gün ne tahmin edildi, ne oldu" kaydı
+5. **[zaten vardı]** Piyasa rejimi tespiti (sakin / çalkantılı dönem) ile risk bantlarının ve sinyal ağırlıklarının döneme göre ayarlanması
+6. **[zaten vardı]** Aracı kurum hedef fiyatları ve konsensüs ile model tahmininin yan yana gösterilmesi
 
 ## Arayüz ve kullanım
 7. **[yapıldı v2.1]** Ana ekranda "Bugün ne yapmalıyım?" kartı (vadesi dolan mevduat, hedefe ulaşan hisse, atıl nakit tek listede)
@@ -26,7 +26,7 @@ Sırada (2026-11-15): 56, 58, 59, 60, 63, 64, 65, 66, 67, 70. Yeni sekme planı 
 13. **[yapıldı v2.1]** Kâr/zarar ısı haritası
 14. **[yapıldı v2.1]** Uygulama açıldığında vade, hedef ve zarar-kes uyarıları
 15. **[yapıldı v2.1]** Etkileşimli senaryo kaydırıcıları ("dolar %20 artarsa", "faiz 5 puan düşerse" → fon değeri anında)
-16. Hedef tabanlı plan ("2 yılda 1 milyon TL": ulaşma olasılığı ve gereken aylık ekleme)
+16. **[yapıldı v2.32]** Hedef tabanlı plan ("2 yılda 1 milyon TL": ulaşma olasılığı ve gereken aylık ekleme)
 
 ## Estetik
 17. **[yapıldı v2.1]** Yazı sistemi: metinler tek bir sade yazı tipinde (ör. IBM Plex Sans / Inter), yalnızca rakamlar eşit genişlikli (tabular) mono; şu an kalem adları da mono
@@ -34,7 +34,7 @@ Sırada (2026-11-15): 56, 58, 59, 60, 63, 64, 65, 66, 67, 70. Yeni sekme planı 
 19. **[yapıldı v2.1]** Kutu içinde kutu yerine ince ayraçlar; 8 piksellik ızgara ile tutarlı boşluklar; panellerde daha fazla nefes alanı
 20. **[yapıldı v2.1]** Tek grafik dili: aynı eksen, ızgara ve renkler; üzerine gelince artı imleçli ipucu; uç değer etiketleri; çakışan etiketlerin düzeltilmesi (fan grafiğindeki 290k/300k gibi)
 21. **[yapıldı v2.1]** Varlık türü renkleri ve simgeleri: hisse, fon, altın, döviz, mevduat, VİOP her yerde aynı renk ve küçük çizgi simgeyle
-22. Yeni tema "Private Banking": lacivert ve krem, ince altın vurgu, başlıklarda zarif serif; mevcut Paper / Slate / Terminal / Mono korunur
+22. **[zaten vardı]** Yeni tema "Private Banking": lacivert ve krem, ince altın vurgu, başlıklarda zarif serif; mevcut Paper / Slate / Terminal / Mono korunur
 23. **[yapıldı v2.1]** Akıcılık: "Yükleniyor…" yerine iskelet yükleme, değişen rakamlarda yumuşak geçiş, panelin kayarak açılması, sade bildirim balonları
 24. **[yapıldı v2.1]** Marka: orangegoat için küçük bir keçi logosu, turuncu vurgu rengi, uyumlu favicon ve uygulama simgesi; üst çubuğun sadeleştirilmesi
 25. **[yapıldı v2.1]** Boş durumlar: fon yokken, veri gelmemişken kısa yönlendirme ve tek tıkla başlama düğmesi
@@ -86,21 +86,21 @@ Sırada (2026-11-15): 56, 58, 59, 60, 63, 64, 65, 66, 67, 70. Yeni sekme planı 
     - Maliyet: soru başına yaklaşık birkaç cent (Opus 5.5: girdi $4, çıktı $20 / milyon token); Ayarlar'da aylık harcama sayacı ve üst sınır.
 
 ## Benzer uygulamalarla karşılaştırma — eksikler (2026-11-15, seçim bekliyor)
-55. Cihazlar arası şifreli eşitleme (telefon + bilgisayar aynı veri; uçtan uca şifreli, kendi Google Drive / GitHub alanınızda)
+55. **[yapıldı v2.33]** Cihazlar arası şifreli eşitleme (telefon + bilgisayar aynı veri; uçtan uca şifreli, kendi Google Drive / GitHub alanınızda)
 56. **[yapıldı v2.2]** Temettü ve sermaye artırımları fonlara otomatik: temettü kaydı (brüt, stopaj, net), bedelsiz / bedelli / bölünme uyarlaması, temettü takvimi ve yıllık temettü geliri tahmini
-57. Vergi / beyanname yardımcısı: yıl içi gerçekleşen kazançlar (ABD hisseleri için ÜFE endekslemesi, FIFO, TCMB kuru), temettü gelirleri, kesilen stopaj; PDF / Excel çıktısı
+57. **[yapıldı v2.32]** Vergi / beyanname yardımcısı: yıl içi gerçekleşen kazançlar (ABD hisseleri için ÜFE endekslemesi, FIFO, TCMB kuru), temettü gelirleri, kesilen stopaj; PDF / Excel çıktısı
 58. **[yapıldı v2.2]** Dönemsel performans tablosu: her fon için ay / çeyrek / yıl bazında zaman ağırlıklı (TWR) ve para ağırlıklı (XIRR) getiri; getirinin fiyat, temettü ve kur etkisine ayrılması
 59. **[yapıldı v2.2]** Reel (enflasyondan arındırılmış) görünüm: her getirinin TÜFE’ye göre reel karşılığı ve “enflasyonu yendim mi” göstergesi
 60. **[yapıldı v2.2]** Yeni varlık türleri: kripto (BTC, ETH), Eurobond / DİBS / özel sektör tahvili, BES fonları, fiziki altın (çeyrek, cumhuriyet), gayrimenkul ve araç (elle değerleme), borçlar (kredi, kart) → gerçek net varlık *(Kripto, kullanıcı kararıyla kapsamdan çıkarıldı.)*
-61. Telefona bildirim: fiyat, hedef / zarar-kes, vade ve KAP uyarıları (kişisel Telegram botu veya web push; yalnızca sembol listesi paylaşılır)
-62. Hedef ve emeklilik planlayıcı: aylık düzenli yatırım (DCA), hedef tutar / tarih, Monte Carlo ile ulaşma olasılığı, düzenli yatırım hatırlatıcısı
+61. **[yapıldı v2.33]** Telefona bildirim: fiyat, hedef / zarar-kes, vade ve KAP uyarıları (kişisel Telegram botu veya web push; yalnızca sembol listesi paylaşılır)
+62. **[yapıldı v2.32]** Hedef ve emeklilik planlayıcı: aylık düzenli yatırım (DCA), hedef tutar / tarih, Monte Carlo ile ulaşma olasılığı, düzenli yatırım hatırlatıcısı
 63. **[yapıldı v2.2]** Masraf analizi: yıl bazında ödenen komisyon, BSMV, fon yönetim ücreti; 10 yıllık birikimli etkisi ve daha ucuz alternatif önerisi
 64. **[yapıldı v2.2]** Ekonomik takvim ve haber akışı: TCMB faiz kararı, enflasyon, ABD verileri; elde tutulan hisselerin KAP bildirimleri kısa özetlerle; olayın fona olası etkisi
 65. **[yapıldı v2.2]** Fon içi “X-ray”: TEFAS fonlarının portföy dağılımı (KAP raporlarından) ile tüm fonlardaki gerçek hisse ve sektör maruziyeti
 66. **[yapıldı v2.2]** Temel analiz kartı: değerleme (F/K, PD/DD sektöre göre), büyüme, borçluluk, temettü güvenliği — tek bakışta görsel özet
 67. **[yapıldı v2.2]** “Ya bunun yerine şunu alsaydım?”: her alımın aynı tarihte BIST 100, altın, dolar veya mevduat ile karşılaştırması
-68. Aracı kurum ekstrelerinin düzenli içe aktarımı: banka / aracı kurum şablonları, mükerrer kayıt tespiti, toplu içe aktarma
-69. Uygulama kilidi (PIN / Windows Hello / parmak izi) ve güvenilir kişiye acil durum dosyası (varlık listesi, hesaplar)
+68. **[yapıldı v2.33]** Aracı kurum ekstrelerinin düzenli içe aktarımı: banka / aracı kurum şablonları, mükerrer kayıt tespiti, toplu içe aktarma
+69. **[yapıldı v2.33]** Uygulama kilidi (PIN / Windows Hello / parmak izi) ve güvenilir kişiye acil durum dosyası (varlık listesi, hesaplar)
 
 ## Emtia işlemleri (2026-11-15)
 70. **[yapıldı v2.2]** Emtianın kendisiyle (vadeli değil) işlem: Brent, WTI, altın ons, gümüş, platin, paladyum, bakır, doğalgaz için “Al / Sat” — birim (varil, ons, libre, MMBtu), kesirli miktar, USD fiyat ve o günün kuru; fonda “Emtia” sınıfında, VİOP’tan ayrı. Vadeli sözleşmeler ayrıca kalır; emtia sayfasında “Vadeli sözleşmeler” bölümü olarak görünür.
@@ -130,7 +130,7 @@ Sırada (2026-11-15): 56, 58, 59, 60, 63, 64, 65, 66, 67, 70. Yeni sekme planı 
 90. **[yapıldı v2.2]** Tablolar: sabit başlık satırı, satır üzerine gelince vurgu, tekrar eden etiketler (her satırda “BIST equity”, “12 months”) yerine sütun başlığında bir kez; 1 aylık mini grafik (sparkline); “Zaman” sütunu varsayılanda gizli; satır başındaki renkli çizginin anlamı açıklanır.
 91. **[yapıldı v2.2]** Fiyat değişince yumuşak yanıp sönme (yeşil / kırmızı), sayıların kayarak değişmesi; panel açılış-kapanış geçişleri; odak halkası ve klavye ile gezinme.
 92. **[yapıldı v2.2]** Boş ve ilk kullanım durumları: “0 TRY” büyük rakamı yerine “İlk fonunuzu ekleyin” çağrısı; boş paneller gizlenir.
-93. Bugün sayfasının sadeleşmesi: eski “Bir bakışta / Gelen kutusu / Dünkü kapanıştan beri / Karar kontrolü / Son bakışınızdan beri / …” panelleri birleştirilir veya kaldırılır (72 ile birlikte); en üstte yalnızca 4–5 kart.
+93. **[zaten vardı]** Bugün sayfasının sadeleşmesi: eski “Bir bakışta / Gelen kutusu / Dünkü kapanıştan beri / Karar kontrolü / Son bakışınızdan beri / …” panelleri birleştirilir veya kaldırılır (72 ile birlikte); en üstte yalnızca 4–5 kart.
 94. **[yapıldı v2.2]** Telefon: üst çubuk tek satır (logo + arama + bildirim), kart görünümü, büyük dokunma alanları, alt menüde simgeler; bildirim balonu alt menünün üstünde.
 95. **[yapıldı v2.2]** Grafikler: tek renk paleti, ince ızgara, sağda son değer etiketi, üzerine gelince artı imleç ve değer; açık ve koyu temada aynı okunurluk.
 96. **[yapıldı v2.2]** Erişilebilirlik ve okunurluk: en küçük yazı 12 px, gri metinlerde yeterli kontrast, ışıkların yanında metin etiketi (renk tek başına anlam taşımaz). Kullanıcı: yazı büyüklüğü Ayarlar’dan seçilebilsin (Küçük / Normal / Büyük / Çok büyük).
@@ -314,33 +314,33 @@ Bugün hesaplananlar: RSI 14, 20/50/200 günlük ortalamalar, ATR, 52 hafta zirv
 201. **[yapıldı v2.23]** **Özet sayfasının tek ana bilgiyle açılması:** En üstte büyük toplam varlık, bugünkü değişim, mevduata göre fark; altında “Bugün yapılacaklar”; takvim ve gün sonu notu katlanır.
 202. **[yapıldı v2.23]** **Tutarlı dil:** Seçili dilde bütün metinler aynı dilde (ör. döviz çevirme kaydı, Factsheet).
 203. **[yapıldı v2.23]** **Terimlerin tek tıkla açıklanması:** Alfa, Sharpe, Oynaklık vb. için tutarlı ? simgesi; tek cümle + somut örnek.
-204. **[kabul edildi]** **Fon sağlık halkaları:** Apple Watch tarzı üç iç içe halka: mevduata göre getiri, risk bütçesi kullanımı, çeşitlendirme. Fonun durumu tek bakışta okunur.
-205. **[kabul edildi]** **Zaman makinesi kaydırıcısı:** Fon sayfasının altında tarih kaydırıcısı; sürüklendikçe NAV, dağılım ve kâr/zarar o güne akıcı biçimde döner.
-206. **[kabul edildi]** **Servet nehri:** Özet’te fon bileşiminin zaman içindeki değişimini gösteren akış (streamgraph) grafiği; durağan pasta yerine.
-207. **[kabul edildi]** **Beklenti yelpazesi:** Tek tahmin sayısı yerine hedef tarihe uzanan güven bantlı yelpaze grafiği; hedef çizgisi ve “hedefe ulaşma olasılığı %”.
-208. **[kabul edildi]** **Fon röntgeni ağaç haritası:** Fon içeriği ağırlığa göre boyutlanan, kâr/zarara göre renklenen kareler; dokununca içine inilir.
-209. **[kabul edildi]** **Getiri takvim ısı haritası:** Fonun günlük getirisi GitHub tarzı takvim karelerinde; iyi ve kötü dönemler bir bakışta.
-210. **[kabul edildi]** **Piyasa saatine göre ortam tonu:** Üst şeridin rengi BIST seansına göre çok hafif değişir (açılış öncesi, açık, kapalı); akşam sistem koyu moddaysa koyu tema. Ayarlara seçenek eklenmez.
-211. **[kabul edildi]** **Sayaç tarzı sayı geçişi:** NAV ve toplam varlık değiştiğinde rakamlar sayaç gibi kayarak yeni değere geçer (hareketi azalt açıksa kapalı).
-212. **[kabul edildi]** **Günün hikâyesi (telefon):** Açılışta kaydırılabilir 4–5 kart: toplam varlık, en çok kazandıran/kaybettiren, bugün yapılacaklar, yaklaşan olaylar.
-213. **[kabul edildi]** **Onayda dokunsal ve görsel geri bildirim:** İşlem onaylanınca kısa bir onay işareti animasyonu ve telefonda hafif titreşim.
-214. **[kabul edildi]** **Paylaşılabilir fon kartı:** Fonun özetini (getiri, mevduata göre fark, dağılım) şık bir PNG kart olarak indirme; tutarlar isteğe bağlı gizlenir.
-215. **[kabul edildi]** **Komut paleti:** Ctrl K araması eylem de alır: “THYAO sat”, “mevduat aç”, “GNC II’yi aç”; ilgili pencere dolu açılır.
-216. **[kabul edildi]** **Korelasyon ağı:** Fondaki varlıkların birbirleriyle ilişkisi ağ grafiği; birlikte hareket edenler yakın ve kalın çizgiyle — çeşitlendirmenin görsel kanıtı.
-217. **[kabul edildi]** **Kurumsal tipografi ve marka:** Logo turuncusu yalnızca vurgu rengi; başlıklar için ince ve geniş bir display yazı tipi, metin için okunaklı sans; 4–6 boyutlu net tipografi ölçeği.
+204. **[yapıldı v2.31]** **Fon sağlık halkaları:** Apple Watch tarzı üç iç içe halka: mevduata göre getiri, risk bütçesi kullanımı, çeşitlendirme. Fonun durumu tek bakışta okunur.
+205. **[yapıldı v2.31]** **Zaman makinesi kaydırıcısı:** Fon sayfasının altında tarih kaydırıcısı; sürüklendikçe NAV, dağılım ve kâr/zarar o güne akıcı biçimde döner.
+206. **[yapıldı v2.31]** **Servet nehri:** Özet’te fon bileşiminin zaman içindeki değişimini gösteren akış (streamgraph) grafiği; durağan pasta yerine.
+207. **[yapıldı v2.31]** **Beklenti yelpazesi:** Tek tahmin sayısı yerine hedef tarihe uzanan güven bantlı yelpaze grafiği; hedef çizgisi ve “hedefe ulaşma olasılığı %”.
+208. **[yapıldı v2.31]** **Fon röntgeni ağaç haritası:** Fon içeriği ağırlığa göre boyutlanan, kâr/zarara göre renklenen kareler; dokununca içine inilir.
+209. **[yapıldı v2.31]** **Getiri takvim ısı haritası:** Fonun günlük getirisi GitHub tarzı takvim karelerinde; iyi ve kötü dönemler bir bakışta.
+210. **[yapıldı v2.31]** **Piyasa saatine göre ortam tonu:** Üst şeridin rengi BIST seansına göre çok hafif değişir (açılış öncesi, açık, kapalı); akşam sistem koyu moddaysa koyu tema. Ayarlara seçenek eklenmez.
+211. **[yapıldı v2.31]** **Sayaç tarzı sayı geçişi:** NAV ve toplam varlık değiştiğinde rakamlar sayaç gibi kayarak yeni değere geçer (hareketi azalt açıksa kapalı).
+212. **[yapıldı v2.31]** **Günün hikâyesi (telefon):** Açılışta kaydırılabilir 4–5 kart: toplam varlık, en çok kazandıran/kaybettiren, bugün yapılacaklar, yaklaşan olaylar.
+213. **[yapıldı v2.31]** **Onayda dokunsal ve görsel geri bildirim:** İşlem onaylanınca kısa bir onay işareti animasyonu ve telefonda hafif titreşim.
+214. **[yapıldı v2.31]** **Paylaşılabilir fon kartı:** Fonun özetini (getiri, mevduata göre fark, dağılım) şık bir PNG kart olarak indirme; tutarlar isteğe bağlı gizlenir.
+215. **[yapıldı v2.31]** **Komut paleti:** Ctrl K araması eylem de alır: “THYAO sat”, “mevduat aç”, “GNC II’yi aç”; ilgili pencere dolu açılır.
+216. **[yapıldı v2.31]** **Korelasyon ağı:** Fondaki varlıkların birbirleriyle ilişkisi ağ grafiği; birlikte hareket edenler yakın ve kalın çizgiyle — çeşitlendirmenin görsel kanıtı.
+217. **[yapıldı v2.31]** **Kurumsal tipografi ve marka:** Logo turuncusu yalnızca vurgu rengi; başlıklar için ince ve geniş bir display yazı tipi, metin için okunaklı sans; 4–6 boyutlu net tipografi ölçeği.
 218. **[yapıldı v2.23]** **Logonun sıfırdan oluşması:** Açılışta keçi logosunun hatları SVG ile boş ekrandan çizilir, ardından turuncu dolgu ve “GNC” yazısı belirir (~0,9 sn). Çizimin ilerlemesi veri yüklemesine bağlıdır: logo tamamlandığında veri hazırdır.
-219. **[kabul edildi]** **Logo ailesi:** Tek renk monogram, küçük boyutta okunur sade favicon, açık/koyu tema varyantları; turuncu yalnızca vurgu.
-220. **[kabul edildi]** **Yaşayan logo:** Piyasa açıkken logoda çok hafif bir nabız, veri eskiyse logo griye döner; logo durum göstergesi olarak da çalışır.
+219. **[yapıldı v2.31]** **Logo ailesi:** Tek renk monogram, küçük boyutta okunur sade favicon, açık/koyu tema varyantları; turuncu yalnızca vurgu.
+220. **[yapıldı v2.31]** **Yaşayan logo:** Piyasa açıkken logoda çok hafif bir nabız, veri eskiyse logo griye döner; logo durum göstergesi olarak da çalışır.
 221. **[yapıldı v2.25]** **“Ya olursa” simülatörü:** Kaydırıcılarla BIST (−%30…+%30), USD/TRY ve faiz değiştirilir; fonun değeri ve kalemleri canlı çubuklarla tepki verir.
 222. **[yapıldı v2.25]** **Olası yollar grafiği:** Monte Carlo’nun 200 olası yolu ince çizgiler, ortanca kalın çizgi, hedef çizgisi ve “hedefe ulaşma olasılığı %”.
 223. **[yapıldı v2.25]** **Geriye dönük oynatıcı:** “Bu fonu 2018’de kursaydım” — oynat düğmesiyle grafik zamanla çizilir; kur şoku, pandemi gibi krizler işaretlenir.
 224. **[yapıldı v2.25]** **Kriz kartları:** 2018 kur şoku, 2020 pandemi, Aralık 2021 gibi senaryolarda fonun kaybı ve toparlanma süresi kart hâlinde.
-225. **[kabul edildi]** **Odak modu:** Tek dokunuşla yalnızca toplam varlık, bugünkü değişim ve bugün yapılacaklar görünür.
-226. **[kabul edildi]** **Tutarları gizle:** Üst çubukta göz simgesiyle tüm tutarlar ••• olur, yüzdeler kalır; kalabalık ortamda kullanım için.
-227. **[kabul edildi]** **Sistem tercihine uyum:** Cihazda büyük yazı veya yüksek kontrast açıksa uygulama kendiliğinden uyar; Ayarlara seçenek eklenmez.
-228. **[kabul edildi]** **Tek durum küresi:** Üst çubukta piyasa, veri ve fonların ortak durumunu gösteren tek küre; dokununca nedenler listelenir.
-229. **[kabul edildi]** **Fon kartında ışık yerine renk çubuğu:** Kartın sol kenarında mevduata göre durumu gösteren ince renk çubuğu; parlama yok.
-230. **[kabul edildi]** **Takvim nabzı:** TCMB, TÜİK gibi yaklaşan önemli günler takvimde ve özet satırında yalnızca son 48 saatte hafifçe vurgulanır.
+225. **[yapıldı v2.31]** **Odak modu:** Tek dokunuşla yalnızca toplam varlık, bugünkü değişim ve bugün yapılacaklar görünür.
+226. **[yapıldı v2.31]** **Tutarları gizle:** Üst çubukta göz simgesiyle tüm tutarlar ••• olur, yüzdeler kalır; kalabalık ortamda kullanım için.
+227. **[yapıldı v2.31]** **Sistem tercihine uyum:** Cihazda büyük yazı veya yüksek kontrast açıksa uygulama kendiliğinden uyar; Ayarlara seçenek eklenmez.
+228. **[yapıldı v2.31]** **Tek durum küresi:** Üst çubukta piyasa, veri ve fonların ortak durumunu gösteren tek küre; dokununca nedenler listelenir.
+229. **[yapıldı v2.31]** **Fon kartında ışık yerine renk çubuğu:** Kartın sol kenarında mevduata göre durumu gösteren ince renk çubuğu; parlama yok.
+230. **[yapıldı v2.31]** **Takvim nabzı:** TCMB, TÜİK gibi yaklaşan önemli günler takvimde ve özet satırında yalnızca son 48 saatte hafifçe vurgulanır.
 231. **[yapıldı v2.22]** **Sekme yerleşimi sorunu:** Telefonda fonun sekmeleri (Özet, İçerik ve İşlem, Pointer, Geçmiş) satıra sığmıyor ve “Basit görünüm” düğmesi sekme satırında kesiliyor; sekmeler tam görünür hâle getirilecek, görünüm düğmesi sekme satırından çıkarılacak.
 232. **[yapıldı v2.24]** **Yönetim Kurulu: net cevap ve süreç:** En üstte tek karar kutusu (ör. “THYAO’nun %30’unu sat — güven: orta”), 3 maddelik gerekçe, “Bunu uygula” düğmesi (işlem penceresi dolu açılır); süreç adımları Soru → Veri → Tartışma → Oylama → Karar ilerleme çubuğuyla; oy dağılımı tek çubuk; tartışma ayrıntısı katlanır.
 233. **[yapıldı v2.24]** **Pointer: görselli ve kolay analiz:** Her bulgu bir cümle + bir grafik: mevduata göre fark iki çubuk, risk kadranı, yoğunlaşma halka grafiği, “ne yapmalı” tek düğme; teknik terim yok, gerekirse ? ile açıklanır.
@@ -348,7 +348,7 @@ Bugün hesaplananlar: RSI 14, 20/50/200 günlük ortalamalar, ATR, 52 hafta zirv
 235. **[yapıldı v2.24]** **Masaüstünde animasyonlar çalışmıyor:** İşletim sisteminde animasyon efektleri kapalıyken uygulama bütün animasyon ve geçişleri kapatıyordu; uygulama artık bu sistem ayarından bağımsız olarak animasyonları gösterir.
 236. **[yapıldı v2.25]** **Ekran görüntüsünden talimat alınamıyor:** “📷 Ekran görüntüsünden” düğmesi v2.22’de yalnızca İçerik sekmesindeki eski işlem çubuğuna eklenmişti; v2.23’ten sonra görünen işlem çubuğunda bulunmadığı için özellik kullanılamıyordu. Düğme görünen çubuğa taşındı; ayrıca fon sayfasına görüntü yapıştırma (Ctrl+V) ve sürükleyip bırakma eklendi.
 237. **[yapıldı v2.26]** **Bankayla eşitle (mutabakat):** Fonda “Bankayla eşitle” düğmesi: bankanın/aracı kurumun ekranındaki toplam değer, nakit bakiye ve her kalemin adedi girilir (veya portföy ekranının görüntüsü/raporu okunur). Uygulama farkı kalem kalem ve nedeniyle gösterir (adet farkı, fiyat zamanı, kur alış/satış farkı, mevduat faizi ve stopaj, eksik temettü/bölünme, ücret). Her fark için tek tıkla düzeltme önerir: eksik işlemi kaydet, adedi düzelt, nakit düzeltme kaydı ekle, değerlemede bankanın fiyatını/kurunu kullan. Son eşitleme tarihi fon başlığında görünür.
-238. **[öneri]** **Banka hesap dökümü içe aktarma:** Bankanın internet/mobil şubesinden indirilen hesap hareketleri (Excel/CSV/PDF ekstre) ve mevduat/yatırım hesabı dökümü tarayıcıda okunur; dosya hiçbir yere gönderilmez. Para girişleri, çıkışları, faiz, döviz alım-satımı ve fon/hisse işlemleri tanınıp fona önerilir; daha önce girilenler atlanır; kullanıcı onaylamadan hiçbir şey kaydedilmez. Desteklenecek bankalar için örnek ekstre gerekir. Doğrudan banka bağlantısı (açık bankacılık) lisans gerektirdiğinden bu yol izlenir.
+238. **[yapıldı v2.33]** **Banka hesap dökümü içe aktarma:** Bankanın internet/mobil şubesinden indirilen hesap hareketleri (Excel/CSV/PDF ekstre) ve mevduat/yatırım hesabı dökümü tarayıcıda okunur; dosya hiçbir yere gönderilmez. Para girişleri, çıkışları, faiz, döviz alım-satımı ve fon/hisse işlemleri tanınıp fona önerilir; daha önce girilenler atlanır; kullanıcı onaylamadan hiçbir şey kaydedilmez. Desteklenecek bankalar için örnek ekstre gerekir. Doğrudan banka bağlantısı (açık bankacılık) lisans gerektirdiğinden bu yol izlenir.
 239. **[yapıldı v2.26]** **Ekran görüntüsüyle eşitleme (kullanıcının tercihi):** Kullanıcı ekstre yerine ekran görüntüsü göndermeyi tercih ediyor. Birden çok görüntü aynı anda yüklenir veya yapıştırılır; her görüntünün türü tanınır: portföy/hesap özeti (kalemler, adet, değer, nakit), mevduat hesabı (anapara, faiz, vade), döviz hesabı, işlem geçmişi ve emir detayı. Okunanlar tek tabloda uygulamadaki fonla karşılaştırılır (237) ve eksik işlemler tek tıkla önerilir; aynı işlem iki kez kaydedilmez. Okuma tarayıcıda yapılır, görüntü hiçbir yere gönderilmez. Bankalara göre okuma kuralları kullanıcının örnek görüntüleriyle ayarlanır.
 240. **[yapıldı v2.27]** **Güncellemelerin aksamadan çalışması:** Takvim her 30 dakikada bir güncelleme ister, ancak GitHub zamanlanmış çalışmaları büyük ölçüde atlıyor (26–27 Kasım'da günde 2–3 çalışma; borsa saatlerinde 12 saate varan boşluk). Çözüm: her çalışma bittiğinde, borsa saatlerindeyse bir sonrakini kendisi başlatır (workflow_dispatch, GITHUB_TOKEN ile); böylece fiyatlar gün içinde yaklaşık 30 dakikada bir tazelenir. Zamanlanmış çalışma yedek olarak kalır.
 241. **[yapıldı v2.27]** **Adı değişen / borsadan çıkan BIST hisseleri:** KOZAL, KOZAA, IPEKE, DOBUR, METUR, MARKA, SELGD, SNKRN, YGYO, DMLKT ve benzerleri Yahoo'da artık bulunmuyor (HTTP 404); fiyatları donuk kalıyor (19 BIST hissesi 4 günden eski). Yeni kodlar eşlenir (örn. KOZAL → TRALT), gerçekten çıkanlar "işlem görmüyor" olarak işaretlenir; fonda tutuluyorsa kullanıcıya bildirilir. Yahoo'da olmayanlar için İş Yatırım fiyatı yedek kaynak olur.
@@ -357,7 +357,7 @@ Bugün hesaplananlar: RSI 14, 20/50/200 günlük ortalamalar, ATR, 52 hafta zirv
 244. **[yapıldı v2.27]** **Veri tazeliğinin görünmesi:** Her güncellemede sınıf başına "bugün / 1–4 gün / daha eski" fiyat sayısı ve çalışmayan kaynaklar derleme günlüğüne yazılıyor (v2.26 sonrası eklendi); aynı özet uygulamada fiyat tarihi eski olan varlıkların listesiyle gösterilir.
 245. **[yapıldı v2.27]** **Puanın karara yansıması (kullanıcı: "puanlar hep olumlu, gösterge olmuyor"):** 19 Kasım verisiyle ölçüldü: puan 0–100 arasında düzgün dağılıyor, fakat karar mutlak beklenen getiriye bakıyor. BIST'te piyasa beklentisi (%51,7) mevduatı (%41,5) her durumda geçtiği için puanı 0–20 olan hisseler dahil 645 hissenin 644'ü "12 ay tut" görünüyor; ABD'de ise 1.275 hissenin tamamı "kaçın". Çözüm: renk ve karar, hissenin kendi katkısına (BIST 100'e / S&P 500'e göre beklenen fark, puan beşlisinden) göre verilir; piyasa beklentisi ayrı bir satırda gösterilir. Bantlar: 80+ "Güçlü al adayı", 60–80 "Olumlu", 40–60 "Nötr", 20–40 "Zayıf", 0–20 "Sat adayı"; elde tutulan zayıf hisseler için uyarı çıkar.
 246. **[yapıldı v2.27]** **ABD puanının kanıt düzeyi:** Geriye dönük testte ABD hisselerinde puan beşlileri arasında getiri farkı çok küçük (6 ayda en iyi ile en kötü arası ~1 puan; BIST'te ~7 puan). ABD puanı "zayıf kanıt" olarak etiketlenir veya yeniden ayarlanır; kanıtı zayıf olan puan kararda daha az ağırlık alır.
-247. **[öneri]** **Puanın sınanması ekranda:** Geçmişte verilen puanların sonrasında ne olduğu (puanı yüksekler endeksi geçti mi, düşükler geride kaldı mı) aylık bir tabloyla gösterilir; puanın güvenilirliği kullanıcıya rakamla görünür.
+247. **[yapıldı v2.32]** **Puanın sınanması ekranda:** Geçmişte verilen puanların sonrasında ne olduğu (puanı yüksekler endeksi geçti mi, düşükler geride kaldı mı) aylık bir tabloyla gösterilir; puanın güvenilirliği kullanıcıya rakamla görünür.
 248. **[yapıldı v2.27]** **Açılış hızı:** Sayfa açılışta view.json (14,6 MB) ve series.json (17,8 MB) indiriyor. Liste ve özet için gereken küçük bir dosya önce yüklenir; fiyat geçmişi yalnızca açılan varlık ve tutulan varlıklar için, gerektiğinde çekilir. Açılış süresinin belirgin kısalması beklenir.
 249. **[yapıldı v2.27]** **Tek bakışta fon ekranı:** Fonun Özet sekmesi en üstte üç rakam (değer, mevduata göre fark, risk) ve tek bir "şimdi yapılacak" önerisiyle başlar; diğer paneller kapalı başlar ve açıldığında yüklenir. Hiçbir araç kaldırılmaz.
 250. **[yapıldı v2.27]** **Renk dilinin tutarlılığı:** Yeşil yalnızca alternatifinden (mevduat veya endeks) iyi olanı, kırmızı yalnızca kötü olanı gösterir; mutlak getiri pozitif diye yeşil gösterilmez. Bütün ekranlarda aynı kural uygulanır.
