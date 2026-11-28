@@ -5,6 +5,16 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.34: Dengeleme, karşılaştırma, senaryolar, temettü, risk profili, kurum maliyeti, alarmlar
+
+- **Yeniden dengeleme bekçisi:** Fonun İçerik ve İşlem sayfasında hedef ağırlıklar; bir kalem bandın dışına çıkınca yapılacaklar listesinde uyarı ve "Şimdi dengele" ile dolu işlem girişi.
+- **Hisse karşılaştırma:** ⋯ menüsünden, hisse sayfasındaki "Karşılaştır"dan veya Ctrl K "karşılaştır THYAO GARAN" ile 2–4 hisse yan yana.
+- **Kayıtlı senaryolar:** What If ve deneme işlemi senaryoları kaydedilir; Model karnesi'nde "senaryo mu daha iyi çıktı, olduğu gibi mi" karnesi.
+- **Temettü planlayıcı:** Fonun Geçmiş sayfasında önümüzdeki 12 ayın temettüleri ve 5 yılda yeniden yatırma ile nakit almanın farkı.
+- **Risk profilim:** Yedi soruluk anket; risk bütçesi ve hedef planlayıcının varsayılanı buna göre ayarlanır.
+- **Aracı kurum maliyetleri:** Son 12 ayın işlemleri, girdiğiniz her kurumun tarifesiyle fiyatlanır.
+- **Alarm merkezi:** Piyasalar › İzleme'de fiyat, puan bandı ve duyuru alarmları; bildirimlerle bağlı.
+
 ## v2.33: Eşitleme, kilit, bildirim, banka ekstresi
 
 - **Cihazlar arası şifreli eşitleme:** ⋯ › Cihazlar arası eşitleme. Veriler parolanızla bu cihazda AES-256 ile şifrelenir; size ait gizli bir GitHub Gist'e veya bir dosyaya gider, öbür cihazda aynı parolayla açılır.
