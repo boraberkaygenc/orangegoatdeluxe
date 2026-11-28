@@ -49,6 +49,11 @@ function closesOf(x) {
   if (Array.isArray(x.series)) return x.series.filter(v => v > 0);
   return [];
 }
+// total-return closes: every close before an ex-dividend date is scaled by (1 − dividend ÷ previous close), so returns include dividends
+// (prices shown stay the market prices; only return and risk statistics use this series)
+function divAdjust(c, d, divs) { if (!Array.isArray(divs) || !divs.length || !d || d.length !== c.length || c.length < 2) return c; const out = c.slice();
+  for (const [dd, amt] of divs) { if (!(amt > 0)) continue; let k = -1; for (let i = d.length - 1; i >= 0; i--) if (d[i] < dd) { k = i; break; } if (k < 0 || k >= d.length - 1) continue; const f = 1 - amt / c[k]; if (!(f > 0.5 && f < 1)) continue; for (let i = 0; i <= k; i++) out[i] *= f; }
+  return out; }
 function barsOf(x) { // aligned arrays from x.bars = [[date, close, high, low, volume], ...]; falls back to closes
   const hl = Array.isArray(x.hlv) && Array.isArray(x.closes) && x.hlv.length === x.closes.length ? x.hlv : null;
   const b = Array.isArray(x.bars) && x.bars.length ? x.bars : (Array.isArray(x.closes) ? x.closes.map((r, i) => hl ? [r[0], r[1], hl[i][0], hl[i][1], hl[i][2]] : [r[0], r[1], null, null, null]) : []);
@@ -168,7 +173,7 @@ function indCached(sym, bars) { const n = bars.c.length, k = bars.d[n - 1] + '|'
 function enrich(inst, S, M) {
   const out = {};
   for (const x of Object.values(inst)) {
-    const bars = barsOf(x), c = bars.c.length ? bars.c : closesOf(x), st0 = seriesStats(c, bars), p = x.perf || {}, flags = [];
+    const bars = barsOf(x), c = divAdjust(bars.c.length ? bars.c : closesOf(x), bars.c.length ? bars.d : null, x.divs), st0 = seriesStats(c, bars), p = x.perf || {}, flags = [];
     const st = x.historyStale ? { n: st0.n, vol: st0.vol, dvol: st0.dvol, mdd: st0.mdd, jump: st0.jump, atr: st0.atr, turnover: st0.turnover, amihud: st0.amihud } : st0;
     if (x.historyStale && x.cls !== 'MACRO') flags.push('stale history');
     if (x.inactive) flags.push('not trading');
@@ -1461,7 +1466,7 @@ return { indicators, setCalib, getCalib, calibrate, calScale, calSig, num, clamp
   horizons, scoreAll, explain, scenario, packageAnalytics, portfolioRisk, roman, longDate, addMonths, picks, holdingsView, alerts, sellList, brief, statementModel, packageModel, tearsheetModel, fundId,
   renderPDF, renderDOCX, fmtTRY, fmtPct, fmtN, DISCLAIMER, riskBucket, closesOf, seriesStats, normRating, brokerLatest, consensus, brokerSignals, brokerDigestModel,
   benchNet, benchLabel, depTax, addDays, daysBetween, makeFx, setDisplay, money, realPct, breakeven, exitPlan, earlyExit, alternatives, perfSeries, backtest, DISPLAY,
-  V3_DEFAULT_W, V3_SIGNALS, v3Weights, v3Edge, V3_DEC, barsOf, gate, faber, stopDist, trailLevel, realisedVol, capsCheck, diversificationLabel, suggestWeights,
+  V3_DEFAULT_W, V3_SIGNALS, v3Weights, v3Edge, divAdjust, V3_DEC, barsOf, gate, faber, stopDist, trailLevel, realisedVol, capsCheck, diversificationLabel, suggestWeights,
   fxRate, depositPath, rfTry, ewmaVol, horizonWeights, hKeyForDays, bootstrapFan, ledgerEntry, scoreLedger, fundModel, fundMetrics, beatDeposit, rankProposals, riskBudget, swapSuggestions, earningsFlags, hedgeSleeve, faberMonthly, bizDays, dailyReturns };
 })();
 if (typeof module !== 'undefined') module.exports = ENGINE;
