@@ -72,6 +72,13 @@ try {
   // six significant digits are plenty for the page and make the file about a third smaller; integers stay as they are
   const r6 = (k, v) => typeof v === 'number' && !Number.isInteger(v) && isFinite(v) ? +v.toPrecision(6) : v;
   fs.writeFileSync(path.join(SITE, 'data', 'view.json'), JSON.stringify(payload, r6));
+  // 247 · score track record: once a month keep the best and worst fifth of BIST and US shares with their prices (kept in the data store between runs)
+  try { const LOGF = path.join(DIR, 'data', 'scorelog.json'); let L = { months: [] }; try { L = JSON.parse(fs.readFileSync(LOGF, 'utf8')); } catch (e) { }
+    const month = now.toISOString().slice(0, 7); if (!L.months.some(m => m.month === month)) { const I = Object.values(inst.inst || {}), g = {};
+      for (const [cls, idx] of [['TR_EQ', 'XU100'], ['US_EQ', 'SPX']]) { const L2 = I.filter(x => x.cls === cls && x.score != null && x.price > 0 && x.e && x.e.turnover).sort((a, b) => (b.e.turnover || 0) - (a.e.turnover || 0)).slice(0, cls === 'TR_EQ' ? 300 : 600);
+        const pick = f => L2.filter(f).slice(0, 60).map(x => [x.symbol, +(+x.price).toPrecision(6)]); const ix = (inst.inst || {})[idx]; g[cls] = { top: pick(x => x.score >= 80), bot: pick(x => x.score < 20), idx: ix && ix.price ? [idx, +(+ix.price).toPrecision(6)] : null }; }
+      L.months.push({ month, date: now.toISOString().slice(0, 10), g }); L.months = L.months.slice(-36); fs.writeFileSync(LOGF, JSON.stringify(L)); log(`score log: snapshot for ${month} kept (${L.months.length} months)`); }
+    fs.writeFileSync(path.join(SITE, 'data', 'scorelog.json'), JSON.stringify(L)); } catch (e) { notes.push('score log: ' + e.message); }
   // a tiny file the open page polls; it downloads view.json again only when this changes
   fs.writeFileSync(path.join(SITE, 'data', 'stamp.json'), JSON.stringify({ generatedAt: payload.generatedAt, nextRun: payload.nextRun }));
   fs.writeFileSync(path.join(SITE, 'data', 'series.json'), JSON.stringify({ generatedAt: payload.generatedAt, series }));

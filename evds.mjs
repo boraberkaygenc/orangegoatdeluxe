@@ -11,7 +11,8 @@ const SERIES = {
   usdtry12m: { code: 'TP.PKAUO.S05.C.U', label: 'USD/TRY expectation, 12 months ahead (market participants survey, TL)' },
   usdtryYE: { code: 'TP.PKAUO.S05.B.U', label: 'USD/TRY expectation, current year-end (TL)' },
   policy12m: { code: 'TP.PKAUO.S04.D.U', label: 'Policy rate expectation, 12 months ahead (%)' },
-  deposit3m: { code: 'TP.TRY.MT02', label: 'TL deposit rate, up to 3 months (weekly, %)' }
+  deposit3m: { code: 'TP.TRY.MT02', label: 'TL deposit rate, up to 3 months (weekly, %)' },
+  ppi: { code: 'TP.TUFE1YI.T1', years: 12, label: 'Domestic producer price index (Yİ-ÜFE, 2003=100) — cost indexation for the tax helper' }
 };
 const dmy = d => `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
 function parseDate(t) { let m = String(t).match(/^(\d{2})-(\d{2})-(\d{4})$/); if (m) return `${m[3]}-${m[2]}-${m[1]}`; m = String(t).match(/^(\d{4})-(\d{1,2})$/); if (m) return `${m[1]}-${m[2].padStart(2, '0')}-01`; m = String(t).match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? m[0] : null; }
@@ -38,7 +39,7 @@ export function createEvds({ key, db, put, log, inbox, mark }) {
     running = (async () => {
       const end = new Date(), start = new Date(Date.now() - 2.2 * 365 * 864e5), cur = db.docs['macro/series'] || { series: {} }, out = { ...cur, series: { ...(cur.series || {}) } }, ok = [], fail = [];
       for (const [k, s] of Object.entries(SERIES)) {
-        try { const rows = await fetchSeries(key, s, start, end); out.series[k] = { label: s.label, code: s.code, data: rows }; ok.push(k); }
+        try { const rows = await fetchSeries(key, s, s.years ? new Date(Date.now() - s.years * 365.25 * 864e5) : start, end); out.series[k] = { label: s.label, code: s.code, data: rows }; ok.push(k); }
         catch (e) { fail.push(`${k}: ${e.message}${e.cause && e.cause.code ? ' / ' + e.cause.code : ''}`); }
       }
       out.asOf = new Date().toISOString().slice(0, 10); out.note = ok.length ? `EVDS: ${ok.join(', ')} updated${fail.length ? '; failed ' + fail.join('; ') : ''}` : `EVDS failed: ${fail.join('; ')}`;
