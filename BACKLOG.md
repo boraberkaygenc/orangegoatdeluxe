@@ -371,14 +371,14 @@ Bugün hesaplananlar: RSI 14, 20/50/200 günlük ortalamalar, ATR, 52 hafta zirv
 258. **[yapıldı v2.30]** **Ana ekrandan ekran görüntüsü veya rapor:** Özet ve Fonlarım'da "📥 Ekran görüntüsü veya rapor" düğmesi; fon açık değilken yapıştırma ve sürükleyip bırakma da çalışır. Emir görüntüsü hisseyi tutan fona bağlanır (bilet dolu açılır); portföy/geçmiş/mevduat görüntüsü o fonun "Bankayla eşitle" paneline gider; hisse sayfası da açılabilir. PDF/CSV raporda, rapordaki hisseleri tutan fon "Mevcut fona ekle" olarak önceden seçilir.
 259. **[yapıldı v2.30]** **What If Manager:** Her fonun Geçmiş sayfasında ve her hisse/döviz sayfasında kendi logosuyla: gün gün kâr, aynı paranın vadeli mevduatta getireceği kâr, fonun tamamı / kalem kalem / tek kalem görünümü, "Bunun yerine…" (mevduat, dolar, altın, BIST 100, S&P 500 veya yüksek puanlı hisseler) ve "Bir de bunu ekleseydim…" senaryoları, üzerine gelince tarih tarih değerler; "Şunu dene": aynı günlerde daha iyi olacak seçenekler (geriye dönük) ve bugünün al adayları (simülasyonda denenir). Elde olmayan hisse için tarih ve tutar seçilerek "alsaydım" hesabı.
 260. **[yapıldı v2.30]** **Deck ve Sub deck:** Üst sekmeler "Deck", ikinci sıra "Sub deck" olarak adlandırıldı. Her Deck, Sub deck ve fon sayfası sekmesinde küçük simge ve rozet (yapılacak iş sayısı, açık fon, zayıf hisse, kayıt sayısı, getiri, fon kararı); fon sayfasında fonun baş harfleriyle renkli küçük logo, hisse sayfasında sınıf simgesi ve puan bandı rozeti.
-261. **[öneri]** **Yeniden dengeleme bekçisi:** Her fon için hedef ağırlıklar belirlenir; bir kalem hedeften belirli bir oranda saptığında bildirim gelir ve dengeyi geri getiren işlemler (vergi ve masraf dahil) hazır gelir.
-262. **[öneri]** **Hisse karşılaştırma ekranı:** 2–4 hisse yan yana: fiyat grafiği, puan bandı, temel göstergeler, What If kârı ve risk; "hangisi?" sorusuna tek ekranda cevap.
-263. **[öneri]** **Kayıtlı senaryolar:** What If ve deneme işlemi senaryoları adıyla kaydedilir; zamanla "senaryom tuttu mu?" karnesi çıkar.
-264. **[öneri]** **Temettü planlayıcı:** Gelecek temettü takvimi, yıllık temettü geliri tahmini ve temettülerin yeniden yatırılması simülasyonu.
+261. **[yapıldı v2.34]** **Yeniden dengeleme bekçisi:** Her fon için hedef ağırlıklar belirlenir; bir kalem hedeften belirli bir oranda saptığında bildirim gelir ve dengeyi geri getiren işlemler (vergi ve masraf dahil) hazır gelir.
+262. **[yapıldı v2.34]** **Hisse karşılaştırma ekranı:** 2–4 hisse yan yana: fiyat grafiği, puan bandı, temel göstergeler, What If kârı ve risk; "hangisi?" sorusuna tek ekranda cevap.
+263. **[yapıldı v2.34]** **Kayıtlı senaryolar:** What If ve deneme işlemi senaryoları adıyla kaydedilir; zamanla "senaryom tuttu mu?" karnesi çıkar.
+264. **[yapıldı v2.34]** **Temettü planlayıcı:** Gelecek temettü takvimi, yıllık temettü geliri tahmini ve temettülerin yeniden yatırılması simülasyonu.
 265. **[öneri]** **Haftalık otomatik rapor:** Her pazar fonların haftası tek sayfalık PDF olarak hazır olur (isteğe bağlı Telegram ile gönderilir).
-266. **[öneri]** **Risk profili anketi:** 6–8 soruluk anketle risk toleransı belirlenir; öneriler, risk bütçesi ve hedef planlayıcı buna göre ayarlanır.
-267. **[öneri]** **Aracı kurum maliyet karşılaştırması:** Komisyon, saklama ve döviz makası farklarıyla aynı işlemlerin hangi kurumda kaça mal olacağı.
-268. **[öneri]** **Fiyat alarmı merkezi:** Her hisse için fiyat, puan bandı değişimi ve haber alarmları tek listede; bildirimlerle bağlı.
+266. **[yapıldı v2.34]** **Risk profili anketi:** 6–8 soruluk anketle risk toleransı belirlenir; öneriler, risk bütçesi ve hedef planlayıcı buna göre ayarlanır.
+267. **[yapıldı v2.34]** **Aracı kurum maliyet karşılaştırması:** Komisyon, saklama ve döviz makası farklarıyla aynı işlemlerin hangi kurumda kaça mal olacağı.
+268. **[yapıldı v2.34]** **Fiyat alarmı merkezi:** Her hisse için fiyat, puan bandı değişimi ve haber alarmları tek listede; bildirimlerle bağlı.
 
 ## Kullanıcının ekledikleri
 (boş)
