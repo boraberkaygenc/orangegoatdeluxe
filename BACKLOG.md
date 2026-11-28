@@ -361,6 +361,11 @@ Bugün hesaplananlar: RSI 14, 20/50/200 günlük ortalamalar, ATR, 52 hafta zirv
 248. **[yapıldı v2.27]** **Açılış hızı:** Sayfa açılışta view.json (14,6 MB) ve series.json (17,8 MB) indiriyor. Liste ve özet için gereken küçük bir dosya önce yüklenir; fiyat geçmişi yalnızca açılan varlık ve tutulan varlıklar için, gerektiğinde çekilir. Açılış süresinin belirgin kısalması beklenir.
 249. **[yapıldı v2.27]** **Tek bakışta fon ekranı:** Fonun Özet sekmesi en üstte üç rakam (değer, mevduata göre fark, risk) ve tek bir "şimdi yapılacak" önerisiyle başlar; diğer paneller kapalı başlar ve açıldığında yüklenir. Hiçbir araç kaldırılmaz.
 250. **[yapıldı v2.27]** **Renk dilinin tutarlılığı:** Yeşil yalnızca alternatifinden (mevduat veya endeks) iyi olanı, kırmızı yalnızca kötü olanı gösterir; mutlak getiri pozitif diye yeşil gösterilmez. Bütün ekranlarda aynı kural uygulanır.
+251. **[yapıldı v2.28]** **Türkçe ekranda kalan İngilizce metinler:** Bütün ekranlar taranarak Türkçe görünümde kalan 28 İngilizce metin (fon "Satırlar ve çıkış planı" notu, piyasa ve kurum araştırması açıklamaları, puan açıklaması, hedef ve risk notları, grafik açıklaması, "BIST equity", "by" vb.) Türkçeye çevrildi.
+252. **[yapıldı v2.28]** **Türkçe sektör adları:** Isı haritası, piyasa tablosu ve X-ray'deki İngilizce sektör adları (Finance, Retail Trade, Non-Energy Minerals…) Türkçe gösterilir; aynı sektörün büyük/küçük harf farklı yazımları da aynı adı alır.
+253. **[yapıldı v2.28]** **Piyasa tablosunda tek karar:** Tablonun son sütunu her hisseye "Al" yazıyordu; artık kartlardaki kararın aynısı (Al adayı / İzle / Kaçın) renkli etiketle gösterilir.
+254. **[yapıldı v2.28]** **Beklenti sütunları renksiz:** "Bekl. 6 ay" ve "Beklenen" sütunları yeşil/kırmızı gösterilmez (tahmin, sonuç değildir); yargıyı karar ve puan bandı taşır.
+255. **[yapıldı v2.28]** **Hisse sayfasında çelişki giderildi:** Dolar hisselerde görülen "Avoid — TL mevduat daha çok kazandırıyor" ifadesi "Mevduatın altında" olarak değiştirildi; "Kaçın" yalnızca kararın kendisi için kullanılır. Üst çubuktaki ışık sayaçlarının önüne "Dikkat" yazıldı ve her rengin anlamı ipucunda açıklandı.
 
 ## Kullanıcının ekledikleri
 (boş)

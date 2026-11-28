@@ -5,6 +5,13 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.28: Daha kolay okunur ekranlar
+
+- **Tamamen Türkçe:** Bütün ekranlar taranarak Türkçe görünümde kalan İngilizce metinler (fon çıkış planı notu, araştırma ve puan açıklamaları, hedef ve risk notları, grafik açıklaması) çevrildi; sektör adları da Türkçe.
+- **Tek karar dili:** Piyasa tablosu artık her hisseye "Al" yazmıyor; kartlardaki "Al adayı / İzle / Kaçın" kararını gösteriyor. Hisse sayfasındaki "Kaçın" ifadesi, kastedilen anlamla "Mevduatın altında" olarak değiştirildi.
+- **Beklentiler renksiz:** Beklenen getiri sütunları yeşil/kırmızı gösterilmiyor; iyi/kötü yargısını karar ve puan bandı taşıyor.
+- **Üst çubuk:** Işık sayaçlarının önünde "Dikkat" yazıyor; üzerine gelince her rengin anlamı görünüyor.
+
 ## v2.27: Daha taze veri, ayırt eden puanlar, sade fon ekranı
 
 - **Güncellemeler aksamıyor:** GitHub zamanlanmış çalışmaların çoğunu atladığı için borsa saatlerinde (hafta içi 09:00–23:30) her güncelleme, başladıktan yaklaşık 30 dakika sonra bir sonrakini kendisi başlatır. Zamanlanmış çalışma yedek olarak kalır.
