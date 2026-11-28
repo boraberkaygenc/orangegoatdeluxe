@@ -182,7 +182,7 @@ abbr[data-explain],[data-explain]{text-decoration:underline dotted var(--muted);
 </style>
 <script>(function(){window.__dlxT0=Date.now();var tr=(navigator.language||'').toLowerCase().indexOf('tr')===0,seen=false;try{var s=localStorage.getItem('dlx_lang');if(s)tr=s==='tr';seen=!!localStorage.getItem('dlx_seen')}catch(e){}var sp=document.getElementById('dlx-splash');if(seen&&sp){sp.remove();window.__dlxSplash=function(){};return}var lg=sp&&sp.querySelector('.lg');var mx=0;window.__dlxSplash=function(p,msgEn,msgTr){if(p<mx)return;mx=p;var b=document.getElementById('sp-bar'),m=document.getElementById('sp-msg');if(b)b.style.width=Math.round(p)+'%';if(m)m.textContent=tr?msgTr:msgEn;if(lg){if(p>=10)lg.classList.add('s1');if(p>=35)lg.classList.add('s2');if(p>=60)lg.classList.add('s3');if(p>=100)lg.classList.add('s4')}};window.__dlxSplash(10,'Opening… 1/4','Açılıyor… 1/4');setTimeout(function(){window.__dlxSplash(35,'Loading your data… 2/4','Verileriniz yükleniyor… 2/4')},230);setTimeout(function(){window.__dlxSplash(60,'Loading prices… 3/4','Fiyatlar yükleniyor… 3/4')},460);setTimeout(function(){var s=document.getElementById('dlx-splash');if(!s)return;window.__dlxSplash(100,'Showing what is ready','Hazır olanlar gösteriliyor');setTimeout(function(){s.classList.add('out');setTimeout(function(){if(s)s.remove()},300)},450)},2600);})();</script>
 <header class="top">
-  <span class="brand">GNC Terminal<small id="app-ver" title="Build date">v5.28 · orangegoat v2.28 Deluxe · 2026-11-25</small></span><span id="mkt-badges" class="mkt" aria-live="off"></span>
+  <span class="brand">GNC Terminal<small id="app-ver" title="Build date">v5.29 · orangegoat v2.29 Deluxe · 2026-11-25</small></span><span id="mkt-badges" class="mkt" aria-live="off"></span>
   <nav class="tabs" id="tabs">
     <button data-group="TODAY">Today<span class="k">F1</span></button>
     <button data-group="MARKETS">Markets<span class="k">F2</span></button>
@@ -10798,6 +10798,214 @@ TR_FRAG.push([/^[+−-]?[\d.,]+% by .+$/, [[/^([+−-]?[\d.,]+%) by (.+)$/, '$1 
   const word = c => /\br\b/.test(c) ? DL('act now', 'harekete geç') : /\ba\b/.test(c) ? DL('alarm', 'alarm') : /\bg\b/.test(c) ? DL('take profit', 'kâr al') : DL('other', 'diğer');
   b.title = DL('Instruments that need attention — ', 'Dikkat isteyen enstrümanlar — ') + n.filter(x => x[1]).map(([c, t]) => `${t} ${word(c)}`).join(', '); } catch (e) { console.error(e); } }; }
 document.head.insertAdjacentHTML('beforeend', `<style id="v228b-css">.ltb-l{font-size:11.5px;font-weight:600;margin-right:6px;color:var(--fg2,#4a4f57)}@media (max-width:700px){.ltb-l{display:none}}</style>`);
+
+/* ---- v2.29 · appearance picker in the top-bar ⋯ menu (Settings stays as it is): more looks, chart palettes, up/down colours,
+   fonts, text size and corner style. Stored per browser with the same preference store the Settings appearance panel uses. ---- */
+const LK_LOOKS = [
+  ['auto', ['System', 'Sistem'], ['#f4f3ef', '#0f1115', '#0b7279']], ['paper', ['Paper', 'Kâğıt'], ['#f4f3ef', '#ffffff', '#0b7279']], ['slate', ['Slate', 'Arduvaz'], ['#0f1115', '#171a20', '#4fb3b8']],
+  ['private', ['Private Banking', 'Özel bankacılık'], ['#f5f1e8', '#14213d', '#b8913a']], ['terminal', ['Terminal', 'Terminal'], ['#000000', '#15110a', '#f2a93b']], ['mono', ['Mono', 'Siyah-beyaz'], ['#000000', '#141414', '#ffffff']],
+  ['night', ['Midnight', 'Gece mavisi'], ['#0b1220', '#121a2b', '#7aa2ff']], ['forest', ['Forest', 'Orman'], ['#0e1712', '#15211a', '#5fbf8a']], ['sand', ['Sand', 'Kum'], ['#f3ede2', '#fffaf1', '#a2652a']],
+  ['ocean', ['Ocean', 'Okyanus'], ['#eef4f8', '#ffffff', '#1f6fa8']], ['plum', ['Plum', 'Mürdüm'], ['#17121c', '#211a28', '#c08bd8']], ['contrast', ['High contrast', 'Yüksek kontrast'], ['#ffffff', '#000000', '#0047ff']]];
+const LK_FONTS = [['plex', 'IBM Plex Sans', '"IBM Plex Sans",system-ui,sans-serif'], ['inter', 'Inter', 'Inter,system-ui,sans-serif'], ['system', ['System', 'Sistem'], 'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif'],
+  ['serif', 'Source Serif', '"Source Serif 4",Georgia,serif'], ['legible', 'Atkinson Hyperlegible', '"Atkinson Hyperlegible",system-ui,sans-serif'], ['rounded', 'Nunito', 'Nunito,system-ui,sans-serif'], ['mono', 'IBM Plex Mono', '"IBM Plex Mono",ui-monospace,monospace']];
+const LK_PAL = [['default', ['Theme', 'Tema'], null], ['vivid', ['Vivid', 'Canlı'], ['#e4572e', '#17bebb', '#ffc914']], ['pastel', ['Pastel', 'Pastel'], ['#7fa7d9', '#e8a87c', '#a89cd9']], ['cb', ['Colour-blind safe', 'Renk körü dostu'], ['#0072b2', '#e69f00', '#009e73']], ['earth', ['Earth', 'Toprak'], ['#8c6d46', '#5b8c5a', '#c2763d']]];
+const LK_UPDN = [['gr', ['Green / red', 'Yeşil / kırmızı']], ['bo', ['Blue / orange (colour-blind safe)', 'Mavi / turuncu (renk körü dostu)']]];
+const LK_SIZE = [['s', ['Small', 'Küçük']], ['m', ['Normal', 'Normal']], ['l', ['Large', 'Büyük']], ['xl', ['Very large', 'Çok büyük']]];
+const LK_RAD = [['sq', ['Square', 'Köşeli'], '0px'], ['soft', ['Soft', 'Yumuşak'], '4px'], ['round', ['Round', 'Yuvarlak'], '10px']];
+const lkName = n => Array.isArray(n) ? DL(...n) : n;
+function lkFontLoad(k) { const fam = { legible: 'Atkinson+Hyperlegible:wght@400;700', rounded: 'Nunito:wght@400;600;700' }[k]; if (!fam || document.getElementById('lk-font-' + k)) return;
+  const l = document.createElement('link'); l.id = 'lk-font-' + k; l.rel = 'stylesheet'; l.href = `https://fonts.googleapis.com/css2?family=${fam}&display=swap`; document.head.appendChild(l); }
+function lkApply() { const r = document.documentElement, g = (k, d) => pref.get(k, d);
+  const look = g('look', 'auto'); if (look === 'auto') r.removeAttribute('data-look'); else r.setAttribute('data-look', look);
+  for (const [k, attr] of [['pal', 'data-pal'], ['updn', 'data-updn'], ['corner', 'data-corner']]) { const v = g(k, ''); if (v) r.setAttribute(attr, v); else r.removeAttribute(attr); }
+  lkFontFix(); }
+// the extra typefaces (Atkinson Hyperlegible, Nunito) on top of the typeface system of Settings › Appearance, which writes --sans inline
+const LK_EXTRA = { legible: '"Atkinson Hyperlegible",system-ui,sans-serif', rounded: 'Nunito,system-ui,sans-serif' };
+function lkFontFix() { const f = pref.get('font', 'plex'), r = document.documentElement; if (!LK_EXTRA[f]) return; lkFontLoad(f); r.style.setProperty('--sans', LK_EXTRA[f]); r.style.setProperty('--num', LK_EXTRA[f]); r.setAttribute('data-font', f); }
+{ const _al2 = applyLook; applyLook = function () { _al2.apply(this, arguments); try { lkFontFix(); } catch (e) { } }; }
+function lkPanelHTML() { const g = (k, d) => pref.get(k, d), cur = { look: g('look', 'auto'), font: g('font', 'plex') || 'plex', pal: g('pal', '') || 'default', updn: g('updn', '') || 'gr', textsize: g('textsize', 'm') || 'm', corner: g('corner', '') || 'soft' };
+  const seg = (k, L) => `<div class="lk-seg">${L.map(([v, n]) => `<button data-lk="${k}" data-v="${v}" class="${cur[k] === v ? 'on' : ''}">${esc(lkName(n))}</button>`).join('')}</div>`;
+  return `<div id="lk-pop" role="dialog" aria-label="${DL('Appearance', 'Görünüm')}"><div class="lk-h"><b>${DL('Appearance', 'Görünüm')}</b><span class="dim">${DL('this browser', 'bu tarayıcı')}</span><button class="quiet" data-lk-close>✕</button></div>
+    <h4>${DL('Theme', 'Tema')}</h4><div class="lk-looks">${LK_LOOKS.map(([k, n, sw]) => `<button data-lk="look" data-v="${k}" class="lk-look ${cur.look === k ? 'on' : ''}"><span class="lk-sw">${sw.map(c => `<i style="background:${c}"></i>`).join('')}</span>${esc(lkName(n))}</button>`).join('')}</div>
+    <h4>${DL('Font', 'Yazı tipi')}</h4><div class="lk-seg lk-fonts">${LK_FONTS.map(([k, n, css]) => `<button data-lk="font" data-v="${k}" class="${cur.font === k ? 'on' : ''}" style="font-family:${css.replace(/"/g, '&quot;')}">${esc(lkName(n))}</button>`).join('')}</div>
+    <h4>${DL('Text size', 'Yazı boyutu')}</h4>${seg('textsize', LK_SIZE)}
+    <h4>${DL('Chart colours', 'Grafik renkleri')}</h4><div class="lk-seg">${LK_PAL.map(([k, n, c]) => `<button data-lk="pal" data-v="${k}" class="${cur.pal === k ? 'on' : ''}">${c ? `<span class="lk-sw">${c.map(x => `<i style="background:${x}"></i>`).join('')}</span>` : ''}${esc(lkName(n))}</button>`).join('')}</div>
+    <h4>${DL('Gains and losses', 'Kazanç ve kayıp')}</h4>${seg('updn', LK_UPDN)}
+    <h4>${DL('Corners', 'Köşeler')}</h4>${seg('corner', LK_RAD)}
+    <div class="lk-f"><button data-lk-reset class="quiet">${DL('Back to default', 'Varsayılana dön')}</button></div></div>`; }
+function lkOpen() { let p = document.getElementById('lk-pop'); if (p) { p.remove(); return; } document.body.insertAdjacentHTML('beforeend', lkPanelHTML()); }
+document.addEventListener('click', e => { const t = e.target;
+  const b = t.closest && t.closest('#lk-pop [data-lk]'); if (b) { const k = b.dataset.lk, v = b.dataset.v; pref.set(k, (k === 'pal' && v === 'default') || (k === 'updn' && v === 'gr') || (k === 'corner' && v === 'soft') ? '' : v);
+    try { applyLook(); } catch (er) { } lkApply(); const p = document.getElementById('lk-pop'); if (p) p.outerHTML = lkPanelHTML(); try { if (k === 'pal' || k === 'updn' || k === 'look') { renderAll(); } } catch (er) { } return; }
+  if (t.closest && (t.closest('[data-lk-close]'))) { const p = document.getElementById('lk-pop'); if (p) p.remove(); return; }
+  if (t.closest && t.closest('[data-lk-reset]')) { for (const k of ['look', 'font', 'pal', 'updn', 'textsize', 'corner']) pref.set(k, ({ look: 'auto', font: 'plex', textsize: 'm' })[k] || ''); lkApply(); try { applyLook(); renderAll(); } catch (er) { } const p = document.getElementById('lk-pop'); if (p) p.outerHTML = lkPanelHTML(); return; }
+  if (t.closest && t.closest('#dlx-menu [data-m="look"]')) { e.stopPropagation(); const m = document.getElementById('dlx-menu'); if (m) m.hidden = true; lkOpen(); return; }
+  const p = document.getElementById('lk-pop'); if (p && !t.closest('#lk-pop') && !t.closest('#dlx-more')) p.remove(); }, true);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { const p = document.getElementById('lk-pop'); if (p) p.remove(); } });
+// the ⋯ menu gets "Appearance" as its first item
+new MutationObserver(() => { const m = document.getElementById('dlx-menu'); if (m && !m.querySelector('[data-m="look"]')) m.insertAdjacentHTML('afterbegin', `<button data-m="look">${DL('Appearance: theme, colours, font', 'Görünüm: tema, renk, yazı tipi')}</button>`); }).observe(document.body, { childList: true, subtree: true });
+lkApply();
+document.head.insertAdjacentHTML('beforeend', `<style id="lk-css">
+:root[data-look="night"][data-look]{--bg:#0b1220;--panel:#121a2b;--panel2:#18223a;--rule:#26314b;--fg:#e6ecf7;--fg2:#b4c0d6;--muted:#7f8ba3;--accent:#7aa2ff;--accent-fg:#0b1220;--sel:#1b2640;--up:#5ad18b;--down:#ff7a7a;--warn:#f2c14e;--warn-bg:#2a2412;--c1:#7aa2ff;--c2:#f5a25d;--c3:#b48ef0;--ref:#7f8ba3;color-scheme:dark}
+:root[data-look="forest"][data-look]{--bg:#0e1712;--panel:#15211a;--panel2:#1b2a21;--rule:#27392e;--fg:#e3eee6;--fg2:#b3c7b9;--muted:#7e9686;--accent:#5fbf8a;--accent-fg:#0b140f;--sel:#1c3025;--up:#6fdc9a;--down:#ff8070;--warn:#e9c46a;--warn-bg:#2a2612;--c1:#5fbf8a;--c2:#e9a35f;--c3:#9fb7ff;--ref:#7e9686;color-scheme:dark}
+:root[data-look="sand"][data-look]{--bg:#f3ede2;--panel:#fffaf1;--panel2:#ebe2d2;--rule:#dccfb8;--fg:#2b2218;--fg2:#5a4a38;--muted:#857360;--accent:#a2652a;--accent-fg:#ffffff;--sel:#f3e3cc;--up:#2f7a3b;--down:#b0372b;--warn:#8a5a00;--warn-bg:#fff1d6;--c1:#a2652a;--c2:#3f7f8c;--c3:#7b5ea7;--ref:#9a8a76;color-scheme:light}
+:root[data-look="ocean"][data-look]{--bg:#eef4f8;--panel:#ffffff;--panel2:#e1ebf2;--rule:#cddbe6;--fg:#10212e;--fg2:#3c5466;--muted:#6b8193;--accent:#1f6fa8;--accent-fg:#ffffff;--sel:#dcebf7;--up:#16804a;--down:#c0392b;--warn:#8a5a00;--warn-bg:#fff4dc;--c1:#1f6fa8;--c2:#e07b39;--c3:#2a9d8f;--ref:#7a8e9e;color-scheme:light}
+:root[data-look="plum"][data-look]{--bg:#17121c;--panel:#211a28;--panel2:#2a2133;--rule:#3a2f46;--fg:#efe7f5;--fg2:#c9b9d6;--muted:#9583a6;--accent:#c08bd8;--accent-fg:#17121c;--sel:#2e2239;--up:#6ad6a0;--down:#ff7f96;--warn:#f0c75e;--warn-bg:#2c2414;--c1:#c08bd8;--c2:#f2a65a;--c3:#7fc8f8;--ref:#9583a6;color-scheme:dark}
+:root[data-look="contrast"][data-look]{--bg:#ffffff;--panel:#ffffff;--panel2:#f0f0f0;--rule:#000000;--fg:#000000;--fg2:#000000;--muted:#333333;--accent:#0047ff;--accent-fg:#ffffff;--sel:#dbe5ff;--up:#006b1f;--down:#c00000;--warn:#6b4100;--warn-bg:#fff0c2;--c1:#0047ff;--c2:#c25a00;--c3:#6a00c2;--ref:#333333;color-scheme:light}
+:root[data-pal="vivid"][data-pal]{--c1:#e4572e;--c2:#17bebb;--c3:#ffc914}:root[data-pal="pastel"][data-pal]{--c1:#7fa7d9;--c2:#e8a87c;--c3:#a89cd9}:root[data-pal="cb"][data-pal]{--c1:#0072b2;--c2:#e69f00;--c3:#009e73}:root[data-pal="earth"][data-pal]{--c1:#8c6d46;--c2:#5b8c5a;--c3:#c2763d}
+:root[data-updn="bo"][data-updn]{--up:#1f77d0;--down:#e07b00}
+:root[data-corner="sq"]{--radius:0px}:root[data-corner="round"]{--radius:10px}:root[data-corner="round"] .panel,:root[data-corner="round"] button,:root[data-corner="round"] input,:root[data-corner="round"] select{border-radius:var(--radius)}:root[data-corner="sq"] .panel,:root[data-corner="sq"] button{border-radius:0}
+#lk-pop{position:fixed;top:64px;right:16px;z-index:60;width:min(440px,calc(100vw - 24px));max-height:calc(100vh - 90px);overflow:auto;background:var(--panel);color:var(--fg);border:1px solid var(--rule);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.22);padding:12px 14px;font-family:var(--sans)}
+#lk-pop h4{margin:12px 0 6px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}.lk-h{display:flex;align-items:center;gap:8px}.lk-h .dim{flex:1;font-size:12px}
+.lk-looks{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.lk-look{display:flex;flex-direction:column;align-items:flex-start;gap:5px;padding:7px 8px;text-align:left;font-size:12px}.lk-sw{display:inline-flex;gap:3px;margin-right:4px;vertical-align:middle}.lk-sw i{width:14px;height:14px;border-radius:3px;border:1px solid rgba(128,128,128,.4);display:inline-block}
+.lk-seg{display:flex;flex-wrap:wrap;gap:6px}.lk-seg button,.lk-look{border:1px solid var(--rule);background:var(--panel);color:var(--fg);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:12.5px}.lk-seg button.on,.lk-look.on{outline:2px solid var(--accent);outline-offset:-1px;background:var(--sel)}
+.lk-f{margin-top:12px;text-align:right}@media (max-width:600px){#lk-pop{top:auto;bottom:70px;right:12px;left:12px;width:auto}.lk-looks{grid-template-columns:repeat(2,1fr)}}
+</style>`);
+window.__gncLook = { open: lkOpen, apply: lkApply };
+
+/* ---- v2.29 · fund simulation: trial trades. Type buys and sells (or take a suggestion) and see the fund now and after —
+   expected return, against the deposit, risk, return per risk, what the choice of shares adds over the index, largest single
+   holding and the mix — before anything is recorded. "Apply to the fund" opens the usual trade entry, filled in. ---- */
+WI_SEGS.unshift(['trade', ['Trial trades', 'Deneme işlemi']]);
+const ST = {}; // fund id → [{side, sym, amt}]
+const stRows = p => ST[p.id] || (ST[p.id] = []);
+async function stModel(p, rows) { const pos = dlPositions(p).filter(q => q.valueTRY > 0 && q.kind !== 'viop'), dep = dlDep12(), fx = f4Fx() || 0, A = {}, port = {};
+  const addX = (key, x) => { if (A[key]) return A[key]; const e = dlExp1y(x, 1e5); return (A[key] = { key, x, mu: e ? e.mu : dep, sig: e ? e.sig : 25, kind: 'risky', price: x.e.price, ccy: x.ccy, qty: 0 }); };
+  for (const q of pos) { let key = null; const x = q.x;
+    if (x && x.e) { key = q.symbol; addX(key, x); }
+    else if (q.kind === 'try_cash') { key = 'CASH'; A.CASH = A.CASH || { key, mu: 0, sig: 0, kind: 'CASH' }; }
+    else if (q.kind === 'try_dep') { key = q.demand ? 'DDEP' : 'TDEP'; A[key] = A[key] || { key, mu: q.demand ? 0 : dep, sig: 0, kind: key }; }
+    else if (q.kind === 'usd_cash' || q.kind === 'usd_dep') { key = 'USD'; A.USD = A.USD || { key, mu: fx + (q.kind === 'usd_dep' ? (+state.S.rfUsd || 3) * 0.6 : 0), sig: +state.S.fxVol || 12, kind: 'USD' }; }
+    if (!key) continue; port[key] = (port[key] || 0) + q.valueTRY; }
+  A.CASH = A.CASH || { key: 'CASH', mu: 0, sig: 0, kind: 'CASH' };
+  for (const r of rows) { const x = state.map[r.sym]; if (x && x.e && x.e.price) addX(r.sym, x); }
+  try { await f4Series(Object.keys(A).filter(k => A[k].x)); } catch (e) { }
+  const rm = {}, cc = {}, rmap = k => rm[k] || (rm[k] = dlRetMap(k));
+  const cor = (i, j) => { const a = A[i], b = A[j]; if (!a.x || !b.x) return 0; const key = i < j ? i + '|' + j : j + '|' + i; if (cc[key] !== undefined) return cc[key]; let r = dlCorrMaps(rmap(i), rmap(j)); if (r === null) r = a.ccy === b.ccy ? 0.45 : 0.15; return (cc[key] = r); };
+  const P = { ...port }, notes = []; let cost = 0, newMoney = 0;
+  const sideCost = (k, amt) => { const a = A[k]; if (!a || !a.x || !(amt > 0)) return 0; try { return E.costs(a.x, amt, state.S, ctx().M).side; } catch (e) { return amt * 0.004; } };
+  for (const r of rows.filter(r => r.side === 'sell')) { if (!A[r.sym] || !(r.amt > 0)) continue; const have = P[r.sym] || 0, amt = Math.min(r.amt, have); if (amt < r.amt - 1) notes.push(DL(`${r.sym}: only ${T(have)} held, sold that much`, `${r.sym}: elde yalnızca ${T(have)} var, o kadar satıldı`)); if (!(amt > 0)) continue; const c = sideCost(r.sym, amt); cost += c; P[r.sym] = have - amt; P.CASH = (P.CASH || 0) + amt - c; }
+  for (const r of rows.filter(r => r.side === 'buy')) { if (!A[r.sym] || !(r.amt > 0)) continue; const c = sideCost(r.sym, r.amt); cost += c; const cash = P.CASH || 0, need = r.amt + c; if (need > cash) { newMoney += need - Math.max(0, cash); P.CASH = 0; } else P.CASH = cash - need; P[r.sym] = (P[r.sym] || 0) + r.amt; }
+  const before = dlPortStats(port, A, cor, dep), after = dlPortStats(P, A, cor, dep);
+  const extra = (pp, st) => { if (!st) return st; let eq = 0, ed = 0, big = 0, bigK = ''; for (const [k, v] of Object.entries(pp)) { if (!(v > 0.5)) continue; const a = A[k]; if (a && a.x) { const d = scEdge(a.x); if (d != null) { ed += d * v; eq += v; } if (v > big) { big = v; bigK = k; } } } return { ...st, sel: eq ? ed / eq * eq / st.V : null, big: big / st.V * 100, bigK }; };
+  return { A, before: extra(port, before), after: extra(P, after), port, P, cost, newMoney, notes, dep }; }
+const ST_COL = ['var(--c1)', 'var(--c2)', 'var(--c3)', '#8a8f98', '#5fa8a0', '#c9a227', '#9b6fcf', '#d46a6a', '#5c86c4', '#7aa35a'];
+function stBar(pp, V, order) { const keys = order.filter(k => pp[k] > 0.5); return `<div class="st-bar">${keys.map((k, i) => `<i style="width:${(pp[k] / V * 100).toFixed(2)}%;background:${ST_COL[order.indexOf(k) % ST_COL.length]}" title="${esc(k)} ${(pp[k] / V * 100).toFixed(1)}%"></i>`).join('')}</div>`; }
+const stName = k => ({ CASH: DL('TRY cash', 'TL nakit'), DDEP: DL('Demand deposit', 'Vadesiz mevduat'), TDEP: DL('Time deposit', 'Vadeli mevduat'), USD: DL('US dollar', 'Dolar') })[k] || k;
+function stSuggest(p) { const out = []; try { const sel = scFundSel(p); for (const w of (sel && sel.weak) || []) out.push({ t: DL(`Sell weak ${w.q.symbol}`, `Zayıf ${w.q.symbol} sat`), r: { side: 'sell', sym: w.q.symbol, amt: Math.round(w.q.valueTRY) } }); } catch (e) { }
+  try { const held = new Set(dlPositions(p).map(q => q.symbol).filter(Boolean)), V = dlPositions(p).reduce((a, q) => a + q.valueTRY, 0); const c = (state.scored || []).filter(x => scIsEq(x) && !held.has(x.symbol) && x.score >= 80 && x.e && x.e.price && (!x.gate || x.gate.ok) && !x.inactive && dlCall(x) && dlCall(x).c === 'buy').sort((a, b) => b.score - a.score || (b.e.turnover || 0) - (a.e.turnover || 0)).slice(0, 3);
+    for (const x of c) out.push({ t: DL(`Add ${x.symbol} (score ${x.score})`, `${x.symbol} ekle (puan ${x.score})`), r: { side: 'buy', sym: x.symbol, amt: Math.round(Math.max(1000, V * 0.1) / 100) * 100 } }); } catch (e) { }
+  return out; }
+function stHTML(p) { const rows = stRows(p), held = dlPositions(p).filter(q => q.symbol), sug = stSuggest(p);
+  const opts = [...new Set([...held.map(q => q.symbol), ...(state.scored || []).filter(x => scIsEq(x) && x.score >= 70).slice(0, 300).map(x => x.symbol)])];
+  return `<p class="hint" style="margin:0 0 8px">${DL('Try trades on this fund before making them: nothing is recorded until you choose “Apply to the fund”.', 'İşlemleri yapmadan önce bu fonda deneyin: “Fona uygula” demedikçe hiçbir şey kaydedilmez.')}</p>
+    <datalist id="st-syms">${opts.map(s => `<option value="${esc(s)}">`).join('')}</datalist>
+    <div class="st-rows">${rows.map((r, i) => `<div class="st-row"><select data-st-i="${i}" data-st-f="side"><option value="buy" ${r.side === 'buy' ? 'selected' : ''}>${DL('Buy', 'Al')}</option><option value="sell" ${r.side === 'sell' ? 'selected' : ''}>${DL('Sell', 'Sat')}</option></select><input data-st-i="${i}" data-st-f="sym" list="st-syms" value="${esc(r.sym || '')}" placeholder="${DL('Symbol', 'Sembol')}" autocomplete="off"><input data-st-i="${i}" data-st-f="amt" inputmode="decimal" value="${r.amt || ''}" placeholder="${DL('Amount, TRY', 'Tutar, TL')}"><button class="quiet" data-st-del="${i}" title="${DL('Remove', 'Kaldır')}">✕</button></div>`).join('') || `<p class="dim" style="margin:4px 0">${DL('No trial trade yet.', 'Henüz deneme işlemi yok.')}</p>`}</div>
+    <div class="row-inline" style="gap:6px;flex-wrap:wrap;margin:8px 0"><button data-st-add>${DL('+ Add a trade', '+ İşlem ekle')}</button>${sug.map((s, i) => `<button class="quiet st-sug" data-st-sug="${i}">${esc(s.t)}</button>`).join('')}${rows.length ? `<button class="quiet" data-st-clear>${DL('Clear', 'Temizle')}</button>` : ''}</div>
+    <div id="st-res"></div>`; }
+let stTok = 0;
+async function stDraw(p) { const box = $('st-res'); if (!box) return; const rows = stRows(p).filter(r => r.sym && r.amt > 0); if (!rows.length) { box.innerHTML = ''; return; } const tok = ++stTok; box.innerHTML = box.innerHTML || '<div class="dlx-skel" style="height:140px"></div>';
+  let M; try { M = await stModel(p, rows); } catch (e) { console.error(e); box.innerHTML = `<p class="dim">${DL('The simulation could not run.', 'Simülasyon çalışamadı.')}</p>`; return; } if (tok !== stTok || !$('st-res')) return;
+  const b = M.before, a = M.after; if (!b || !a) { box.innerHTML = ''; return; }
+  const unknown = rows.filter(r => !M.A[r.sym]).map(r => r.sym);
+  const row = (l, x, y, f, better) => { const d = y - x, good = better === null ? null : better ? d > 1e-9 : d < -1e-9, bad = better === null ? null : better ? d < -1e-9 : d > 1e-9; return `<tr><td class="l">${l}</td><td>${f(x)}</td><td><b class="${good ? 'up' : bad ? 'down' : ''}">${f(y)}</b></td></tr>`; };
+  const order = [...new Set([...Object.keys(M.port), ...Object.keys(M.P)])].filter(k => (M.port[k] || 0) > 0.5 || (M.P[k] || 0) > 0.5);
+  const legend = order.map(k => `<span><i style="background:${ST_COL[order.indexOf(k) % ST_COL.length]}"></i>${esc(stName(k))}</span>`).join('');
+  const gain = (a.ce - b.ce) / 100 * a.V;
+  box.innerHTML = `${unknown.length ? `<p class="down" style="margin:4px 0">${DL('Unknown symbol', 'Bilinmeyen sembol')}: ${unknown.map(esc).join(', ')}</p>` : ''}${M.notes.map(n => `<p class="hint" style="margin:2px 0">${esc(n)}</p>`).join('')}
+    <div class="st-grid"><table class="st-t"><tr><th class="l"></th><th>${DL('Now', 'Şimdi')}</th><th>${DL('After', 'Sonra')}</th></tr>
+      ${row(DL('Fund value', 'Fon değeri'), b.V, a.V, v => T(v), null)}${row(DL('Expected return, 12 months', 'Beklenen getiri, 12 ay'), b.mu, a.mu, fmtPct, true)}${row(DL('Over the deposit', 'Mevduata göre'), b.ex, a.ex, fmtPct, true)}
+      ${row(DL('Risk (1σ a year)', 'Risk (yıllık 1σ)'), b.sig, a.sig, v => '±' + v.toFixed(0) + '%', false)}${row(DL('Return per unit of risk', 'Risk başına getiri'), b.sr ?? 0, a.sr ?? 0, v => v.toFixed(2), true)}
+      ${b.sel != null || a.sel != null ? row(DL('Choice of shares vs index', 'Hisse seçimi, endekse göre'), b.sel ?? 0, a.sel ?? 0, fmtPct, true) : ''}${row(DL('Largest single holding', 'En büyük tek kalem'), b.big, a.big, v => '%' + v.toFixed(0), false)}</table>
+    <div><div class="st-lbl">${DL('Mix now', 'Şimdiki dağılım')}</div>${stBar(M.port, b.V, order)}<div class="st-lbl">${DL('Mix after', 'Sonraki dağılım')}</div>${stBar(M.P, a.V, order)}<div class="st-leg">${legend}</div></div></div>
+    <p class="st-sum">${DL('Result', 'Sonuç')}: <b class="${gain > 0 ? 'up' : gain < 0 ? 'down' : ''}">${gain >= 0 ? '+' : '−'}${T(Math.abs(gain))}</b> ${DL('a year in risk-adjusted terms', 'yıllık, riske göre düzeltilmiş')} · ${DL('trading cost', 'işlem maliyeti')} ${T(M.cost)}${M.newMoney > 1 ? ` · <b>${DL('new money needed', 'ek para gerekir')}: ${T(M.newMoney)}</b>` : ''}</p>
+    <div class="row-inline" style="gap:8px"><button class="primary" data-st-apply>${DL('Apply to the fund', 'Fona uygula')}</button><span class="hint">${DL('opens the trade entry filled in; you confirm each line', 'işlem girişini dolu açar; her satırı siz onaylarsınız')}</span></div>`; }
+const stDrawSoon = (() => { let t = null; return p => { clearTimeout(t); t = setTimeout(() => stDraw(p), 300); }; })();
+{ const _wr = wiRender; wiRender = function (p, play) { if ((state.wiSeg || 'if') !== 'trade') return _wr.apply(this, arguments); const b = $('wi-body'); if (!b) return;
+  document.querySelectorAll('#dlx-wi [data-wi-seg]').forEach(x => { x.classList.toggle('on', x.dataset.wiSeg === 'trade'); x.setAttribute('aria-selected', x.dataset.wiSeg === 'trade'); }); b.innerHTML = stHTML(p); stDraw(p); }; }
+document.addEventListener('click', e => { const t = e.target; if (!t.closest || !t.closest('#dlx-wi')) return; const p = wiFund(); if (!p) return; const rows = stRows(p); let hit = true;
+  if (t.closest('[data-st-add]')) rows.push({ side: 'buy', sym: '', amt: 0 }); else if (t.closest('[data-st-del]')) rows.splice(+t.closest('[data-st-del]').dataset.stDel, 1); else if (t.closest('[data-st-clear]')) rows.length = 0;
+  else if (t.closest('[data-st-sug]')) { const s = stSuggest(p)[+t.closest('[data-st-sug]').dataset.stSug]; if (s && !rows.some(r => r.side === s.r.side && r.sym === s.r.sym)) rows.push({ ...s.r }); }
+  else if (t.closest('[data-st-apply]')) { e.stopPropagation(); const tr = []; stModel(p, rows.filter(r => r.sym && r.amt > 0)).then(M => { for (const r of rows.filter(r => r.sym && r.amt > 0)) { const a = M.A[r.sym]; if (!a || !a.price) continue; const fx = a.ccy === 'USD' ? dlFx(today()) : 1, amt = r.side === 'sell' ? Math.min(r.amt, M.port[r.sym] || 0) : r.amt; const q0 = amt / (a.price * fx), qty = a.ccy === 'USD' || (a.x && a.x.sub === 'gold') ? +q0.toFixed(4) : Math.floor(q0); if (!(qty > 0)) continue; tr.push({ side: r.side === 'sell' ? 'SELL' : 'BUY', symbol: r.sym, qty, price: a.price, amount: +(qty * a.price).toFixed(2), date: today() }); }
+      if (tr.length) dlManualEntry(p.id, tr); else toast(DL('Nothing to apply.', 'Uygulanacak işlem yok.')); }); return; }
+  else hit = false; if (!hit) return; e.stopPropagation(); const b = $('wi-body'); if (b) { b.innerHTML = stHTML(p); stDraw(p); } }, true);
+document.addEventListener('input', e => { const i = e.target.closest && e.target.closest('#dlx-wi [data-st-f]'); if (!i) return; const p = wiFund(); if (!p) return; const r = stRows(p)[+i.dataset.stI]; if (!r) return; const f = i.dataset.stF; r[f] = f === 'amt' ? (+String(i.value).replace(/[^\d.,]/g, '').replace(/\./g, '').replace(',', '.') || 0) : f === 'sym' ? i.value.trim().toUpperCase() : i.value; stDrawSoon(p); });
+document.addEventListener('change', e => { const i = e.target.closest && e.target.closest('#dlx-wi [data-st-f="side"]'); if (!i) return; const p = wiFund(); if (p) { stRows(p)[+i.dataset.stI].side = i.value; stDrawSoon(p); } });
+// the trade bar gets "Simulate": opens the Pointer tab at the trial trades
+function stGo() { const p = wiFund(); if (!p) return; state.wiSeg = 'trade'; const tab = document.querySelector('[data-ftab="ptr"]'); if (tab) tab.click(); setTimeout(() => { const w = $('dlx-wi'); if (w) { wiRender(p); w.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, 250); }
+function stBar2() { const bar = $('xf-qbar'); if (!bar || bar.querySelector('[data-st-go]')) return; const after = bar.querySelector('[data-rc-go]') || bar.querySelector('[data-ocr-open]'); const h = `<button class="ocr-qb" data-st-go title="${DL('Try trades before making them', 'İşlemleri yapmadan önce deneyin')}">🧪 ${DL('Simulate', 'Simüle et')}</button>`; if (after) after.insertAdjacentHTML('afterend', h); else bar.insertAdjacentHTML('beforeend', h); }
+{ const _rs = renderSheet; renderSheet = function () { _rs.apply(this, arguments); try { stBar2(); } catch (e) { console.error(e); } }; }
+document.addEventListener('click', e => { if (e.target.closest && e.target.closest('[data-st-go]')) { e.stopPropagation(); stGo(); } }, true);
+document.addEventListener('click', e => { if (e.target.closest && e.target.closest('[data-ftab]')) setTimeout(stBar2, 60); });
+document.head.insertAdjacentHTML('beforeend', `<style id="st-css">
+.st-rows{display:flex;flex-direction:column;gap:6px}.st-row{display:grid;grid-template-columns:90px minmax(100px,1fr) minmax(110px,160px) 34px;gap:6px;align-items:center}.st-row input,.st-row select{width:100%;box-sizing:border-box}
+.st-grid{display:grid;grid-template-columns:minmax(280px,1.1fr) 1fr;gap:18px;align-items:start;margin-top:6px}.st-t td,.st-t th{padding:4px 8px}
+.st-lbl{font-size:11px;color:var(--muted);margin:6px 0 3px}.st-bar{display:flex;height:16px;border-radius:5px;overflow:hidden;background:var(--panel2)}.st-bar i{display:block;height:100%;transition:width .45s ease}
+.st-leg{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:8px;font-size:11.5px;color:var(--fg2)}.st-leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.st-sum{margin:10px 0}.st-sug{border:1px dashed var(--rule)!important}
+@media (max-width:760px){.st-grid{grid-template-columns:1fr}.st-row{grid-template-columns:72px 1fr 1fr 30px}}
+</style>`);
+window.__gncSt = { rows: id => ST[id], go: stGo, model: (id, rows) => stModel(state.packages.find(p => p.id === id), rows) };
+
+/* ---- v2.29 · screenshot or report from the main screens: a button on Özet and Fonlarım, and paste / drop anywhere when no fund
+   is open. A screenshot is read on this device; a trade goes to the fund that already holds the share (or the one you pick) with the
+   ticket filled in, a portfolio / history / deposit screen opens that fund's "Reconcile with the bank". A PDF or CSV report opens the
+   report import with the fund that holds its shares already chosen. ---- */
+const DK = { file: null, R: null, kind: null, text: '' };
+const dkOpenFunds = () => state.packages.filter(p => p.status !== 'closed');
+const dkHolds = (p, sym) => (p.lines || []).filter(l => !l.closed && l.symbol === sym).reduce((a, l) => a + (+l.qty || 0), 0);
+function dkModal(html) { const m = $('modal'); m.innerHTML = `<div class="modal dk-modal" role="dialog" aria-label="${DL('Screenshot', 'Ekran görüntüsü')}">${html}</div>`; m.hidden = false; }
+function dkClose() { try { closeModal(); } catch (e) { const m = $('modal'); if (m) { m.hidden = true; m.innerHTML = ''; } } }
+async function dkFromFile(file) { if (!file) return;
+  if (/pdf|csv|text\/plain/i.test(file.type || '') || /\.(pdf|csv|txt)$/i.test(file.name || '')) return dkReport(file);
+  if (!/^image\//.test(file.type || '')) { toast(DL('Choose an image, a PDF or a CSV file.', 'Bir görüntü, PDF veya CSV dosyası seçin.')); return; }
+  DK.file = file; dkModal(`<h3>📷 ${DL('Reading the screenshot…', 'Ekran görüntüsü okunuyor…')}</h3><div class="ocr-bar"><i id="dk-bi"></i></div><p class="hint">${DL('Reading happens on this device; the image is not sent anywhere.', 'Okuma bu cihazda yapılır; görüntü hiçbir yere gönderilmez.')}</p>`);
+  let text = ''; try { text = await ocrRead(file, pc => { const i = $('dk-bi'); if (i) i.style.width = Math.round(pc * 100) + '%'; }); } catch (e) { console.error(e); dkModal(`<h3>${DL('The image could not be read', 'Görüntü okunamadı')}</h3><p>${esc(e.message || '')}</p><div class="row-inline" style="justify-content:flex-end"><button data-dk-x>${DL('Close', 'Kapat')}</button></div>`); return; }
+  DK.text = text; DK.kind = (() => { try { return rcKind(text); } catch (e) { return 'order'; } })(); DK.R = ocrParse(text); dkChooser(); }
+function dkChooser() { const R = DK.R || {}, kind = DK.kind, sym = R.symbol && state.map[R.symbol] ? R.symbol : null, funds = dkOpenFunds();
+  const kindTxt = { order: DL('Order / trade', 'Emir / işlem'), history: DL('Transaction history', 'İşlem geçmişi'), deposit: DL('Deposit', 'Mevduat'), portfolio: DL('Portfolio / balance', 'Portföy / bakiye') }[kind] || kind;
+  const tradeTxt = kind === 'order' && sym ? `${R.side === 'sell' ? DL('Sell', 'Satış') : DL('Buy', 'Alış')} <b>${esc(sym)}</b>${R.qty ? ' ' + fmtN(R.qty, R.qty % 1 ? 4 : 0) : ''}${R.price ? ' @ ' + fmtN(R.price) : ''}${R.date ? ' · ' + dlDate(R.date) : ''}` : '';
+  const ranked = funds.map(p => ({ p, h: sym ? dkHolds(p, sym) : 0, hit: (() => { if (kind === 'order') return 0; const L = new Set((p.lines || []).filter(l => !l.closed).map(l => l.symbol)); let n = 0; for (const s of L) if (s && new RegExp('\\b' + s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b').test(DK.text)) n++; return n; })() })).sort((a, b) => (b.h - a.h) || (b.hit - a.hit));
+  const act = kind === 'order' ? DL('add as a trade', 'işlem olarak ekle') : DL('reconcile with this', 'bununla eşitle');
+  const rows = ranked.map(({ p, h, hit }, i) => `<button class="dk-opt ${i === 0 && (h || hit) ? 'best' : ''}" data-dk-fund="${esc(p.id)}"><b>${esc(p.name)}</b><span class="dim">${h ? DL(`holds ${fmtN(h, h % 1 ? 4 : 0)} ${sym}`, `${fmtN(h, h % 1 ? 4 : 0)} ${sym} tutuyor`) : hit ? DL(`${hit} of its holdings appear in the image`, `${hit} kalemi görüntüde geçiyor`) : (kind === 'order' && R.side === 'sell' ? DL(`does not hold ${sym || 'it'}`, `${sym || 'bunu'} tutmuyor`) : '')}</span><span class="dk-act">${act} →</span></button>`).join('');
+  dkModal(`<h3>📷 ${DL('Screenshot read', 'Ekran görüntüsü okundu')}</h3><p><span class="pill src">${esc(kindTxt)}</span> ${tradeTxt || (sym ? `<b>${esc(sym)}</b>` : '')}</p>
+    ${funds.length ? `<p class="hint" style="margin:8px 0 4px">${kind === 'order' ? DL('Which fund is it for?', 'Hangi fona ait?') : DL('Which fund should it be compared with?', 'Hangi fonla karşılaştırılsın?')}</p><div class="dk-opts">${rows}</div>` : `<p class="hint">${DL('You have no open fund yet.', 'Henüz açık bir fonunuz yok.')}</p>`}
+    <div class="row-inline" style="gap:8px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap">${sym ? `<button data-dk-sym="${esc(sym)}">${DL(`Open ${sym}`, `${sym} sayfasını aç`)}</button>` : ''}${kind === 'order' && R.side !== 'sell' ? `<button data-dk-new>${DL('New fund with it', 'Bununla yeni fon')}</button>` : ''}<button data-dk-x class="quiet">${DL('Cancel', 'Vazgeç')}</button></div>`); }
+function dkToFund(id) { const p = state.packages.find(q => q.id === id); if (!p) return; const R = DK.R || {}, kind = DK.kind, file = DK.file; dkClose(); openSheet({ type: 'pkg', id });
+  setTimeout(() => { if (kind === 'order') { dlTicketDialog(p, R.side === 'sell' ? 'sell' : 'buy', R.symbol && state.map[R.symbol] ? R.symbol : null, {}); setTimeout(() => { try { const msg = ocrFill(p, R); if (typeof msg === 'string' && msg) toast(msg); } catch (e) { console.error(e); } }, 120); }
+    else { try { rcGo(); setTimeout(() => rcRead(p, [file]), 250); } catch (e) { console.error(e); } } }, 350); }
+function dkReport(file) { dkClose(); try { if (state.view !== 'PLAN') showView('PLAN'); } catch (e) { } DK.reportFile = file;
+  setTimeout(() => { const b = $('imp-open'); if (!b) { toast(DL('Open “My funds” and use “Add fund from external investment report”.', '“Fonlarım”da “Dış yatırım raporundan fon ekle”yi kullanın.')); return; } b.click(); setTimeout(() => { const fi = $('imp-file'); if (!fi) return; const dt = new DataTransfer(); dt.items.add(file); fi.files = dt.files; fi.dispatchEvent(new Event('change', { bubbles: true })); }, 150); }, 200); }
+// report import: when the report's shares are already in an open fund, choose "Add to an existing fund" and that fund
+{ const _iu = impUse; impUse = function (results) { _iu.apply(this, arguments); try { const syms = new Set(IMP.rows.map(r => r.symbol)), sells = IMP.rows.some(r => r.side === 'SELL'); let best = null, bn = 0;
+    for (const p of dkOpenFunds()) { const n = (p.lines || []).filter(l => !l.closed && syms.has(l.symbol)).length; if (n > bn) { bn = n; best = p; } }
+    if (best && (bn > 0 || sells)) { IMP.mode = 'add'; IMP.target = best.id; IMP.dkNote = DL(`${bn} of the report's shares are already in “${best.name}”, so they are added to it. Choose “Create new fund” for a separate fund.`, `Rapordaki ${bn} hisse zaten “${best.name}” fonunda; bu yüzden ona eklenmesi seçildi. Ayrı bir fon için “Yeni fon oluştur”u seçin.`); impRender(); } else IMP.dkNote = ''; } catch (e) { console.error(e); } }; }
+{ const _ir = impRender; impRender = function () { _ir.apply(this, arguments); try { if (!IMP.dkNote || IMP.mode !== 'add') return; const t = $('imp-target'); if (t && !$('dk-impnote')) t.insertAdjacentHTML('afterend', `<p class="hint" id="dk-impnote" style="grid-column:1/-1;margin:4px 0 0">🔗 ${esc(IMP.dkNote)}</p>`); } catch (e) { } }; }
+// entry points: buttons on Özet and Fonlarım; paste and drop when no fund page or dialog is open
+function dkButtons() { const mk = id => `<button id="${id}" class="dk-btn" title="${DL('A screenshot of an order or your bank / broker screen, or a PDF / CSV report — it is linked to the fund that holds the share', 'Bir emrin veya banka / aracı kurum ekranınızın görüntüsü ya da PDF / CSV rapor — hisseyi tutan fona bağlanır')}">📥 ${DL('Screenshot or report', 'Ekran görüntüsü veya rapor')}</button>`;
+  const io = $('imp-open'); if (io && !$('dk-plan')) io.insertAdjacentHTML('afterend', mk('dk-plan'));
+  const pe = [...document.querySelectorAll('#view-TODAY button, #view-TODAY .btn')].find(b => /^(Para ekle|Add money)$/.test(b.textContent.trim())); if (pe && !$('dk-today')) pe.insertAdjacentHTML('beforebegin', mk('dk-today')); }
+{ const _ra = renderAll; renderAll = function () { const r = _ra.apply(this, arguments); try { dkButtons(); } catch (e) { } return r; }; }
+new MutationObserver(() => { if ((!$('dk-plan') && $('imp-open')) || (!$('dk-today') && $('view-TODAY'))) dkButtons(); }).observe(document.body, { childList: true, subtree: true });
+const dkPick = () => { const i = document.createElement('input'); i.type = 'file'; i.accept = 'image/*,.pdf,.csv,.txt,application/pdf,text/csv'; i.onchange = () => dkFromFile(i.files[0]); i.click(); };
+document.addEventListener('click', e => { const t = e.target; if (!t.closest) return;
+  if (t.closest('#dk-plan,#dk-today')) { e.stopPropagation(); dkPick(); return; }
+  if (t.closest('[data-dk-x]')) { e.stopPropagation(); dkClose(); return; }
+  const f = t.closest('[data-dk-fund]'); if (f) { e.stopPropagation(); dkToFund(f.dataset.dkFund); return; }
+  const s = t.closest('[data-dk-sym]'); if (s) { e.stopPropagation(); dkClose(); openSheet({ type: 'sym', symbol: s.dataset.dkSym }); return; }
+  if (t.closest('[data-dk-new]')) { e.stopPropagation(); const R = DK.R || {}; dkClose(); if (R.symbol && R.qty && R.price) dlManualEntry(null, [{ side: 'BUY', symbol: R.symbol, qty: R.qty, price: R.price, amount: +(R.qty * R.price).toFixed(2), date: R.date || today() }]); else { const b = $('dlx-newfund'); if (b) b.click(); } return; } }, true);
+const dkFree = () => !(state.sheet && state.sheet.type === 'pkg') && !($('modal') && !$('modal').hidden && $('modal').innerHTML.trim());
+const dkFileOf = list => [...(list || [])].find(f => /^image\//.test(f.type || '') || /pdf|csv/.test(f.type || '') || /\.(pdf|csv)$/i.test(f.name || ''));
+document.addEventListener('paste', e => { if (!dkFree()) return; const t = e.target; if (t && /^(INPUT|TEXTAREA)$/.test(t.tagName)) return; const f = dkFileOf((e.clipboardData || {}).files); if (!f) return; e.preventDefault(); dkFromFile(f); });
+let dkN = 0; document.addEventListener('dragenter', e => { if (!dkFree() || ![...((e.dataTransfer || {}).types || [])].includes('Files')) return; dkN++; document.body.classList.add('dk-drop'); });
+document.addEventListener('dragleave', () => { if (dkN > 0 && --dkN === 0) document.body.classList.remove('dk-drop'); });
+document.addEventListener('dragover', e => { if (dkFree() && [...((e.dataTransfer || {}).types || [])].includes('Files')) e.preventDefault(); });
+document.addEventListener('drop', e => { dkN = 0; document.body.classList.remove('dk-drop'); if (!dkFree() || (e.target.closest && e.target.closest('#imp-drop'))) return; const f = dkFileOf((e.dataTransfer || {}).files); if (!f) return; e.preventDefault(); dkFromFile(f); });
+document.head.insertAdjacentHTML('beforeend', `<style id="dk-css">.dk-modal{width:min(560px,100%)}.dk-opts{display:flex;flex-direction:column;gap:6px}.dk-opt{display:grid;grid-template-columns:1fr auto;gap:2px 10px;text-align:left;padding:9px 12px;border:1px solid var(--rule);border-radius:8px;background:var(--panel);cursor:pointer}
+.dk-opt .dim{grid-column:1;font-size:12px}.dk-opt .dk-act{grid-column:2;grid-row:1/3;align-self:center;font-size:12px;color:var(--accent)}.dk-opt.best{border-color:var(--accent);background:var(--sel)}
+body.dk-drop::after{content:"${DL('Drop the screenshot or report here', 'Ekran görüntüsünü veya raporu buraya bırakın')}";position:fixed;inset:12px;border:3px dashed var(--accent);border-radius:14px;display:grid;place-items:center;font-size:20px;color:var(--accent);background:color-mix(in srgb,var(--bg) 70%,transparent);z-index:80;pointer-events:none}
+.dk-btn{white-space:nowrap}</style>`);
+window.__gncDk = { fromFile: dkFromFile, state: () => DK };
 
 /* v2.14 end */
 Object.assign(TR, { 'GitHub version · prices update about every 30–60 minutes on weekdays · your data stays in this browser': 'GitHub sürümü · fiyatlar iş günleri yaklaşık 30–60 dakikada bir güncellenir · verileriniz bu tarayıcıda kalır',
