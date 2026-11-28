@@ -5,6 +5,14 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.30: What If Manager, Deck'ler, görünüm seçici, fon simülasyonu
+
+- **What If Manager:** Her fonun Geçmiş sayfasında ve her hisse/döviz sayfasında: gün gün kâr, aynı paranın vadeli mevduatta getireceği kâr, kalem kalem görünüm, "Bunun yerine…" ve "Bir de bunu ekleseydim…" senaryoları, "Şunu dene" önerileri.
+- **Deck ve Sub deck:** Üst sekmeler Deck, alt sekmeler Sub deck; her birinde simge ve rozet. Fon ve hisse sayfalarında küçük logo.
+- **Görünüm:** ⋯ menüsünde tema, yazı tipi, yazı boyutu, grafik renkleri, kazanç/kayıp renkleri ve köşe biçimi (Ayarlar değişmedi).
+- **Fon simülasyonu:** "🧪 Simüle et" ile işlemleri yapmadan önce deneyin; şimdi/sonra karşılaştırması ve "Fona uygula".
+- **Ana ekrandan içe aktarma:** Özet ve Fonlarım'dan ekran görüntüsü veya rapor; hisseyi tutan fona bağlanır.
+
 ## v2.28: Daha kolay okunur ekranlar
 
 - **Tamamen Türkçe:** Bütün ekranlar taranarak Türkçe görünümde kalan İngilizce metinler (fon çıkış planı notu, araştırma ve puan açıklamaları, hedef ve risk notları, grafik açıklaması) çevrildi; sektör adları da Türkçe.

@@ -5555,6 +5555,65 @@ document.head.insertAdjacentHTML('beforeend', `<style id="wim-css">
 </style>`);
 window.__gncWim = { model: () => wimModel(wimSt()), st: wimSt, render: wimRender };
 
+/* ---- v2.30 · Decks and Sub decks: the top tabs are "Decks", the second row "Sub decks". Every Deck, Sub deck and fund page tab gets
+   a small icon and a badge (a count or a status), and the fund and share pages get a small logo next to their name. ---- */
+const DK_I = d => `<svg class="sd-ico" viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const SD_ICONS = { PKGS: 'M2 5h4l1.5 1.5H14v6.5H2z', PERF: 'M2 13l3.5-4 3 2 5.5-7M10.5 4H14v3.5', LEDGER: 'M3 2.5h8.5a1.5 1.5 0 0 1 1.5 1.5v9.5H4.5A1.5 1.5 0 0 1 3 12zM6 6h4.5M6 8.5h4.5', FEES: 'M4 2.5h8v11l-2-1.2-2 1.2-2-1.2-2 1.2zM6.2 9.8l3.6-3.6M6.3 6.4h.1M9.7 9.6h.1',
+  SCRN: 'M2.5 3h11v3h-11zM2.5 8h5v5h-5zM9.5 8h4v5h-4z', WATCH: 'M1.5 8s2.4-4.5 6.5-4.5S14.5 8 14.5 8 12.1 12.5 8 12.5 1.5 8 1.5 8zM8 9.8a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6z', MACRO: 'M8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12zM2 8h12M8 2c2 2 2 10 0 12M8 2c-2 2-2 10 0 12', RSRCH: 'M2.5 6.5v3h2l4.5 3v-9l-4.5 3zM11.5 6a3 3 0 0 1 0 4',
+  PTR: 'M8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12zM8 10.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM8 1v2.5M8 12.5V15M1 8h2.5M12.5 8H15', MODEL: 'M3 2.5h10v11H3zM5.5 6l1.2 1.2L9 5M5.5 10l1.2 1.2L9 9M10.5 6.2h.5M10.5 10.2h.5' };
+const FT_ICONS = { ov: 'M2.5 2.5h4.5v4.5H2.5zM9 2.5h4.5v4.5H9zM2.5 9h4.5v4.5H2.5zM9 9h4.5v4.5H9z', hold: 'M2.5 4h11M2.5 8h11M2.5 12h7', ptr: SD_ICONS.PTR, hist: 'M8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12zM8 4.5V8l2.5 1.5' };
+const dkShort = n => n >= 1e6 ? (n / 1e6).toFixed(1).replace('.0', '') + DL('M', ' mn') : n >= 1e4 ? Math.round(n / 1e3) + DL('k', ' b') : n >= 1e3 ? (n / 1e3).toFixed(1).replace('.0', '') + DL('k', ' b') : String(Math.round(n));
+const dkOpen = () => state.packages.filter(p => p.status !== 'closed');
+function dkWeakHeld() { const s = new Set(); for (const p of dkOpen()) for (const l of (p.lines || []).filter(z => !z.closed)) { const x = state.map[l.symbol]; if (x && scIsEq(x) && x.score != null && x.score < 40) s.add(l.symbol); } return s.size; }
+function dkBadges() { const b = {}; const safe = f => { try { return f(); } catch (e) { return null; } };
+  b.TODAY = safe(() => { const n = dlTodo().length; return n ? { t: n, c: n && dlTodo().some(o => o.pri === 0) ? 'r' : 'a', h: DL(`${n} thing(s) to do`, `${n} yapılacak iş`) } : { t: '✓', c: 'g', h: DL('Nothing to do today', 'Bugün yapılacak iş yok') }; });
+  b.PLAN = safe(() => { const n = dkOpen().length; return { t: n, c: 'n', h: DL(`${n} open fund(s)`, `${n} açık fon`) }; });
+  b.MARKETS = safe(() => { const n = ((state.watch || {}).items || []).length; return n ? { t: n, c: 'n', h: DL(`${n} on the watch list`, `İzleme listesinde ${n}`) } : null; });
+  b.LAB = safe(() => { const n = dkWeakHeld(); return n ? { t: n, c: 'r', h: DL(`${n} weak share(s) held`, `Elde ${n} zayıf hisse`) } : { t: '✓', c: 'g', h: DL('No weak share held', 'Elde zayıf hisse yok') }; });
+  b.BOARD = safe(() => { const n = (state.board || []).length; return n ? { t: n, c: 'n', h: DL(`${n} meeting minute(s)`, `${n} toplantı tutanağı`) } : null; });
+  b.PKGS = b.PLAN;
+  b.PERF = safe(() => { let inv = 0, val = 0; for (const p of dkOpen()) { const g = dlGlanceStats(p, null); if (g && g.inv > 0) { inv += g.inv; val += g.nav; } } if (!(inv > 0)) return null; const r = (val / inv - 1) * 100; return { t: (r >= 0 ? '+' : '') + r.toFixed(1) + '%', c: r >= 0 ? 'g' : 'r', h: DL('Return of the open funds', 'Açık fonların getirisi') }; });
+  b.LEDGER = safe(() => { const n = dkOpen().reduce((a, p) => a + (DX.txList(p) || []).length, 0); return n ? { t: dkShort(n), c: 'n', h: DL(`${n} entries`, `${n} kayıt`) } : null; });
+  b.FEES = safe(() => { let f = 0; const y = today().slice(0, 4); for (const p of state.packages) for (const l of p.lines || []) for (const z of l.fills || []) if ((z.date || '').startsWith(y)) f += +z.fee || +z.commission || 0; return f > 0 ? { t: dkShort(f), c: 'n', h: DL('Fees paid this year, TRY', 'Bu yıl ödenen masraf, TL') } : null; });
+  b.SCRN = safe(() => { const n = (state.scored || []).length; return n ? { t: dkShort(n), c: 'n', h: DL(`${n} instruments`, `${n} enstrüman`) } : null; });
+  b.WATCH = b.MARKETS;
+  b.MACRO = safe(() => { const cal = (state.status && state.status.calendar) || null; return null; });
+  b.RSRCH = safe(() => { const it = ((state.digest || {}).items || state.digests || []); const n = Array.isArray(it) ? it.length : 0; return n ? { t: dkShort(n), c: 'n', h: DL(`${n} announcements`, `${n} duyuru`) } : null; });
+  b.PTR = b.LAB;
+  b.MODEL = safe(() => { const c = state.calib || (state.inst && null); return null; });
+  return b; }
+const dkBadge = o => o ? `<span class="dk-bdg ${o.c || 'n'}" title="${esc(o.h || '')}">${esc(String(o.t))}</span>` : '';
+function dkPaint() { const B = dkBadges();
+  const tabs = $('tabs'); if (tabs) { tabs.setAttribute('aria-label', DL('Decks', 'Deck’ler')); tabs.querySelectorAll('[data-group]').forEach(t => { const g = t.dataset.group; if (g === 'SET') return; let s = t.querySelector('.dk-bdg'); const h = dkBadge(B[g]); if (s) s.outerHTML = h || ''; else if (h) t.insertAdjacentHTML('beforeend', h); const l = t.querySelector('.tab-l'); t.title = `Deck · ${l ? l.textContent : ''}`; }); }
+  const sub = $('subtabs'); if (sub) { sub.setAttribute('aria-label', DL('Sub decks', 'Sub deck’ler')); sub.querySelectorAll('[data-view]').forEach(t => { const v = t.dataset.view; if (SD_ICONS[v] && !t.querySelector('.sd-ico')) t.insertAdjacentHTML('afterbegin', DK_I(SD_ICONS[v])); const h = dkBadge(B[v]); const s = t.querySelector('.dk-bdg'); if (s) s.outerHTML = h || ''; else if (h) t.insertAdjacentHTML('beforeend', h); t.title = `Sub deck · ${t.textContent.replace(/\s+\S+$/, '').trim()}`; }); }
+  dkFundTabs(); dkPageLogo(); }
+function dkFundTabs() { const w = state.sheet; if (!w || w.type !== 'pkg') return; const p = state.packages.find(q => q.id === w.id); if (!p) return; const safe = f => { try { return f(); } catch (e) { return null; } };
+  const B = { ov: safe(() => { const v = dlFundVerdict(p); if (!v) return null; const c = v.verdict[0] === 'good' ? 'g' : v.verdict[0] === 'bad' ? 'r' : 'a'; return { t: c === 'g' ? '✓' : '!', c, h: v.verdict[1] }; }),
+    hold: safe(() => { const n = (p.lines || []).filter(l => !l.closed).length; return n ? { t: n, c: 'n', h: DL(`${n} open line(s)`, `${n} açık kalem`) } : null; }),
+    ptr: safe(() => { const sel = scFundSel(p), n = sel ? sel.weak.length : 0; return n ? { t: n, c: 'r', h: DL(`${n} weak share(s)`, `${n} zayıf hisse`) } : { t: '✓', c: 'g', h: DL('No weak share', 'Zayıf hisse yok') }; }),
+    hist: safe(() => { const n = (DX.txList(p) || []).length; return n ? { t: dkShort(n), c: 'n', h: DL(`${n} entries`, `${n} kayıt`) } : null; }) };
+  document.querySelectorAll('[data-ftab]').forEach(t => { const k = t.dataset.ftab; if (FT_ICONS[k] && !t.querySelector('.sd-ico')) t.insertAdjacentHTML('afterbegin', DK_I(FT_ICONS[k])); const h = dkBadge(B[k]); const s = t.querySelector('.dk-bdg'); if (s) s.outerHTML = h || ''; else if (h) t.insertAdjacentHTML('beforeend', h); }); }
+// page logos: a fund monogram coloured by its verdict, the class icon and score band of a share
+function dkPageLogo() { const w = state.sheet, sh = $('sheet'); if (!w || !sh || sh.hidden) return; const h = sh.querySelector('.sheet-bar h2, .sheet-head h2, h2'); if (!h || h.querySelector('.pg-logo')) return;
+  if (w.type === 'pkg') { const p = state.packages.find(q => q.id === w.id); if (!p) return; let c = 'n'; try { const v = dlFundVerdict(p); c = v ? (v.verdict[0] === 'good' ? 'g' : v.verdict[0] === 'bad' ? 'r' : 'a') : 'n'; } catch (e) { }
+    const mono = String(p.name || 'F').replace(/[^A-Za-zÇĞİÖŞÜçğıöşü0-9 ]/g, ' ').split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0]).join('').toUpperCase() || 'F';
+    h.insertAdjacentHTML('afterbegin', `<span class="pg-logo fund ${c}" title="${DL('Fund', 'Fon')}">${esc(mono)}</span>`); }
+  else if (w.type === 'sym') { const x = state.map[w.symbol] || state.inst[w.symbol] || {}; const ico = { TR_EQ: SD_ICONS.SCRN, US_EQ: SD_ICONS.MACRO, TEFAS: SD_ICONS.PKGS, TR_ETF: SD_ICONS.PKGS, CMDTY: 'M3 12.5h10L11 6H5zM6 6V4h4v2', MACRO: 'M2.5 11.5l3-3 2 2 6-6' }[x.cls] || SD_ICONS.SCRN; const b = scBand(x);
+    h.insertAdjacentHTML('afterbegin', `<span class="pg-logo sym ${b ? b.k : ''}" title="${esc(x.cls || '')}">${DK_I(ico)}</span>`); if (b) h.insertAdjacentHTML('beforeend', ` <span class="dk-bdg ${b.c === 'g' ? 'g' : b.c === 'r' ? 'r' : 'n'}" title="${DL('Score band', 'Puan bandı')}">${esc(b.t)}</span>`); } }
+let dkT = null; const dkSoon = () => { clearTimeout(dkT); dkT = setTimeout(() => { try { dkPaint(); } catch (e) { console.error(e); } }, 150); };
+new MutationObserver(m => { if (m.some(r => [...r.addedNodes].some(n => n.nodeType === 1 && !(n.classList && (n.classList.contains('dk-bdg') || n.classList.contains('sd-ico') || n.classList.contains('pg-logo')))))) dkSoon(); }).observe(document.body, { childList: true, subtree: true });
+// the words: tab → Deck / Sub deck
+TR_FRAG.push([/sekme/i, [[/fonun Pointer sekmesine bakın/g, 'fonun Pointer sub deck’ine bakın'], [/“İçerik ve İşlem” sekmesini/g, '“İçerik ve İşlem” sub deck’ini'], [/sekme geçişi/g, 'deck geçişi'], [/Birkaç sekme/g, 'Birkaç deck'], [/^Sekme$/, 'Deck']]]);
+document.head.insertAdjacentHTML('beforeend', `<style id="dk-deck-css">
+.dk-bdg{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 5px;margin-left:5px;border-radius:8px;font-size:10px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;vertical-align:1px;background:var(--panel2);color:var(--fg2);border:1px solid var(--rule)}
+.dk-bdg.g{background:color-mix(in srgb,var(--up) 14%,transparent);color:var(--up);border-color:color-mix(in srgb,var(--up) 35%,transparent)}.dk-bdg.r{background:color-mix(in srgb,var(--down) 14%,transparent);color:var(--down);border-color:color-mix(in srgb,var(--down) 35%,transparent)}.dk-bdg.a{background:color-mix(in srgb,#c98c14 16%,transparent);color:#a9740c;border-color:color-mix(in srgb,#c98c14 40%,transparent)}
+.sd-ico{vertical-align:-2px;margin-right:5px;opacity:.75}#subtabs [data-view].active .sd-ico,[data-ftab].on .sd-ico,[data-ftab].active .sd-ico{opacity:1}
+.pg-logo{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:7px;margin-right:8px;vertical-align:-5px;font-size:11px;font-weight:700;letter-spacing:.02em;background:var(--sel);color:var(--accent);border:1px solid var(--rule)}.pg-logo.fund.g{background:color-mix(in srgb,var(--up) 16%,transparent);color:var(--up)}.pg-logo.fund.r{background:color-mix(in srgb,var(--down) 14%,transparent);color:var(--down)}.pg-logo.fund.a{background:color-mix(in srgb,#c98c14 16%,transparent);color:#a9740c}.pg-logo .sd-ico{margin:0;opacity:1}
+.pg-logo.sym.s5,.pg-logo.sym.s4{color:var(--up)}.pg-logo.sym.s1,.pg-logo.sym.s2{color:var(--down)}
+@media (max-width:700px){#tabs .dk-bdg{position:absolute;top:2px;right:calc(50% - 22px);margin:0;min-width:14px;height:14px;font-size:9px;padding:0 4px}#tabs [data-group]{position:relative}#subtabs .dk-bdg{display:none}}
+</style>`);
+window.__gncDeck = { badges: dkBadges, paint: dkPaint };
+
 /* v2.14 end */
 Object.assign(TR, { 'GitHub version · prices update about every 30–60 minutes on weekdays · your data stays in this browser': 'GitHub sürümü · fiyatlar iş günleri yaklaşık 30–60 dakikada bir güncellenir · verileriniz bu tarayıcıda kalır',
   'Glossary': 'Sözlük', 'Add fund from external investment report': 'Dış yatırım raporundan fon ekle', 'TRY time deposit': 'TL vadeli mevduat', 'Money-market fund': 'Para piyasası fonu', 'BIST 100 index fund': 'BIST 100 endeks fonu', 'USD deposit': 'USD mevduat', 'Inflation (CPI) — value kept': 'Enflasyon (TÜFE) — korunan değer' });
