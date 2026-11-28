@@ -1,6 +1,7 @@
 # orangegoat Deluxe: fetch market data and publish the app on GitHub Pages.
 # Every 30 minutes on weekdays 09:00–23:30 Istanbul (quick update), every night 00:15 Istanbul (full update),
 # on every push to main, and by hand (Actions › Update data and publish › Run workflow).
+# GitHub drops many scheduled runs, so during market hours each run starts the next one itself (job 'next', about every 30 minutes).
 # The store of market data (data/) is kept between runs in the Actions cache. Your personal data never comes here:
 # it stays in your browser. Needs one repository secret: EVDS_KEY (TCMB EVDS API key).
 name: Update data and publish
@@ -19,6 +20,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  actions: write
 concurrency:
   group: publish
   cancel-in-progress: false
@@ -67,3 +69,24 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+  next:
+    # during market hours (weekdays 09:00–23:30 Istanbul) start the next quick update about 30 minutes after this one began,
+    # unless another run is already waiting; the cron schedule above stays as a back-up
+    needs: deploy
+    if: always() && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Start the next update
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          in_hours() { local d h m; d=$(TZ=Europe/Istanbul date +%u); h=$(TZ=Europe/Istanbul date +%H); m=$(TZ=Europe/Istanbul date +%M); [ "$d" -le 5 ] && [ $((10#$h)) -ge 9 ] && { [ $((10#$h)) -lt 23 ] || [ $((10#$m)) -lt 30 ]; }; }
+          if ! in_hours; then echo "outside market hours: no chained run"; exit 0; fi
+          start=$(gh api "repos/$REPO/actions/runs/${{ github.run_id }}" -q .run_started_at); wait=$(( $(date -d "$start" +%s) + 1740 - $(date +%s) ))
+          if [ "$wait" -gt 0 ]; then echo "waiting ${wait}s"; sleep "$wait"; fi
+          if ! in_hours; then echo "market closed meanwhile"; exit 0; fi
+          q=$(gh api "repos/$REPO/actions/workflows/publish.yml/runs?status=queued" -q '.total_count'); p=$(gh api "repos/$REPO/actions/workflows/publish.yml/runs?status=pending" -q '.total_count')
+          if [ "$q" -gt 0 ] || [ "$p" -gt 0 ]; then echo "a run is already waiting: no chained run"; exit 0; fi
+          gh workflow run publish.yml -R "$REPO" -f mode=quick && echo "next quick update started"

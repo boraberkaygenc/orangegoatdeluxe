@@ -69,7 +69,11 @@ try {
   // 4) site
   fs.rmSync(SITE, { recursive: true, force: true }); fs.mkdirSync(path.join(SITE, 'data'), { recursive: true });
   fs.cpSync(path.join(DIR, 'public'), SITE, { recursive: true });
-  fs.writeFileSync(path.join(SITE, 'data', 'view.json'), JSON.stringify(payload));
+  // six significant digits are plenty for the page and make the file about a third smaller; integers stay as they are
+  const r6 = (k, v) => typeof v === 'number' && !Number.isInteger(v) && isFinite(v) ? +v.toPrecision(6) : v;
+  fs.writeFileSync(path.join(SITE, 'data', 'view.json'), JSON.stringify(payload, r6));
+  // a tiny file the open page polls; it downloads view.json again only when this changes
+  fs.writeFileSync(path.join(SITE, 'data', 'stamp.json'), JSON.stringify({ generatedAt: payload.generatedAt, nextRun: payload.nextRun }));
   fs.writeFileSync(path.join(SITE, 'data', 'series.json'), JSON.stringify({ generatedAt: payload.generatedAt, series }));
   // weekly closes since 2015, one small file per symbol (data/long/<SYM>.json), loaded only when a fund's history player or crisis cards ask for it
   { const SD = path.join(DIR, 'data', 'series'), LD = path.join(SITE, 'data', 'long'); let n = 0;

@@ -2,6 +2,7 @@
 // TEFAS (daily NAV, fund list), refresh orchestration with progress/ETA, retries, data-quality checks and the health doc.
 const UA = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36', 'Accept': 'application/json,text/plain,*/*', 'Accept-Language': 'en-US,en;q=0.8' };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+import { hisseTekil } from './isyatirim.mjs';
 export function errMsg(e) { const c = e && e.cause; return [e && e.message, c && (c.code || c.message)].filter(Boolean).join(' / ') || String(e); }
 const DTF = new Map(); // one Intl.DateTimeFormat per time zone (each one holds native ICU memory; creating one per bar leaks RSS until a major GC)
 const dateIn = (ts, tz) => { const z = tz || 'Europe/Istanbul'; let f = DTF.get(z); if (!f) { f = new Intl.DateTimeFormat('en-CA', { timeZone: z, year: 'numeric', month: '2-digit', day: '2-digit' }); DTF.set(z, f); } return f.format(new Date(ts * 1000)); };
@@ -42,14 +43,14 @@ export async function yahooQuotes(symbols) { // -> Map yahooSymbol -> fields
 /* ---------------- Yahoo: spark (prices only, no crumb) as a fallback ---------------- */
 export async function yahooSpark(symbols) {
   const out = new Map();
-  for (let i = 0; i < symbols.length; i += 50) {
-    const chunk = symbols.slice(i, i + 50);
+  for (let i = 0; i < symbols.length; i += 20) { // the spark endpoint answers HTTP 400 above 20 symbols a request
+    const chunk = symbols.slice(i, i + 20);
     const r = await fetch(`https://query1.finance.yahoo.com/v8/finance/spark?symbols=${encodeURIComponent(chunk.join(','))}&range=5d&interval=1d`, { headers: UA, signal: AbortSignal.timeout(20000) });
     if (!r.ok) throw new Error('spark HTTP ' + r.status);
     const j = await r.json(); const res = (j && j.spark && j.spark.result) || (Array.isArray(j) ? j : Object.values(j || {}));
     for (const it of res) { const resp = it && (it.response ? it.response[0] : it); if (!resp) continue; const sym = it.symbol || resp.symbol; const m = resp.meta || {}, cl = (resp.indicators && resp.indicators.quote && resp.indicators.quote[0] && resp.indicators.quote[0].close) || resp.close || [];
       const last = [...cl].reverse().find(v => v > 0); const price = num(m.regularMarketPrice) ?? last ?? null; if (sym && price) out.set(sym, { price, at: m.regularMarketTime ? new Date(m.regularMarketTime * 1000).toISOString() : null, tz: m.exchangeTimezoneName }); }
-    if (i + 50 < symbols.length) await sleep(300);
+    if (i + 20 < symbols.length) await sleep(150);
   }
   return out;
 }
@@ -167,7 +168,7 @@ export function createData({ db, put, log, inbox, coll, ist, config, issuePicks,
       const missing = [];
       for (const [ys, [k, x]] of bySym) {
         const q = got.get(ys); if (!q || !(q.price > 0)) { missing.push([k, x]); continue; }
-        const y = { ...(db.docs[k] || x) }; y.price = q.price; if (q.at) y.asOf = String(q.at).slice(0, 10);
+        const y = { ...(db.docs[k] || x) }; delete y.inactive; delete y.noPriceSince; y.price = q.price; if (q.at) y.asOf = String(q.at).slice(0, 10);
         for (const f of ['pe', 'fpe', 'pb', 'divYield', 'mcap', 'hi52', 'lo52', 'avgVolume', 'volume', 'eps']) if (q[f] !== null && q[f] !== undefined) y[f] = q[f];
         if (q.name && (!y.name || y.name === y.symbol)) y.name = q.name;
         if (Array.isArray(y.closes) && y.closes.length && y.asOf) { const last = y.closes[y.closes.length - 1], hl = Array.isArray(y.hlv) && y.hlv.length === y.closes.length ? y.hlv : null; if (last[0] === y.asOf) { last[1] = q.price; if (hl && q.volume) hl[hl.length - 1][2] = q.volume; } else if (last[0] < y.asOf) { y.closes.push([y.asOf, q.price]); if (hl) hl.push([null, null, q.volume ?? null]); } }
@@ -182,11 +183,18 @@ export function createData({ db, put, log, inbox, coll, ist, config, issuePicks,
         while (idx < queue.length) {
           const [k, x] = queue[idx++];
           const want1y = full || barsOf(db.docs[k] || x).length < 60;
-          try { const got = await yahooChart(yahooSymbol(x), want1y ? (x.cls === 'MACRO' ? '2y' : '1y') : '5d'); const y = { ...(db.docs[k] || x) }; if (!full && want1y) y.histTriedAt = day0;
+          try { const got = await yahooChart(yahooSymbol(x), want1y ? (x.cls === 'MACRO' ? '2y' : '1y') : '5d'); const y = { ...(db.docs[k] || x) }; delete y.inactive; delete y.noPriceSince; delete y.yahooMissing; if (!full && want1y) y.histTriedAt = day0;
             y.bars = full ? mergeBars([], got.bars) : mergeBars(barsOf(y), got.bars); if (got.splits && got.splits.length) y.splits = got.splits.slice(-5); if (got.divs && got.divs.length) { const m = new Map((y.divs || []).map(d => [d[0], d])); for (const d of got.divs) m.set(d[0], d); y.divs = [...m.values()].sort((a, b) => a[0] < b[0] ? -1 : 1).slice(-24); }
             if (got.price) y.price = got.price; if (got.name && (!y.name || y.name === y.symbol)) y.name = got.name; if (full || want1y) keepSeries(x, got.bars, got.splits, srcLabel(x)); derive(y); if (full) integrity(y);
             db.docs[k] = stamp(y, srcLabel(x), okSet.has(x.symbol) ? (db.docs[k].priceSrc || 'chart') : 'chart', got.at); okSet.add(x.symbol); }
-          catch (e) { const why = errMsg(e); if (!okSet.has(x.symbol)) { fails.push(x.symbol); if (!firstErr) firstErr = `${x.symbol}: ${why}`; } db.docs[k] = { ...(db.docs[k] || x), fetchError: why.slice(0, 80), fetchErrorAt: new Date().toISOString() }; }
+          catch (e) { const why = errMsg(e);
+            // BIST share Yahoo no longer knows (renamed or delisted): daily closes from İş Yatırım; after 5 days with no price anywhere it is marked as not trading
+            if ((x.cls === 'TR_EQ' || x.cls === 'TR_ETF') && !okSet.has(x.symbol)) { try { const cur = db.docs[k] || x, have = barsOf(cur).length, from = new Date(Date.now() - (have >= 60 && !full ? 12 : 400) * 864e5).toISOString().slice(0, 10);
+                const rows = await hisseTekil(x.symbol, from, day0); const last = rows[rows.length - 1];
+                if (last && (Date.now() - Date.parse(last[0])) / 864e5 < 6) { const y = { ...cur }; delete y.fetchError; delete y.inactive; delete y.noPriceSince; y.bars = mergeBars(have >= 60 && !full ? barsOf(y) : [], rows.map(r => [r[0], r[1], null, null, null])); y.price = last[1]; y.asOf = last[0]; y.yahooMissing = why.slice(0, 40); derive(y); db.docs[k] = stamp(y, 'İş Yatırım (daily close)', 'isyatirim', last[0] + 'T15:00:00Z'); okSet.add(x.symbol); setP({ done: progress.done + 1 }); continue; } } catch (e2) { } }
+            if (!okSet.has(x.symbol)) { fails.push(x.symbol); if (!firstErr) firstErr = `${x.symbol}: ${why}`; }
+            const cur = db.docs[k] || x, since = cur.noPriceSince || day0, y = { ...cur, fetchError: why.slice(0, 80), fetchErrorAt: new Date().toISOString() };
+            if (!okSet.has(x.symbol)) { y.noPriceSince = since; if ((Date.parse(day0) - Date.parse(since)) / 864e5 >= 5) y.inactive = true; } db.docs[k] = y; }
           setP({ done: progress.done + 1 }); await sleep(full ? 200 : 150);
         }
       }

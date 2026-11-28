@@ -31,7 +31,9 @@
   }
   async function pull(first) {
     try {
-      const r = await fetch(VIEW + '?t=' + Date.now(), { cache: 'no-store' }); if (!r.ok) throw new Error('HTTP ' + r.status);
+      // the small stamp first: when the published data has not changed since the copy in hand, nothing more is downloaded
+      if (!first && gen) { const st = await fetch(BASE + 'data/stamp.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null); if (st && st.generatedAt === gen) { window.__GNC_OFFLINE = false; return; } }
+      const r = await fetch(VIEW, { cache: 'no-cache' }); if (!r.ok) throw new Error('HTTP ' + r.status);
       const j = await r.json(); window.__GNC_OFFLINE = false; window.__GNC_FROM_CACHE = false; apply(j, first);
     } catch (e) { window.__GNC_OFFLINE = true; console.warn('market data:', e.message); }
   }

@@ -5,6 +5,17 @@ stres testi, raporlar. İnternet adresinden açılır, tarayıcıdan **uygulama 
 
 **Adres:** https://boraberkaygenc.github.io/orangegoatdeluxe/
 
+## v2.27: Daha taze veri, ayırt eden puanlar, sade fon ekranı
+
+- **Güncellemeler aksamıyor:** GitHub zamanlanmış çalışmaların çoğunu atladığı için borsa saatlerinde (hafta içi 09:00–23:30) her güncelleme, başladıktan yaklaşık 30 dakika sonra bir sonrakini kendisi başlatır. Zamanlanmış çalışma yedek olarak kalır.
+- **Fiyatı gelmeyen BIST hisseleri:** Yahoo'da bulunamayan hisselerin günlük kapanışı İş Yatırım'dan alınır. Beş gün hiçbir kaynaktan fiyat gelmezse hisse "işlem görmüyor" olarak işaretlenir; fonda tutuluyorsa yapılacaklar listesinde uyarı çıkar.
+- **Yedek fiyat kaynağı ve Nasdaq-100 listesi onarıldı:** Toplu yedek istek 20 sembollük parçalarla yapılır; Nasdaq-100 üye listesi sayfa düzeni değişse de okunur.
+- **Puanlar artık ayırt ediyor:** Hissenin rengi ve kararı, puanının endekse (BIST 100 / S&P 500) göre 12 ayda getirmesi beklenen farka göre verilir; mutlak getiri pozitif diye yeşil gösterilmez. Puan beş bantta gösterilir (Çok güçlü, Güçlü, Nötr, Zayıf, Çok zayıf) ve not halkası bandın rengini alır. ABD puanı "zayıf kanıt" olarak işaretlenir.
+- **Fon kararı ikiye ayrıldı:** "Bu fon değer mi?" paneli beklenen getiriyi "piyasadan gelen" ve "hisse seçiminden gelen" olarak ayırır; elde tutulan zayıf hisseler gösterilir ve değiştirilmesi önerilir.
+- **Tek bakışta fon:** Fon değerinin hemen altında tek satırlık "Şimdi" önerisi yer alır.
+- **Veri tazeliği:** Üst satırdaki veri ışığına tıklandığında her piyasa için fiyatların ne kadar yeni olduğu ve fiyatı eski olan elde tutulan varlıklar gösterilir; kaynak hatalarının nedeni de artık görünür.
+- **Daha hızlı:** Piyasa verisi dosyası yaklaşık üçte bir küçüldü; açık sayfa veriyi yalnızca yeni bir güncelleme yayımlandığında yeniden indirir.
+
 ## v2.26: Bankayla eşitle
 
 - Fonun işlem çubuğunda “⚖ Bankayla eşitle” düğmesi vardır; İçerik ve İşlem sekmesinde aynı adlı panel açılır.

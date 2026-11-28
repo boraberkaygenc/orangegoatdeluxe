@@ -25,7 +25,11 @@ export function parseSP500(html) {
 }
 // Nasdaq-100 page: components table and sentences in the "Changes in 20xx" sections ("... X (TICK) replaced Y (TICK) ...", best effort)
 export function parseNDX(html) {
-  const cur = new Set(); const t = tableAfter(html, /id="Components"/); if (t) for (const r of rowsOf(t)) for (const c of r.slice(0, 2)) if (TICK.test(c) && c.length <= 5 && c !== 'GICS') { cur.add(c); break; }
+  const cur = new Set(); const t = tableAfter(html, /id="Components"|id="constituents"|id="Current_components"/); if (t) for (const r of rowsOf(t)) for (const c of r.slice(0, 2)) if (TICK.test(c) && c.length <= 5 && c !== 'GICS') { cur.add(c); break; }
+  if (cur.size < 80) { // the page layout changed: take the table whose header has a Ticker/Symbol column and the most tickers in it
+    let best = null; for (const m of html.matchAll(/<table[\s\S]*?<\/table>/g)) { const rows = rowsOf(m[0]); const hi = rows.findIndex(r => r.some(c => /^(ticker|symbol|ticker symbol)$/i.test(c))); if (hi < 0) continue;
+      const col = rows[hi].findIndex(c => /^(ticker|symbol|ticker symbol)$/i.test(c)), got = rows.slice(hi + 1).map(r => r[col]).filter(c => c && TICK.test(c) && c.length <= 5); if (!best || got.length > best.length) best = got; }
+    if (best && best.length > cur.size) { cur.clear(); for (const c of best) cur.add(c); } }
   const events = []; const secs = [...html.matchAll(/id="Changes_in_(\d{4})"/g)];
   for (let i = 0; i < secs.length; i++) { const year = secs[i][1], from = secs[i].index, to = i + 1 < secs.length ? secs[i + 1].index : Math.min(html.length, from + 60000), body = html.slice(from, to);
     for (const p of body.matchAll(/<(?:p|li)[^>]*>([\s\S]*?)<\/(?:p|li)>/g)) { const txt = strip(p[1]); const d = parseDate(txt); const date = d && d.startsWith(year) ? d : null; if (!date) continue;
