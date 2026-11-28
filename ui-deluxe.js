@@ -1297,6 +1297,7 @@ function dlTodo() {
   const out = [], S = state.S, add = (pri, kind, text, pid) => out.push({ pri, kind, text, pid }), dep = +S.depRate || 0;
   for (const p of state.packages.filter(q => q.status !== 'closed')) {
     for (const l of (p.lines || []).filter(z => !z.closed)) { const x = state.map[l.symbol]; if (!x || !x.e) continue; const px = x.e.price;
+      if (x.inactive) add(0, 'exit', DL(`${l.symbol}: no price from any source since ${dlDate(x.noPriceSince)} — the share may have been renamed or delisted; check with your broker and update the fund.`, `${l.symbol}: ${dlDate(x.noPriceSince)} tarihinden beri hiçbir kaynaktan fiyat gelmiyor — hissenin kodu değişmiş veya borsadan çıkmış olabilir; aracı kurumunuza sorup fonu güncelleyin.`), p.id);
       if (l.stop && px <= l.stop) add(0, 'exit', DL(`${l.symbol} is at or below its stop ${fmtN(l.stop)} (now ${fmtN(px)}) — sell to limit the loss.`, `${l.symbol} zarar-kes seviyesinde (${fmtN(l.stop)}, şimdi ${fmtN(px)}) — zararı sınırlamak için satın.`), p.id);
       else if (l.target && px >= l.target) add(1, 'exit', DL(`${l.symbol} reached its target ${fmtN(l.target)} (now ${fmtN(px)}) — consider taking the profit.`, `${l.symbol} hedefine ulaştı (${fmtN(l.target)}, şimdi ${fmtN(px)}) — kârı almayı düşünün.`), p.id);
       else if (l.exitDate && today() >= l.exitDate) add(1, 'exit', DL(`${l.symbol}: the planned exit date ${l.exitDate} has come.`, `${l.symbol}: planlanan çıkış tarihi ${l.exitDate} geldi.`), p.id); }
@@ -1766,7 +1767,7 @@ state.hooks.push(() => { try { renderBadges(); } catch (e) { } });
     const cls = bad.length > 3 || ageH > 48 ? 'r' : bad.length || ageH > 6 ? 'a' : 'g', label = cls === 'g' ? DL('Data up to date', 'Veri güncel') : cls === 'a' ? DL('Data partly delayed', 'Veri kısmen gecikmeli') : DL('Data needs attention', 'Veride sorun var');
     const span = [...el.children].find(s => /Sources|Kaynaklar/.test(s.textContent)); const html = `<button class="quiet" id="dlx-health" title="${DL('Data sources', 'Veri kaynakları')}"><i class="lt ${cls}"></i>${label}</button>`; if (span) span.outerHTML = html; else el.insertAdjacentHTML('beforeend', html); }; }
 document.addEventListener('click', e => { if (!e.target.closest('#dlx-health')) { const pop = $('dlx-hpop'); if (pop && !e.target.closest('#dlx-hpop')) pop.remove(); return; } e.stopPropagation(); const old = $('dlx-hpop'); if (old) { old.remove(); return; } const src = (state.health || {}).sources || {}, r = e.target.closest('#dlx-health').getBoundingClientRect();
-  const rows = Object.entries(src).sort((a, b) => (b[1].fails || 0) - (a[1].fails || 0)).map(([k, v]) => { const c = v.fails >= 2 || v.breached ? 'r' : v.fails ? 'a' : 'g'; return `<tr><td class="l"><i class="lt ${c}"></i> ${esc(k)}</td><td class="l dim" style="font-size:12px">${v.lastOk ? esc(dlFixDates(stampAt(v.lastOk, true))) : '—'}</td><td class="l dim" style="font-size:12px;max-width:260px;white-space:normal">${c === 'g' ? '' : esc(String(v.lastErr || v.error || (v.breached ? DL('late', 'gecikti') : '')).slice(0, 90))}</td></tr>`; }).join('');
+  const rows = Object.entries(src).sort((a, b) => (b[1].fails || 0) - (a[1].fails || 0)).map(([k, v]) => { const c = v.fails >= 2 || v.breached ? 'r' : v.fails ? 'a' : 'g'; return `<tr><td class="l"><i class="lt ${c}"></i> ${esc(k)}</td><td class="l dim" style="font-size:12px">${v.lastOk ? esc(dlFixDates(stampAt(v.lastOk, true))) : '—'}</td><td class="l dim" style="font-size:12px;max-width:260px;white-space:normal">${c === 'g' ? '' : esc(String(v.lastError || v.lastErr || v.error || (v.breached ? DL('late', 'gecikti') : '')).slice(0, 90))}</td></tr>`; }).join('');
   document.body.insertAdjacentHTML('beforeend', `<div id="dlx-hpop" style="left:${Math.max(8, r.left)}px;top:${r.bottom + window.scrollY + 6}px"><b>${DL('Data sources', 'Veri kaynakları')}</b><p class="hint" style="margin:4px 0 8px">${DL('Prices come from the GitHub job every 30–60 minutes on weekdays. A red source does not stop the app: the last good data is used.', 'Fiyatlar iş günlerinde 30–60 dakikada bir GitHub işinden gelir. Kırmızı kaynak uygulamayı durdurmaz: son iyi veri kullanılır.')}</p><table>${rows || `<tr><td>${DL('No source information yet.', 'Henüz kaynak bilgisi yok.')}</td></tr>`}</table></div>`); }, true);
 
 // 84: fund light on the fund cards (My funds › Funds)
@@ -5078,6 +5079,86 @@ document.head.insertAdjacentHTML('beforeend', `<style id="rc-css">#dlx-recon>sum
 .rc-img{border:1px solid var(--rule,#ddd);border-radius:10px;padding:6px 10px;margin:0 0 6px;font-size:13px;animation:wiIn .25s ease-out}.rc-img.reading{border-style:dashed}.rc-img .rc-k{display:inline-block;padding:1px 8px;border-radius:9px;background:var(--panel2,#eee);font-size:12px;margin:0 4px}.rc-img details{display:inline-block;margin-left:6px}
 .rc-scroll{overflow-x:auto}.rc-t{width:100%;margin:6px 0}.rc-t td{vertical-align:top}.rc-bank{white-space:nowrap}.rc-in{width:96px;padding:4px 6px;margin:0 2px;font-variant-numeric:tabular-nums;text-align:right}.rc-wr td{border-top:0;padding-top:0;padding-bottom:10px}.rc-why{font-size:12.5px;white-space:normal}.rc-why .warn{color:var(--warn,#b07800)}.rc-fix{display:inline-block;margin:4px 0 0}.rc-fix button{font-size:12.5px}.rc-tot td{border-top:2px solid var(--rule,#ccc)}.rc-tot+.rc-wr td{font-size:12.5px}.rc-end{gap:10px;margin:10px 0 0}.rc-strip{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:13.5px}
 @media (max-width:700px){.xf-qbar .rc-qb,.xf-qbar .ocr-qb{flex:1 1 calc(50% - 8px)}.rc-in{width:78px}}</style>`);
+
+/* ---- v2.27 · 245–247, 250: scores that discriminate. A share's colour and call come from what its score adds over its own
+   index (the 2017–2026 score-quintile table), not from the absolute return: in TRY the market itself is expected to beat the
+   deposit, so the absolute figure made almost every BIST share look good and every US share look bad. ---- */
+const SC_BANDS = [[80, 's5', ['Very strong', 'Çok güçlü']], [60, 's4', ['Strong', 'Güçlü']], [40, 's3', ['Neutral', 'Nötr']], [20, 's2', ['Weak', 'Zayıf']], [0, 's1', ['Very weak', 'Çok zayıf']]];
+const scIsEq = x => !!x && (x.cls === 'TR_EQ' || x.cls === 'US_EQ');
+function scBand(x) { if (!x || x.score == null) return null; const b = SC_BANDS.find(r => x.score >= r[0]) || SC_BANDS[4]; return { k: b[1], t: DL(...b[2]), c: b[1] >= 's4' ? 'g' : b[1] <= 's2' ? 'r' : '', weakEv: x.cls === 'US_EQ' }; }
+// expected 12-month difference against the share's own index that comes from its score alone, in %
+function scEdge(x) { if (!scIsEq(x) || !x.z || x.z.q == null) return null; try { return (Math.exp(E.v3Edge(x.ccy === 'USD' ? 'USD' : 'TRY', x.z.q, 252) / 100) - 1) * 100; } catch (e) { return null; } }
+const scIdx = x => x && x.ccy === 'USD' ? 'S&P 500' : 'BIST 100';
+const scEdgeTxt = (x, d) => DL(`${fmtPct(d)} vs ${scIdx(x)}`, `${scIdx(x)}’e göre ${fmtPct(d)}`);
+const SC_WEAK_US = () => DL('US score: weak evidence — in the 2017–2026 test the best and worst fifths differed by about 1 point in 6 months (BIST: about 7).', 'ABD puanı: zayıf kanıt — 2017–2026 testinde en iyi ve en kötü beşte bir arasındaki fark 6 ayda yaklaşık 1 puan (BIST’te yaklaşık 7).');
+
+// one call per instrument (▲ buy candidate · ● watch · ▼ avoid): band first, the edge over the index instead of the absolute return
+{ const _call = dlCall; dlCall = function (x) { const r = _call.apply(this, arguments); if (!r || !scIsEq(x)) return r;
+  const b = scBand(x), d = scEdge(x); let why = r.why.filter(w => !/^(score|puan) \d/.test(w[1]) && !/^12 (m|ay):/.test(w[1]));
+  if (d != null) why.unshift([d > 0.25 ? 'g' : d < -0.25 ? 'r' : '', DL('12 m: ', '12 ay: ') + scEdgeTxt(x, d)]);
+  if (b) why.unshift([b.c, b.t + (b.weakEv ? DL(' (weak evidence)', ' (zayıf kanıt)') : '')]);
+  let c = r.c; const av = (() => { try { return dlAvoidOf(x); } catch (e) { return null; } })(), rd = (() => { try { return dlTechRead(x); } catch (e) { return null; } })(), gate = !x.gate || x.gate.ok;
+  if (x.inactive) { c = 'avoid'; why.unshift(['r', DL('no price: renamed or delisted?', 'fiyat yok: kodu değişmiş veya borsadan çıkmış olabilir')]); }
+  else if (av || !gate || x.score < 35) c = 'avoid';
+  else if (x.score >= (x.cls === 'US_EQ' ? 80 : 70) && (!rd || rd.s > -3) && (d == null || d > 0)) c = 'buy'; else c = 'watch';
+  return { ...r, c, why: why.slice(0, 4), t: c === 'buy' ? DL('Buy candidate', 'Al adayı') : c === 'avoid' ? DL('Avoid', 'Kaçın') : DL('Watch', 'İzle'), ic: c === 'buy' ? '▲' : c === 'avoid' ? '▼' : '●' }; }; }
+
+// grade ring coloured by band (green top, grey middle, red bottom), with the band word under it
+{ const _gr = dlGradeRing; dlGradeRing = function (x) { const h = _gr.apply(this, arguments), b = scBand(x); if (!h || !b) return h;
+  return h.replace('class="dlx-gr"', `class="dlx-gr sc-${b.k}"`).replace(/title="([^"]*)"/, (m, t) => `title="${t} · ${esc(b.t)}"`); }; }
+
+// fund verdict: split the expected return into what the market gives and what the choice of shares adds; weak held shares become actions
+function scFundSel(p) { const pos = dlPositions(p).filter(q => q.valueTRY > 0 && q.x && scIsEq(q.x)), V = pos.reduce((a, q) => a + q.valueTRY, 0); if (!(V > 0)) return null;
+  let s = 0, w = 0; const weak = [], strong = []; for (const q of pos) { const d = scEdge(q.x); if (d == null) continue; s += d * q.valueTRY; w += q.valueTRY; const b = scBand(q.x); if (q.x.score < 40 || q.x.inactive) weak.push({ q, d, b }); else if (q.x.score >= 70) strong.push({ q, d, b }); }
+  return w ? { edge: s / w, V, share: w, weak: weak.sort((a, b) => b.q.valueTRY - a.q.valueTRY), strong } : null; }
+{ const _fv = dlFundVerdict; dlFundVerdict = function (p) { const v = _fv.apply(this, arguments); if (!v) return v; const sel = scFundSel(p); v.sel = sel; if (!sel) return v;
+  if (v.verdict[0] === 'good' && sel.edge < -0.5) v.verdict = ['warn', DL(`The market is expected to beat the deposit, but the shares in this fund are expected to trail their index by ${Math.abs(sel.edge).toFixed(1)} points — better shares would raise it`, `Piyasanın mevduatı geçmesi bekleniyor, ancak bu fondaki hisselerin endekslerinin ${Math.abs(sel.edge).toFixed(1)} puan gerisinde kalması bekleniyor — daha iyi hisseler fonu yükseltir`)];
+  for (const { q, d } of sel.weak) v.acts.unshift({ gain: q.valueTRY * Math.max(0, -d) / 100, k: 'weak', sym: q.symbol, html: q.x.inactive ? DL(`<b>${esc(q.symbol)}</b>: no price from any source — check with your broker whether it was renamed or delisted`, `<b>${esc(q.symbol)}</b>: hiçbir kaynaktan fiyat gelmiyor — aracı kurumunuza kodunun değişip değişmediğini veya borsadan çıkıp çıkmadığını sorun`) : DL(`<b>${esc(q.symbol)}</b>: score ${q.x.score} (${scBand(q.x).t}) — expected ${scEdgeTxt(q.x, d)} over 12 months; swap it for a higher-scored share in the same sector`, `<b>${esc(q.symbol)}</b>: puan ${q.x.score} (${scBand(q.x).t}) — 12 ayda beklenen ${scEdgeTxt(q.x, d)}; aynı sektörde puanı daha yüksek bir hisseyle değiştirin`) });
+  return v; }; }
+{ const _vh = dlVerdictHTML; dlVerdictHTML = function (p) { const h = _vh.apply(this, arguments); if (!h) return h; const v = state.__scLastV = dlFundVerdict(p), sel = v && v.sel; if (!sel) return h;
+  const mk = (sel.share / v.V) * 100, row = `<div class="sc-split"><div><span class="lbl">${DL('From the market', 'Piyasadan gelen')}</span><b>${fmtPct(v.mu - sel.edge * sel.share / v.V)}</b></div><div><span class="lbl">${DL('From the choice of shares', 'Hisse seçiminden gelen')}</span><b class="${sel.edge > 0.25 ? 'up' : sel.edge < -0.25 ? 'down' : ''}">${fmtPct(sel.edge * sel.share / v.V)}</b><small>${DL(`shares are ${mk.toFixed(0)}% of the fund; on them ${fmtPct(sel.edge)} vs their index`, `hisseler fonun %${mk.toFixed(0)}’i; onlarda endekse göre ${fmtPct(sel.edge)}`)}</small></div>${sel.weak.length ? `<div><span class="lbl">${DL('Weak shares held', 'Elde zayıf hisse')}</span><b class="down">${sel.weak.map(w => esc(w.q.symbol)).join(', ')}</b></div>` : ''}</div>`;
+  return h.replace(/(<div class="dlx-vhead">[\s\S]*?<\/div>)/, `$1${row}`); }; }
+
+// to-do list: held shares in the bottom two bands
+try { DL_TODO_L.score = ['Weak share', 'Zayıf hisse']; } catch (e) { }
+{ const _td = dlTodo; dlTodo = function () { const out = _td.apply(this, arguments); try { const seen = new Set(out.filter(o => /zarar-kes|stop|fiyat gelmiyor|no price/.test(o.text)).map(o => o.text.split(/[ :]/)[0]));
+  for (const p of state.packages.filter(q => q.status !== 'closed')) for (const l of (p.lines || []).filter(z => !z.closed)) { const x = state.map[l.symbol]; if (!scIsEq(x) || x.inactive || x.score == null || x.score >= 40 || seen.has(l.symbol)) continue; seen.add(l.symbol); const d = scEdge(x), b = scBand(x);
+    out.push({ pri: x.score < 20 ? 1 : 2, kind: 'score', pid: p.id, text: DL(`${l.symbol}: score ${x.score} (${b.t})${d != null ? ', expected ' + scEdgeTxt(x, d) + ' over 12 months' : ''} — consider swapping it for a higher-scored share.`, `${l.symbol}: puan ${x.score} (${b.t})${d != null ? ', 12 ayda beklenen ' + scEdgeTxt(x, d) : ''} — puanı daha yüksek bir hisseyle değiştirmeyi düşünün.`) }); }
+  out.sort((a, b) => a.pri - b.pri); } catch (e) { console.error(e); } return out; }; }
+
+document.head.insertAdjacentHTML('beforeend', `<style id="sc-css">
+.dlx-gr.sc-s5 .mk-ring,.dlx-gr.sc-s4 .mk-ring{--c:var(--up,#2e9d6a)}.dlx-gr.sc-s2 .mk-ring,.dlx-gr.sc-s1 .mk-ring{--c:var(--down,#c0392b)}.dlx-gr.sc-s3 .mk-ring{--c:var(--muted,#8a8f98)}
+.dlx-gr small{text-align:center;line-height:1.25}.sc-w{font-style:normal;font-weight:600}.sc-w.s5,.sc-w.s4{color:var(--up,#2e9d6a)}.sc-w.s2,.sc-w.s1{color:var(--down,#c0392b)}.sc-w.s3{color:var(--muted,#8a8f98)}
+.sc-split{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin:0 0 10px}.sc-split>div{border:1px solid var(--rule,#ddd);border-radius:8px;padding:7px 10px;display:flex;flex-direction:column;gap:2px}
+.sc-split .lbl{font-size:11px;color:var(--muted)}.sc-split b{font-size:15px}.sc-split small{font-size:11px;color:var(--muted)}
+</style>`);
+window.__gncSc = { band: s => scBand(state.map[s]), edge: s => scEdge(state.map[s]), call: s => dlCall(state.map[s]), sel: id => scFundSel(state.packages.find(p => p.id === id)), weakUS: SC_WEAK_US };
+
+/* ---- 244 data freshness: in the data-sources popover, how recent the prices are per market and which held prices are old ---- */
+const FR_CLS = { TR_EQ: ['BIST shares', 'BIST hisseleri'], US_EQ: ['US shares', 'ABD hisseleri'], TEFAS: ['Funds (TEFAS)', 'Fonlar (TEFAS)'], TR_ETF: ['BIST ETFs', 'BIST BYF'], CMDTY: ['Commodities', 'Emtia'], MACRO: ['FX and indices', 'Döviz ve endeksler'] };
+function frSummary() { const now = Date.now(), out = {}; for (const x of Object.values(state.inst || {})) { const c = x.cls; if (!FR_CLS[c]) continue; const a = x.asOf || (x.priceAt || '').slice(0, 10); const age = a ? (now - Date.parse(a + 'T12:00:00Z')) / 864e5 : 99;
+    const o = out[c] = out[c] || { n: 0, d0: 0, d4: 0, old: 0, off: 0 }; o.n++; if (x.inactive) o.off++; else if (age < 1.6) o.d0++; else if (age <= 4.6) o.d4++; else o.old++; } return out; }
+function frHeldOld() { const held = new Map(); for (const p of state.packages.filter(q => q.status !== 'closed')) for (const l of (p.lines || []).filter(z => !z.closed && z.symbol)) held.set(l.symbol, p.name); const out = [];
+  for (const [s] of held) { const x = state.inst[s]; if (!x) continue; const a = x.asOf || (x.priceAt || '').slice(0, 10), age = a ? (Date.now() - Date.parse(a + 'T12:00:00Z')) / 864e5 : 99; if (x.inactive || age > 4.6) out.push({ s, a, off: !!x.inactive }); } return out; }
+function frHTML() { const sm = frSummary(), held = frHeldOld();
+  const rows = Object.keys(FR_CLS).filter(c => sm[c]).map(c => { const o = sm[c], pct = Math.round(o.d0 / o.n * 100); return `<tr><td class="l">${DL(...FR_CLS[c])}</td><td>${o.d0}</td><td>${o.d4}</td><td class="${o.old ? 'down' : ''}">${o.old + o.off}</td><td><span class="fr-bar"><i style="width:${pct}%"></i></span></td></tr>`; }).join('');
+  return `<div class="fr-box"><b>${DL('How recent the prices are', 'Fiyatlar ne kadar yeni')}</b><table class="fr-t"><tr><th class="l"></th><th>${DL('latest', 'son gün')}</th><th>${DL('1–4 days', '1–4 gün')}</th><th>${DL('older', 'daha eski')}</th><th></th></tr>${rows}</table>
+    <p class="hint" style="margin:4px 0 0">${DL('Fund prices (TEFAS) are published the next working day, so “1–4 days” is normal for them.', 'Fon (TEFAS) fiyatları ertesi iş günü yayımlanır; onlarda “1–4 gün” normaldir.')}</p>
+    ${held.length ? `<p style="margin:6px 0 0"><b class="down">${DL('Held, with an old price:', 'Elde tutulan, fiyatı eski:')}</b> ${held.map(h => `${esc(h.s)} <span class="dim">(${h.off ? DL('not trading?', 'işlem görmüyor?') : h.a ? dlDate(h.a) : '—'})</span>`).join(', ')}</p>` : ''}</div>`; }
+new MutationObserver(() => { const p = document.getElementById('dlx-hpop'); if (p && !p.querySelector('.fr-box')) { try { const t = p.querySelector('table'); (t || p).insertAdjacentHTML(t ? 'beforebegin' : 'beforeend', frHTML()); } catch (e) { console.error(e); } } }).observe(document.body, { childList: true });
+document.head.insertAdjacentHTML('beforeend', `<style id="fr-css">#dlx-hpop{max-width:calc(100vw - 16px);box-sizing:border-box;overflow-x:auto}@media (max-width:600px){#dlx-hpop{left:8px!important;right:8px}}#dlx-hpop .fr-box{margin:0 0 10px;padding:0 0 8px;border-bottom:1px solid var(--rule,#ddd)}.fr-t td,.fr-t th{padding:2px 6px;font-size:12px;text-align:right}.fr-t .l{text-align:left}.fr-bar{display:inline-block;width:60px;height:6px;border-radius:3px;background:rgba(127,127,127,.18);overflow:hidden;vertical-align:middle}.fr-bar i{display:block;height:100%;background:var(--up,#2e9d6a)}</style>`);
+window.__gncFr = { summary: frSummary, held: frHeldOld };
+
+/* ---- 249 one glance: under the fund value, one line saying what to do now (the fund's most urgent to-do, else the verdict's first action) ---- */
+function nowLine(p) { let t = null, lvl = 'ok';
+  try { const td = dlTodo().filter(o => o.pid === p.id).sort((a, b) => a.pri - b.pri)[0]; if (td) { t = td.text; lvl = td.pri === 0 ? 'bad' : 'warn'; } } catch (e) { }
+  if (!t) { try { const v = dlFundVerdict(p); if (v && v.acts && v.acts[0]) { t = v.acts[0].html; lvl = v.verdict[0] === 'good' ? 'ok' : 'warn'; } else if (v) { t = esc(v.verdict[1]); lvl = v.verdict[0] === 'good' ? 'ok' : v.verdict[0] === 'bad' ? 'bad' : 'warn'; } } catch (e) { } }
+  if (!t) return ''; return `<div class="now-line ${lvl}" id="dlx-now"><span class="now-k">${DL('Now', 'Şimdi')}</span><span class="now-t">${t}</span></div>`; }
+{ const _gb = dlGlanceBody; dlGlanceBody = function (p) { const h = _gb.apply(this, arguments); try { const nl = nowLine(p); if (!nl) return h; const i = h.indexOf('<div class="gl-row"'); return i > 0 ? h.slice(0, i) + nl + h.slice(i) : h + nl; } catch (e) { return h; } }; }
+document.head.insertAdjacentHTML('beforeend', `<style id="now-css">.now-line{display:flex;gap:10px;align-items:baseline;margin:12px 0;padding:8px 12px;border-radius:8px;border:1px solid var(--rule,#ddd);font-size:13.5px;line-height:1.45}
+.now-line .now-k{flex:none;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:10px;color:#fff;background:var(--up,#2e9d6a)}
+.now-line.warn{border-color:rgba(201,140,20,.45);background:rgba(201,140,20,.06)}.now-line.warn .now-k{background:#c98c14}.now-line.bad{border-color:rgba(192,57,43,.45);background:rgba(192,57,43,.06)}.now-line.bad .now-k{background:var(--down,#c0392b)}.now-line.ok{background:rgba(46,157,106,.05)}
+#dlx-glance .tile .val{overflow-wrap:anywhere}</style>`);
 
 /* v2.14 end */
 Object.assign(TR, { 'GitHub version · prices update about every 30–60 minutes on weekdays · your data stays in this browser': 'GitHub sürümü · fiyatlar iş günleri yaklaşık 30–60 dakikada bir güncellenir · verileriniz bu tarayıcıda kalır',

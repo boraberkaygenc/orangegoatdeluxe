@@ -171,6 +171,7 @@ function enrich(inst, S, M) {
     const bars = barsOf(x), c = bars.c.length ? bars.c : closesOf(x), st0 = seriesStats(c, bars), p = x.perf || {}, flags = [];
     const st = x.historyStale ? { n: st0.n, vol: st0.vol, dvol: st0.dvol, mdd: st0.mdd, jump: st0.jump, atr: st0.atr, turnover: st0.turnover, amihud: st0.amihud } : st0;
     if (x.historyStale && x.cls !== 'MACRO') flags.push('stale history');
+    if (x.inactive) flags.push('not trading');
     const e = { price: num(x.price) ?? (c.length ? c[c.length - 1] : null) };
     e.r1w = st.r1w ?? num(p.w1); e.r2w = st.r2w; e.r1m = st.r1m ?? num(p.m1) ?? num(x.r1m);
     e.r3m = num(p.m3) ?? st.r3m ?? num(x.r3m); e.r6m = num(p.m6) ?? st.r6m ?? num(x.r6m); e.r1y = num(p.y1) ?? num(x.change52w) ?? st.r1y ?? num(x.r1y); e.ytd = num(p.ytd) ?? num(x.ytd);
@@ -634,6 +635,7 @@ function alerts(ctx) {
     if (r.trailLevel && px <= r.trailLevel && r.peak > (r.cost || 0) * 1.02) out.push({ level: 'bad', kind: 'trail', symbol: r.symbol, text: `${s} closed below its trailing stop ${r.trailLevel.toFixed(2)} (${r.trailMult ? r.trailMult + ' × ATR' : (r.trailPct || 0).toFixed(0) + '%'} under the high of ${r.peak.toFixed(2)}): lock in the gain.` });
     if (r.pkg && r.planned && tot > 0) { const pk = (packages || []).find(p => p.id === r.pkg); const ptot = pk ? pk.lines.reduce((a, l) => a + (+l.amount || 0), 0) : 0, pval = pk ? rows.filter(q => q.pkg === r.pkg).reduce((a, q) => a + q.value, 0) : 0; if (ptot && pval) { const wPlan = r.planned / ptot, wNow = r.value / pval, drift = wNow / wPlan - 1; if (Math.abs(drift) > 0.2 && Math.abs(wNow - wPlan) > 0.02) out.push({ level: 'info', kind: 'drift', symbol: r.symbol, text: `${s} is ${(wNow * 100).toFixed(0)}% of its fund against a planned ${(wPlan * 100).toFixed(0)}% (${drift > 0 ? '+' : ''}${(drift * 100).toFixed(0)}% relative drift, band 20%): rebalance with new money first.` }); } }
     if (r.x.cls === 'TEFAS' && r.x.b51 && r.heldDays !== null && r.heldDays >= 300 && r.heldDays < 365) out.push({ level: 'info', kind: 'taxwait', symbol: r.symbol, text: `${s}: ${365 - r.heldDays} days until stopaj falls to 0% (${longDate(addDays(r.buyDate, 365))}). If you plan to sell, waiting saves ${S.taxTefas}% of the gain.` });
+    if (r.x.inactive) out.push({ level: 'bad', kind: 'inactive', symbol: r.symbol, text: `${s}: no price from any source since ${r.x.noPriceSince || '?'}; the share may have been renamed or delisted. Check with your broker.` });
     if (r.x.score !== null && r.x.score < 30) out.push({ level: 'warn', kind: 'score', symbol: r.symbol, text: `${s}: score fell to ${r.x.score}; consider trimming.` });
     const e = r.x.e; if (e.r1m !== null && e.r1m < -(2 * e.volUsed / Math.sqrt(12))) out.push({ level: 'bad', kind: '2sigma', symbol: r.symbol, text: `${s} fell ${e.r1m.toFixed(1)}% in a month, beyond its 2σ band.` });
   }
